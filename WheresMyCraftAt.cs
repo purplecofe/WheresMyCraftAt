@@ -128,19 +128,22 @@ namespace WheresMyCraftAt
                 //if (!await AsyncMoveMouse(new Vector2N(0, 0), cancellationToken))
                 //    return false;
 
-                //if (!await AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), cancellationToken))
-                //    return false;
-
-                //if (!await AsyncButtonPress(Keys.LButton, cancellationToken))
-                //    return false;
-
                 bool isInvOpen = await WaitForInventoryOpen(cancellationToken);
                 bool isStashOpen = await WaitForStashOpen(cancellationToken);
 
                 if (!isStashOpen || !isInvOpen)
                     return false;
 
-                DebugPrint("Stash & Inventory Open", LogMessageType.Success);
+                if (!await AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), cancellationToken))
+                    return false;
+
+                if (!await AsyncButtonPress(Keys.LButton, cancellationToken))
+                    return false;
+
+                if (!await WaitForItemOnCursor(cancellationToken))
+                    return false;
+
+                DebugPrint("Stash & Inventory Open AND an items on the cursor", LogMessageType.Success);
             }
             catch (Exception ex)
             {
@@ -376,6 +379,34 @@ namespace WheresMyCraftAt
                     if (panel)
                     {
                         DebugPrint($"{Name}: {FunctionName}({panel}) = True", LogMessageType.Success);
+                        return true;
+                    }
+                }
+
+                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+            }
+        }
+
+        private async Task<bool> WaitForItemOnCursor(CancellationToken cancellationToken, int timeout = 2)
+        {
+            var FunctionName = "WaitForItemOnCursor";
+            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeout));
+
+            try
+            {
+                while (!ctsTimeout.Token.IsCancellationRequested)
+                {
+                    await AsyncWaitServerLatency(ctsTimeout.Token);
+
+                    var itemOnCursor = IsAnItemPickedUp(GameController);
+                    if (itemOnCursor)
+                    {
+                        DebugPrint($"{Name}: {FunctionName}({itemOnCursor}) = True", LogMessageType.Success);
                         return true;
                     }
                 }
