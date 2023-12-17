@@ -134,8 +134,8 @@ namespace WheresMyCraftAt
                 //if (!await AsyncButtonPress(Keys.LButton, cancellationToken))
                 //    return false;
 
-                bool isStashOpen = await WaitForStashOpen(cancellationToken);
                 bool isInvOpen = await WaitForInventoryOpen(cancellationToken);
+                bool isStashOpen = await WaitForStashOpen(cancellationToken);
 
                 if (!isStashOpen || !isInvOpen)
                     return false;
@@ -157,6 +157,8 @@ namespace WheresMyCraftAt
             var FunctionName = "AsyncWaitServerLatency";
             DebugPrint($"{Name}: {FunctionName}({_serverLatency})", LogMessageType.Info);
             await Task.Delay(_serverLatency, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             return true;
         }
@@ -370,7 +372,7 @@ namespace WheresMyCraftAt
                 {
                     await AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    var panel = IsInGame(GameController);
+                    var panel = IsInventoryPanelOpen(GameController);
                     if (panel)
                     {
                         DebugPrint($"{Name}: {FunctionName}({panel}) = True", LogMessageType.Success);
