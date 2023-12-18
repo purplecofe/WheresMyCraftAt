@@ -52,7 +52,6 @@ namespace WheresMyCraftAt
 
         public override void Render()
         {
-            Graphics.DrawText($"IsAnItemRightClickedOnCursor({IsItemRightClickedCondition(GameController)})", new Vector2N(900, 600));
         }
 
         public override Job Tick()
@@ -317,8 +316,6 @@ namespace WheresMyCraftAt
             }
             catch (OperationCanceledException)
             {
-                //Probably dont have this handled here if we are a few deep? learn as i go.
-                //EmergencyStop();
                 return false;
             }
         }
@@ -342,14 +339,18 @@ namespace WheresMyCraftAt
             }
             catch (OperationCanceledException)
             {
-                //Probably dont have this handled here if we are a few deep? learn as i go.
-                //EmergencyStop();
                 return false;
             }
         }
 
+        private static bool TryGetCursorStateCondition(GameController GC, out MouseActionType cursorState) =>
+            (cursorState = GC?.Game?.IngameState?.IngameUi?.Cursor?.Action ?? MouseActionType.Free) != MouseActionType.Free;
+
+        private static bool IsItemOnLeftClickCondition(GameController GC) =>
+            TryGetCursorStateCondition(GC, out var cursorState) && cursorState == MouseActionType.HoldItem;
+
         private static bool IsItemRightClickedCondition(GameController GC) =>
-            GC?.Game?.IngameState?.IngameUi?.Cursor?.Action == MouseActionType.UseItem;
+            TryGetCursorStateCondition(GC, out var cursorState) && cursorState == MouseActionType.UseItem;
 
         private static bool IsStashPanelOpenCondition(GameController GC) =>
             GC?.Game?.IngameState?.IngameUi?.StashElement?.IsVisible ?? false;
@@ -371,13 +372,10 @@ namespace WheresMyCraftAt
 
         private Vector2N GetCurrentMousePosition() => new(GameController.IngameState.MousePosX, GameController.IngameState.MousePosY);
 
-        private static Entity GetPickedUpItem(GameController GC, InventorySlotE invSlot)
-        {
-            if (IsAnItemPickedUpCondition(GC))
-                return GetItemsFromAnInventory(GC, invSlot).FirstOrDefault();
+        private static Entity GetPickedUpItem(GameController GC) =>
+            IsAnItemPickedUpCondition(GC) ? GetItemsFromAnInventory(GC, InventorySlotE.Cursor1).FirstOrDefault() : null;
 
-            return null;
-        }
+        private static string GetPickedUpItemBaseName(GameController GC) => GC?.Files.BaseItemTypes.Translate(GetPickedUpItem(GC)?.Path)?.BaseName ?? string.Empty;
 
         public void DebugPrint(string printString, LogMessageType messageType)
         {
