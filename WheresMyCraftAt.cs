@@ -416,14 +416,21 @@ namespace WheresMyCraftAt
         private InventoryType GetTypeOfCurrentVisibleStash(GameController GC) =>
             GC?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ?? InventoryType.InvalidInventory;
 
-        private static Entity GetPickedUpItem(GameController GC) =>
-            IsAnItemPickedUpCondition(GC) ? GetItemsFromAnInventory(GC, InventorySlotE.Cursor1).FirstOrDefault() : null;
+        private static bool TryGetPickedUpItem(GameController GC, out Entity pickedUpItem)
+        {
+            pickedUpItem = IsAnItemPickedUpCondition(GC)
+                           ? GetItemsFromAnInventory(GC, InventorySlotE.Cursor1).FirstOrDefault()
+                           : null;
+
+            return pickedUpItem != null;
+        }
 
         private static string GetBaseNameFromItem(GameController GC, Entity item) => GetBaseNameFromPath(GC, item?.Path);
 
         private static string GetBaseNameFromItem(GameController GC, NormalInventoryItem item) => GetBaseNameFromPath(GC, item.Entity?.Path);
 
-        private static string GetPickedUpItemBaseName(GameController GC) => GetBaseNameFromPath(GC, GetPickedUpItem(GC)?.Path);
+        private static string GetPickedUpItemBaseName(GameController GC) =>
+            TryGetPickedUpItem(GC, out Entity pickedUpItem) ? GetBaseNameFromPath(GC, pickedUpItem.Path) : string.Empty;
 
         private static string GetBaseNameFromPath(GameController GC, string path) => GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
