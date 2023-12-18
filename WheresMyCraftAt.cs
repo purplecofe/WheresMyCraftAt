@@ -1,4 +1,6 @@
 ﻿using ExileCore;
+using ExileCore.PoEMemory;
+using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
@@ -24,6 +26,12 @@ namespace WheresMyCraftAt
             { LogMessageType.Success, Color.Green },
             { LogMessageType.Cancelled, Color.Orange },
             { LogMessageType.Timeout, Color.Gray }
+        };
+
+        private readonly Dictionary<SpecialSlot, Vector2N> specialSlotDimensionMap = new()
+        {
+            { SpecialSlot.CurrencyTab, new Vector2N(126f, 252f) },
+            { SpecialSlot.EssenceTab, new Vector2N(127.2f, 254.4f) }
         };
 
         private CancellationTokenSource _operationCts;
@@ -52,6 +60,8 @@ namespace WheresMyCraftAt
 
         public override void Render()
         {
+            if (TryGetStashSpecialSlot(GameController, SpecialSlot.CurrencyTab, out var foundItem))
+                Graphics.DrawText(GetBaseNameFromItem(GameController, foundItem), new Vector2N(800, 600));
         }
 
         public override Job Tick()
@@ -215,6 +225,14 @@ namespace WheresMyCraftAt
             }
         }
 
+        public Vector2N GetRelativeWinPos(Vector2N position)
+        {
+            return new Vector2N(
+                position.X + _clickWindowOffset.X,
+                position.Y + _clickWindowOffset.Y
+            );
+        }
+
         private async SyncTask<bool> AsyncIsButtonUp(Keys button, CancellationToken token)
         {
             return await ExecuteWithCancellationHandling(
@@ -231,14 +249,6 @@ namespace WheresMyCraftAt
                 condition: () => Input.GetKeyState(button),
                 timeoutS: Settings.ActionTimeoutInSeconds,
                 token: token);
-        }
-
-        public Vector2N GetRelativeWinPos(Vector2N position)
-        {
-            return new Vector2N(
-                position.X + _clickWindowOffset.X,
-                position.Y + _clickWindowOffset.Y
-            );
         }
 
         private async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
@@ -352,11 +362,12 @@ namespace WheresMyCraftAt
         private static bool IsItemRightClickedCondition(GameController GC) =>
             TryGetCursorStateCondition(GC, out var cursorState) && cursorState == MouseActionType.UseItem;
 
-        private static bool IsStashPanelOpenCondition(GameController GC) =>
-            GC?.Game?.IngameState?.IngameUi?.StashElement?.IsVisible ?? false;
+        private static bool IsStashPanelOpenCondition(GameController GC) => IsIngameUiElementOpenCondition(GC, ui => ui.StashElement);
 
-        private static bool IsInventoryPanelOpenCondition(GameController GC) =>
-            GC?.Game?.IngameState?.IngameUi?.InventoryPanel?.IsVisible ?? false;
+        private static bool IsInventoryPanelOpenCondition(GameController GC) => IsIngameUiElementOpenCondition(GC, ui => ui.InventoryPanel);
+
+        private static bool IsIngameUiElementOpenCondition(GameController GC, Func<IngameUIElements, Element> panelSelector) =>
+            panelSelector(GC?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
 
         private static bool IsAnItemPickedUpCondition(GameController GC) =>
             GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
@@ -372,10 +383,49 @@ namespace WheresMyCraftAt
 
         private Vector2N GetCurrentMousePosition() => new(GameController.IngameState.MousePosX, GameController.IngameState.MousePosY);
 
+        private bool TryGetItemInStash(GameController GC, string baseName, out NormalInventoryItem foundItem)
+        {
+            foundItem = TryGetVisibleStashInventory(GC, out var stashContents)
+                        ? stashContents.FirstOrDefault(item => GetBaseNameFromItem(GC, item) == baseName)
+                        : null;
+
+            return foundItem != null;
+        }
+
+        private bool TryGetStashSpecialSlot(GameController GC, SpecialSlot slotType, out NormalInventoryItem inventoryItem)
+        {
+            inventoryItem = TryGetVisibleStashInventory(GC, out var stashContents)
+                        ? stashContents.FirstOrDefault(item => item.Elem.Size == specialSlotDimensionMap[slotType])
+                        : null;
+
+            return inventoryItem != null;
+        }
+
+        private bool TryGetVisibleStashInventory(GameController GC, out IList<NormalInventoryItem> inventoryItems)
+        {
+            inventoryItems = IsVisibleStashValidCondition(GC) ? GetVisibleStashInventory(GC) : null;
+            return inventoryItems != null;
+        }
+
+        private IList<NormalInventoryItem> GetVisibleStashInventory(GameController GC) =>
+            GC?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
+
+        private bool IsVisibleStashValidCondition(GameController GC) =>
+            GetTypeOfCurrentVisibleStash(GC) != InventoryType.InvalidInventory;
+
+        private InventoryType GetTypeOfCurrentVisibleStash(GameController GC) =>
+            GC?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ?? InventoryType.InvalidInventory;
+
         private static Entity GetPickedUpItem(GameController GC) =>
             IsAnItemPickedUpCondition(GC) ? GetItemsFromAnInventory(GC, InventorySlotE.Cursor1).FirstOrDefault() : null;
 
-        private static string GetPickedUpItemBaseName(GameController GC) => GC?.Files.BaseItemTypes.Translate(GetPickedUpItem(GC)?.Path)?.BaseName ?? string.Empty;
+        private static string GetBaseNameFromItem(GameController GC, Entity item) => GetBaseNameFromPath(GC, item?.Path);
+
+        private static string GetBaseNameFromItem(GameController GC, NormalInventoryItem item) => GetBaseNameFromPath(GC, item.Entity?.Path);
+
+        private static string GetPickedUpItemBaseName(GameController GC) => GetBaseNameFromPath(GC, GetPickedUpItem(GC)?.Path);
+
+        private static string GetBaseNameFromPath(GameController GC, string path) => GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
         public void DebugPrint(string printString, LogMessageType messageType)
         {
