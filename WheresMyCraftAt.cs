@@ -1,5 +1,6 @@
 ﻿using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using ExileCore.Shared.Nodes;
 using SharpDX;
@@ -26,7 +27,7 @@ namespace WheresMyCraftAt
         };
 
         private CancellationTokenSource _operationCts;
-        private Task<bool> _currentOperationTask;
+        private SyncTask<bool> _currentOperation;
         private Vector2 _clickWindowOffset;
         private int _serverLatency;
 
@@ -34,7 +35,6 @@ namespace WheresMyCraftAt
         {
             Name = "Wheres My Craft At";
             _operationCts = new CancellationTokenSource();
-            _currentOperationTask = Task.FromResult(false);
         }
 
         public override bool Initialise()
@@ -47,18 +47,12 @@ namespace WheresMyCraftAt
         private static void RegisterHotkey(HotkeyNode hotkey)
         {
             Input.RegisterKey(hotkey);
-            hotkey.OnValueChanged += () => { Input.RegisterKey(hotkey); };
-        }
-
-        public override void AreaChange(AreaInstance area)
-        {
-            CancelCurrentOperation();
+            hotkey.OnValueChanged += () => Input.RegisterKey(hotkey);
         }
 
         public override void Render()
         {
-            //Graphics.DrawText($"MouseState ({Input.GetKeyState(Keys.LButton)})", new Vector2N(900, 600));
-            Graphics.DrawText($"{IsAnItemRightClickedOnCursor(GameController)}", new Vector2N(900, 600));
+            Graphics.DrawText($"IsAnItemRightClickedOnCursor({IsItemRightClickedCondition(GameController)})", new Vector2N(900, 600));
         }
 
         public override Job Tick()
@@ -66,34 +60,54 @@ namespace WheresMyCraftAt
             _clickWindowOffset = GameController.Window.GetWindowRectangle().TopLeft;
             _serverLatency = GameController.IngameState.ServerData.Latency;
 
+            if (!IsInGameCondition(GameController))
+            {
+                Stop();
+                return null;
+            }
+
             if (Settings.TestButton1.PressedOnce())
             {
-                if (_currentOperationTask.Status != TaskStatus.RanToCompletion)
+                if (_currentOperation is not null)
                 {
-                    CancelCurrentOperation();
+                    // Imediate cancelation called, release all buttons.
+                    Stop();
                 }
                 else
                 {
-                    StartNewOperation();
+                    DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
+                    ResetCancellationTokenSource();
+                    _currentOperation = AsyncTestButton1Main(_operationCts.Token);
                 }
             }
+
+            if (_currentOperation is not null)
+                TaskUtils.RunOrRestart(ref _currentOperation, () => null);
 
             return null;
         }
 
-        private void CancelCurrentOperation()
+        private void Stop()
         {
-            DebugPrint($"{Name}: Attempting to Cancel Current Operation.", LogMessageType.Cancelled);
-            ResetCancellationTokenSource();
-            _currentOperationTask = Task.FromResult(false);
-        }
+            if (_currentOperation is not null)
+            {
+                _currentOperation = null;
 
-        private void StartNewOperation()
-        {
-            DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
-            ResetCancellationTokenSource();
+                var keysToRelease = new List<Keys>
+                {
+                    Keys.LControlKey,
+                    Keys.ShiftKey,
+                    Keys.LButton,
+                    Keys.RButton
+                };
 
-            _currentOperationTask = Task.Run(async () => await AsyncTestButton1Main(_operationCts.Token), _operationCts.Token);
+                foreach (var key in keysToRelease)
+                    if (Input.GetKeyState(key))
+                        Input.KeyUp(key);
+
+                if (IsItemRightClickedCondition(GameController))
+                    Input.KeyPressRelease(Keys.Escape);
+            }
         }
 
         private void ResetCancellationTokenSource()
@@ -109,12 +123,9 @@ namespace WheresMyCraftAt
             _operationCts = new CancellationTokenSource();
         }
 
-        private async Task<bool> AsyncTestButton1Main(CancellationToken cancellationToken)
+        private async SyncTask<bool> AsyncTestButton1Main(CancellationToken token)
         {
-            var FunctionName = "AsyncTestButton1Main";
-            DebugPrint($"{Name}: {FunctionName} called.", LogMessageType.Info);
-
-            if (!IsInGame(GameController))
+            if (!IsInGameCondition(GameController))
             {
                 DebugPrint($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
                 return false;
@@ -122,224 +133,173 @@ namespace WheresMyCraftAt
 
             try
             {
-                //if (!await AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), cancellationToken))
-                //    return false;
-
-                //if (!await AsyncMoveMouse(new Vector2N(0, 0), cancellationToken))
-                //    return false;
-
-                bool isInvOpen = await WaitForInventoryOpen(cancellationToken);
-                bool isStashOpen = await WaitForStashOpen(cancellationToken);
+                bool isInvOpen = await AsyncWaitForInventoryOpen(token);
+                bool isStashOpen = await AsyncWaitForStashOpen(token);
 
                 if (!isStashOpen || !isInvOpen)
                     return false;
 
-                if (!await AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), cancellationToken))
+                if (!await AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), token))
                     return false;
 
-                if (!await AsyncButtonPress(Keys.LButton, cancellationToken))
+                if (!await AsyncButtonPress(Keys.RButton, token))
                     return false;
 
-                if (!await WaitForItemOnCursor(cancellationToken))
+                if (!await AsyncWaitForRightClickedItemOnCursor(token))
                     return false;
 
-                DebugPrint("Stash & Inventory Open AND an items on the cursor", LogMessageType.Success);
-            }
-            catch (Exception ex)
-            {
-                DebugPrint($"{Name}: Exception in {FunctionName}: {ex.Message}", LogMessageType.Error);
-                return false;
-            }
+                if (!await AsyncButtonPress(Keys.RButton, token))
+                    return false;
 
-            DebugPrint($"{Name}: {FunctionName}() Finished", LogMessageType.Success);
-            return true;
-        }
-
-        private async Task<bool> AsyncWaitServerLatency(CancellationToken cancellationToken)
-        {
-            var FunctionName = "AsyncWaitServerLatency";
-            DebugPrint($"{Name}: {FunctionName}({_serverLatency})", LogMessageType.Info);
-            await Task.Delay(_serverLatency, cancellationToken);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return true;
-        }
-
-        private async Task<bool> AsyncMoveMouse(Vector2N wantedPosition, CancellationToken cancellationToken)
-        {
-            var FunctionName = "AsyncMoveMouse";
-            DebugPrint($"{Name}: {FunctionName}({wantedPosition})", LogMessageType.Info);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return await AsyncIsMouseInPlace(wantedPosition, cancellationToken);
-        }
-
-        private async Task<bool> AsyncIsMouseInPlace(Vector2N wantedPosition, CancellationToken cancellationToken)
-        {
-            var FunctionName = "AsyncIsMouseInPlace";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Settings.ActionTimeoutInSeconds));
-
-            try
-            {
-                while (!ctsTimeout.Token.IsCancellationRequested)
+                if (!await AsyncWaitForRightClickedItemOffCursor(token))
                 {
-                    Input.SetCursorPos(GetRelativeWinPos(wantedPosition));
-
-                    await AsyncWaitServerLatency(ctsTimeout.Token);
-
-                    var currentMousePosition = new Vector2N(GameController.IngameState.MousePosX, GameController.IngameState.MousePosY);
-                    if (currentMousePosition == wantedPosition)
-                    {
-                        DebugPrint($"{Name}: {FunctionName}({wantedPosition}) = True", LogMessageType.Success);
-                        return true;
-                    }
+                    await AsyncButtonPress(Keys.Escape, token);
+                    await AsyncWaitServerLatency(token);
+                    return false;
                 }
 
-                return HandleTimeoutOrCancellation(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), FunctionName, cancellationToken);
+                DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
             }
             catch (OperationCanceledException)
             {
-                return HandleTimeoutOrCancellation(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), FunctionName, cancellationToken);
+                Stop();
+                return false;
             }
+
+            return true;
         }
 
-        private async Task<bool> AsyncButtonPress(Keys button, CancellationToken cancellationToken)
+        private async SyncTask<bool> AsyncWaitServerLatency(CancellationToken token)
         {
-            var FunctionName = "AsyncButtonPress";
-            DebugPrint($"{Name}: {FunctionName}({button})", LogMessageType.Info);
+            await Task.Delay(_serverLatency, token);
 
-            cancellationToken.ThrowIfCancellationRequested();
+            return true;
+        }
 
-            bool isDown = await AsyncIsButtonDown(button, cancellationToken);
-            bool isUp = await AsyncIsButtonUp(button, cancellationToken);
+        private async SyncTask<bool> AsyncMoveMouse(Vector2N position, CancellationToken token) => await AsyncIsMouseInPlace(position, token);
+
+        private async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, CancellationToken token)
+        {
+            return await ExecuteWithCancellationHandling(
+                action: () => SetCursorPositionAction(position),
+                condition: () => IsMouseInPositionCondition(position),
+                timeoutS: Settings.ActionTimeoutInSeconds,
+                token: token);
+        }
+
+        private async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            bool isDown = await AsyncIsButtonDown(button, token);
+            bool isUp = await AsyncIsButtonUp(button, token);
 
             return isDown && isUp;
         }
 
-        private async Task<bool> AsyncSetButtonDown(Keys button, CancellationToken cancellationToken)
+        private async SyncTask<bool> AsyncSetButtonDown(Keys button, CancellationToken token) =>
+            await AsyncIsButtonDown(button, token);
+
+        private void PerformButtonAction(Keys button, bool press)
         {
-            var FunctionName = "AsyncSetButtonDown";
-            DebugPrint($"{Name}: {FunctionName}({button})", LogMessageType.Info);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return await AsyncIsButtonDown(button, cancellationToken);
-        }
-
-        private async Task<bool> AsyncIsButtonDown(Keys button, CancellationToken cancellationToken)
-        {
-            var FunctionName = "AsyncIsButtonDown";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Settings.ActionTimeoutInSeconds));
-
-            try
+            if (press)
             {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    if (button == Keys.LButton)
-                        Input.LeftDown();
-                    else if (button == Keys.RButton)
-                        Input.RightDown();
-                    else
-                        Input.KeyDown(button);
-
-                    await AsyncWaitServerLatency(ctsTimeout.Token);
-
-                    var isButtonDown = Input.GetKeyState(button);
-                    if (isButtonDown)
-                    {
-                        DebugPrint($"{Name}: {FunctionName}({button}) = True", LogMessageType.Success);
-                        return true;
-                    }
-                }
-
-                return HandleTimeoutOrCancellation(button, FunctionName, cancellationToken);
+                if (button == Keys.LButton) Input.LeftDown();
+                else if (button == Keys.RButton) Input.RightDown();
+                else Input.KeyDown(button);
             }
-            catch (OperationCanceledException)
+            else
             {
-                return HandleTimeoutOrCancellation(button, FunctionName, cancellationToken);
+                if (button == Keys.LButton) Input.LeftUp();
+                else if (button == Keys.RButton) Input.RightUp();
+                else Input.KeyUp(button);
             }
         }
 
-        private async Task<bool> AsyncIsButtonUp(Keys button, CancellationToken cancellationToken)
+        private async SyncTask<bool> AsyncIsButtonUp(Keys button, CancellationToken token)
         {
-            var FunctionName = "AsyncIsButtonUp";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Settings.ActionTimeoutInSeconds));
-
-            try
-            {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    if (button == Keys.LButton)
-                        Input.LeftUp();
-                    else if (button == Keys.RButton)
-                        Input.RightUp();
-                    else
-                        Input.KeyUp(button);
-
-                    await AsyncWaitServerLatency(ctsTimeout.Token);
-
-                    var isButtonDown = Input.GetKeyState(button);
-                    if (!isButtonDown)
-                    {
-                        DebugPrint($"{Name}: {FunctionName}({button}) = True", LogMessageType.Success);
-                        return true;
-                    }
-                }
-
-                return HandleTimeoutOrCancellation(button, FunctionName, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                return HandleTimeoutOrCancellation(button, FunctionName, cancellationToken);
-            }
+            return await ExecuteWithCancellationHandling(
+                action: () => PerformButtonAction(button, false),
+                condition: () => !Input.GetKeyState(button),
+                timeoutS: Settings.ActionTimeoutInSeconds,
+                token: token);
         }
 
-        private bool HandleTimeoutOrCancellation<T>(T identifier, string actionName, CancellationToken cancellationToken)
+        private async SyncTask<bool> AsyncIsButtonDown(Keys button, CancellationToken token)
         {
-            string message = cancellationToken.IsCancellationRequested
-                ? $"{Name}: {actionName}({identifier}) = False (Cancelled)"
-                : $"{Name}: {actionName}({identifier}) = False (Timeout)";
-
-            LogMessageType messageType = cancellationToken.IsCancellationRequested
-                ? LogMessageType.Cancelled
-                : LogMessageType.Timeout;
-
-            DebugPrint(message, messageType);
-            return false;
+            return await ExecuteWithCancellationHandling(
+                action: () => PerformButtonAction(button, true),
+                condition: () => Input.GetKeyState(button),
+                timeoutS: Settings.ActionTimeoutInSeconds,
+                token: token);
         }
 
-        private bool HandleTimeoutOrCancellation(string actionName, CancellationToken cancellationToken)
-        {
-            string message = cancellationToken.IsCancellationRequested
-                ? $"{Name}: {actionName} = False (Cancelled)"
-                : $"{Name}: {actionName} = False (Timeout)";
-
-            LogMessageType messageType = cancellationToken.IsCancellationRequested
-                ? LogMessageType.Cancelled
-                : LogMessageType.Timeout;
-
-            DebugPrint(message, messageType);
-            return false;
-        }
-
-        public Vector2N GetRelativeWinPos(Vector2N wantedPosition)
+        public Vector2N GetRelativeWinPos(Vector2N position)
         {
             return new Vector2N(
-                wantedPosition.X + _clickWindowOffset.X,
-                wantedPosition.Y + _clickWindowOffset.Y
+                position.X + _clickWindowOffset.X,
+                position.Y + _clickWindowOffset.Y
             );
         }
 
-        private async Task<bool> WaitForStashOpen(CancellationToken cancellationToken, int timeout = 10)
+        private async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
         {
-            var FunctionName = "WaitForStashOpen";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeout));
+            return await ExecuteWithCancellationHandling(
+                condition: () => IsStashPanelOpenCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
+        {
+            return await ExecuteWithCancellationHandling(
+                condition: () => IsInventoryPanelOpenCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> AsyncWaitForItemOnCursor(CancellationToken token, int timeout = 2)
+        {
+            return await ExecuteWithCancellationHandling(
+                condition: () => IsAnItemPickedUpCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> AsyncWaitForItemOffCursor(CancellationToken token, int timeout = 2)
+        {
+            return await ExecuteWithCancellationHandling(
+                condition: () => !IsAnItemPickedUpCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> AsyncWaitForRightClickedItemOnCursor(CancellationToken token, int timeout = 2)
+        {
+            return await ExecuteWithCancellationHandling(
+                condition: () => IsItemRightClickedCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> AsyncWaitForRightClickedItemOffCursor(CancellationToken token, int timeout = 2)
+        {
+            return await ExecuteWithCancellationHandling(
+                condition: () => !IsItemRightClickedCondition(GameController),
+                timeoutS: timeout,
+                token: token
+                );
+        }
+
+        private async SyncTask<bool> ExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, CancellationToken token)
+        {
+            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
 
             try
             {
@@ -347,114 +307,76 @@ namespace WheresMyCraftAt
                 {
                     await AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    var panel = IsStashPanelOpen(GameController);
-                    if (panel)
+                    if (condition())
                     {
-                        DebugPrint($"{Name}: {FunctionName}({panel}) = True", LogMessageType.Success);
                         return true;
                     }
                 }
 
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+                return false;
             }
             catch (OperationCanceledException)
             {
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+                //Probably dont have this handled here if we are a few deep? learn as i go.
+                //EmergencyStop();
+                return false;
             }
         }
 
-        private async Task<bool> WaitForInventoryOpen(CancellationToken cancellationToken, int timeout = 10)
+        private async SyncTask<bool> ExecuteWithCancellationHandling(Action action, Func<bool> condition, int timeoutS, CancellationToken token)
         {
-            var FunctionName = "WaitForInventoryOpen";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeout));
+            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
 
             try
             {
                 while (!ctsTimeout.Token.IsCancellationRequested)
                 {
+                    action();
                     await AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    var panel = IsInventoryPanelOpen(GameController);
-                    if (panel)
-                    {
-                        DebugPrint($"{Name}: {FunctionName}({panel}) = True", LogMessageType.Success);
-                        return true;
-                    }
+                    if (condition()) return true;
                 }
 
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+                return false;
             }
             catch (OperationCanceledException)
             {
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
+                //Probably dont have this handled here if we are a few deep? learn as i go.
+                //EmergencyStop();
+                return false;
             }
         }
 
-        private async Task<bool> WaitForItemOnCursor(CancellationToken cancellationToken, int timeout = 2)
+        private static bool IsItemRightClickedCondition(GameController GC) =>
+            GC?.Game?.IngameState?.IngameUi?.Cursor?.Action == MouseActionType.UseItem;
+
+        private static bool IsStashPanelOpenCondition(GameController GC) =>
+            GC?.Game?.IngameState?.IngameUi?.StashElement?.IsVisible ?? false;
+
+        private static bool IsInventoryPanelOpenCondition(GameController GC) =>
+            GC?.Game?.IngameState?.IngameUi?.InventoryPanel?.IsVisible ?? false;
+
+        private static bool IsAnItemPickedUpCondition(GameController GC) =>
+            GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
+
+        private static IList<Entity> GetItemsFromAnInventory(GameController GC, InventorySlotE invSlot) =>
+            GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
+
+        private static bool IsInGameCondition(GameController GC) => GC?.Game?.IngameState?.InGame ?? false;
+
+        private void SetCursorPositionAction(Vector2N position) => Input.SetCursorPos(GetRelativeWinPos(position));
+
+        private bool IsMouseInPositionCondition(Vector2N position) => GetCurrentMousePosition() == position;
+
+        private Vector2N GetCurrentMousePosition() => new(GameController.IngameState.MousePosX, GameController.IngameState.MousePosY);
+
+        private static Entity GetPickedUpItem(GameController GC, InventorySlotE invSlot)
         {
-            var FunctionName = "WaitForItemOnCursor";
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeout));
-
-            try
-            {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    await AsyncWaitServerLatency(ctsTimeout.Token);
-
-                    var itemOnCursor = IsAnItemPickedUp(GameController);
-                    if (itemOnCursor)
-                    {
-                        DebugPrint($"{Name}: {FunctionName}({itemOnCursor}) = True", LogMessageType.Success);
-                        return true;
-                    }
-                }
-
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                return HandleTimeoutOrCancellation(FunctionName, cancellationToken);
-            }
-        }
-
-        private static bool IsAnItemRightClickedOnCursor(GameController gameController)
-        {
-            return gameController?.Game?.IngameState?.IngameUi?.Cursor?.GetChildAtIndex(0)?.IsVisible ?? false;
-        }
-
-        private static bool IsStashPanelOpen(GameController gameController)
-        {
-            return gameController?.Game?.IngameState?.IngameUi?.StashElement?.IsVisible ?? false;
-        }
-
-        private static bool IsInventoryPanelOpen(GameController gameController)
-        {
-            return gameController?.Game?.IngameState?.IngameUi?.InventoryPanel?.IsVisible ?? false;
-        }
-
-        private static bool IsAnItemPickedUp(GameController gameController)
-        {
-            return gameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
-        }
-
-        private static Entity GetPickedUpItem(GameController gameController, InventorySlotE invSlot)
-        {
-            if (IsAnItemPickedUp(gameController))
-                return GetItemsFromAnInventory(gameController, invSlot).FirstOrDefault();
+            if (IsAnItemPickedUpCondition(GC))
+                return GetItemsFromAnInventory(GC, invSlot).FirstOrDefault();
 
             return null;
-        }
-
-        private static IList<Entity> GetItemsFromAnInventory(GameController gameController, InventorySlotE invSlot)
-        {
-            return gameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
-        }
-
-        private static bool IsInGame(GameController gameController)
-        {
-            return gameController?.Game?.IngameState?.InGame ?? false;
         }
 
         public void DebugPrint(string printString, LogMessageType messageType)
