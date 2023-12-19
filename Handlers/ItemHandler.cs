@@ -54,11 +54,14 @@ namespace WheresMyCraftAt.Handlers
                 );
         }
 
-        public static string GetBaseNameFromItem(Entity item) => GetBaseNameFromPath(item?.Path);
+        public static string GetBaseNameFromItem(Entity item) => 
+            GetBaseNameFromPath(item?.Path);
 
-        public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);
+        public static string GetBaseNameFromItem(NormalInventoryItem item) => 
+            GetBaseNameFromPath(item.Entity?.Path);
 
-        public static string GetBaseNameFromPath(string path) => GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
+        public static string GetBaseNameFromPath(string path) => 
+            GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
         public static string GetPickedUpItemBaseName() =>
             InventoryHandler.TryGetPickedUpItem(out Entity pickedUpItem) ? GetBaseNameFromPath(pickedUpItem.Path) : string.Empty;

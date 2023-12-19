@@ -35,6 +35,7 @@ namespace WheresMyCraftAt.Handlers
             GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
 
         public static bool IsInventoryPanelOpenCondition() => ElementHandler.IsIngameUiElementOpenCondition(ui => ui.InventoryPanel);
+
         public static bool TryGetPickedUpItem(out Entity pickedUpItem)
         {
             pickedUpItem = IsAnItemPickedUpCondition()

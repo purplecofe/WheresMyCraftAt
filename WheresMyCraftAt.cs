@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using WheresMyCraftAt.Extensions;
 using WheresMyCraftAt.Handlers;
 using Vector2N = System.Numerics.Vector2;
 
@@ -31,7 +32,7 @@ namespace WheresMyCraftAt
 
         private CancellationTokenSource _operationCts;
         private SyncTask<bool> _currentOperation;
-        public Vector2 _clickWindowOffset;
+        public Vector2 ClickWindowOffset;
         public int ServerLatency;
 
         public WheresMyCraftAt()
@@ -48,6 +49,7 @@ namespace WheresMyCraftAt
             ExecuteHandler.Initialize(this);
             GameHandler.Initialize(this);
             InventoryHandler.Initialize(this);
+            ItemExtensions.Initialize(this);
             ItemHandler.Initialize(this);
             KeyHandler.Initialize(this);
             MouseHandler.Initialize(this);
@@ -62,21 +64,9 @@ namespace WheresMyCraftAt
             hotkey.OnValueChanged += () => Input.RegisterKey(hotkey);
         }
 
-        public override void Render()
-        {
-            if (StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var foundItem))
-            {
-                Graphics.DrawText(ItemHandler.GetBaseNameFromItem(foundItem), new Vector2N(800, 600));
-            }
-            else
-            {
-                Graphics.DrawText("None", new Vector2N(800, 600));
-            }
-        }
-
         public override Job Tick()
         {
-            _clickWindowOffset = GameController.Window.GetWindowRectangle().TopLeft;
+            ClickWindowOffset = GameController.Window.GetWindowRectangle().TopLeft;
             ServerLatency = GameController.IngameState.ServerData.Latency;
 
             if (!GameHandler.IsInGameCondition())
@@ -96,7 +86,7 @@ namespace WheresMyCraftAt
                 {
                     DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
                     ResetCancellationTokenSource();
-                    _currentOperation = AsyncTestButton1Main(_operationCts.Token);
+                    _currentOperation = AsyncTestingMethod(_operationCts.Token);
                 }
             }
 
@@ -126,6 +116,8 @@ namespace WheresMyCraftAt
 
                 if (ItemHandler.IsItemRightClickedCondition())
                     Input.KeyPressRelease(Keys.Escape);
+
+                DebugPrint($"{Name}: Stop() has been ran.", LogMessageType.Warning);
             }
         }
 
@@ -142,7 +134,7 @@ namespace WheresMyCraftAt
             _operationCts = new CancellationTokenSource();
         }
 
-        private async SyncTask<bool> AsyncTestButton1Main(CancellationToken token)
+        private async SyncTask<bool> AsyncTestingMethod(CancellationToken token)
         {
             if (!GameHandler.IsInGameCondition())
             {
@@ -158,24 +150,17 @@ namespace WheresMyCraftAt
                 if (!isStashOpen || !isInvOpen)
                     return false;
 
-                if (!await MouseHandler.AsyncMoveMouse(new Vector2N(Settings.MouseMoveX, Settings.MouseMoveY), token))
+                if (!StashHandler.TryGetItemInStash("Orb of Transmutation", out var item))
                     return false;
 
-                if (!await KeyHandler.AsyncButtonPress(Keys.RButton, token))
+                if (!await item.AsyncTryClick(true, token))
                     return false;
 
-                if (!await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token))
+                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var specialItem))
                     return false;
 
-                if (!await KeyHandler.AsyncButtonPress(Keys.RButton, token))
+                if (!await specialItem.AsyncTryClick(false, token))
                     return false;
-
-                if (!await ItemHandler.AsyncWaitForRightClickedItemOffCursor(token))
-                {
-                    await KeyHandler.AsyncButtonPress(Keys.Escape, token);
-                    await GameHandler.AsyncWaitServerLatency(token);
-                    return false;
-                }
 
                 DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
             }

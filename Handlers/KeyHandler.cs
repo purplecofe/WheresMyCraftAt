@@ -15,15 +15,8 @@ namespace WheresMyCraftAt.Handlers
             Main = main;
         }
 
-        public static async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token)
-        {
-            token.ThrowIfCancellationRequested();
-
-            bool isDown = await AsyncIsButtonDown(button, token);
-            bool isUp = await AsyncIsButtonUp(button, token);
-
-            return isDown && isUp;
-        }
+        public static async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token) => 
+            await AsyncIsButtonDown(button, token) && await AsyncIsButtonUp(button, token);
 
         public static async SyncTask<bool> AsyncIsButtonDown(Keys button, CancellationToken token)
         {

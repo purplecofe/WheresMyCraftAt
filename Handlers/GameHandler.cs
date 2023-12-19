@@ -19,7 +19,6 @@ namespace WheresMyCraftAt.Handlers
         public static async SyncTask<bool> AsyncWaitServerLatency(CancellationToken token)
         {
             await Task.Delay(Main.ServerLatency, token);
-
             return true;
         }
 
