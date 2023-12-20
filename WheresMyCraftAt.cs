@@ -1,13 +1,16 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
+using ExileCore.Shared.Enums;
 using ExileCore.Shared.Nodes;
 using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using WheresMyCraftAt.CraftingSequence;
 using WheresMyCraftAt.Extensions;
 using WheresMyCraftAt.Handlers;
+using static WheresMyCraftAt.CraftingSequence.CraftingSequenceBase;
 using Vector2N = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt
@@ -45,6 +48,7 @@ namespace WheresMyCraftAt
         {
             RegisterHotkey(Settings.TestButton1);
 
+            CraftingSequenceExecutor.Initialize(this);
             ElementHandler.Initialize(this);
             ExecuteHandler.Initialize(this);
             GameHandler.Initialize(this);
@@ -86,7 +90,7 @@ namespace WheresMyCraftAt
                 {
                     DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
                     ResetCancellationTokenSource();
-                    _currentOperation = AsyncTestingMethod(_operationCts.Token);
+                    _currentOperation = AsyncStart(_operationCts.Token);
                 }
             }
 
@@ -134,7 +138,7 @@ namespace WheresMyCraftAt
             _operationCts = new CancellationTokenSource();
         }
 
-        private async SyncTask<bool> AsyncTestingMethod(CancellationToken token)
+        private async SyncTask<bool> AsyncStart(CancellationToken token)
         {
             if (!GameHandler.IsInGameCondition())
             {
@@ -150,23 +154,46 @@ namespace WheresMyCraftAt
                 if (!isStashOpen || !isInvOpen)
                     return false;
 
-                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var specialItem))
+                var craftingSteps = new List<CraftingStep>
+                {
+                    new() 
+                    {
+                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Normal, token),
+                        ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Normal),
+                        //AutomaticSuccess = false, // Set based on your method's logic
+                        SuccessAction = SuccessAction.Continue,
+                        //SuccessActionStepIndex = 1, // Proceed to next step on success
+                        FailureAction = FailureAction.Restart,
+                        //FailureActionStepIndex = 0 // Restart from first step on failure
+                    },
+                    new()
+                    {   // Loops back to step 0 due to SuccessAction.GoToStep(0)
+                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Magic, token),
+                        ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Magic),
+                        //AutomaticSuccess = false, // Set based on your method's logic
+                        SuccessAction = SuccessAction.GoToStep,
+                        SuccessActionStepIndex = 0, // Proceed to next step on success
+                        FailureAction = FailureAction.Restart,
+                        //FailureActionStepIndex = 0 // Restart from first step on failure
+                    }, 
+                    new() 
+                    {
+                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Rare, token),
+                        ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Normal),
+                        //AutomaticSuccess = false, // Set based on your method's logic
+                        SuccessAction = SuccessAction.End,
+                        //SuccessActionStepIndex = 1, // Proceed to next step on success
+                        FailureAction = FailureAction.Restart,
+                        //FailureActionStepIndex = 0 // Restart from first step on failure
+                    }
+                };
+
+
+                var giveItems = new CraftingSequenceExecutor(craftingSteps);
+
+                if (!await giveItems.Execute(CancellationToken.None))
                     return false;
 
-                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Normal, token))
-                    return false;
-
-                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out specialItem))
-                    return false;
-
-                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Magic, token))
-                    return false;
-
-                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out specialItem))
-                    return false;
-
-                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Rare, token))
-                    return false;
 
                 DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
             }
