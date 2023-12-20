@@ -9,7 +9,7 @@
             Error,
             Success,
             Cancelled,
-            Timeout
+            Special
         }
     }
 }

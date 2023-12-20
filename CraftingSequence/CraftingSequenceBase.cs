@@ -29,7 +29,7 @@ namespace WheresMyCraftAt.CraftingSequence
         {
             public Func<CancellationToken, SyncTask<bool>> Method { get; set; }
             public Func<bool> ConditionalCheck { get; set; }
-            public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.BeforeMethod;
+            public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethod;
             public bool AutomaticSuccess { get; set; } = false;
             public SuccessAction SuccessAction { get; set; }
             public int SuccessActionStepIndex { get; set; }

@@ -24,7 +24,7 @@ namespace WheresMyCraftAt
             { LogMessageType.Error, Color.Red },
             { LogMessageType.Success, Color.Green },
             { LogMessageType.Cancelled, Color.Orange },
-            { LogMessageType.Timeout, Color.Gray }
+            { LogMessageType.Special, Color.Gray }
         };
 
         public readonly Dictionary<SpecialSlot, Vector2N> specialSlotDimensionMap = new()
@@ -171,8 +171,8 @@ namespace WheresMyCraftAt
                         Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Magic, token),
                         ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Magic),
                         //AutomaticSuccess = false, // Set based on your method's logic
-                        SuccessAction = SuccessAction.GoToStep,
-                        SuccessActionStepIndex = 0, // Proceed to next step on success
+                        SuccessAction = SuccessAction.Continue,
+                        //SuccessActionStepIndex = 0, // Proceed to next step on success
                         FailureAction = FailureAction.Restart,
                         //FailureActionStepIndex = 0 // Restart from first step on failure
                     }, 
@@ -181,10 +181,10 @@ namespace WheresMyCraftAt
                         Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Rare, token),
                         ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Normal),
                         //AutomaticSuccess = false, // Set based on your method's logic
-                        SuccessAction = SuccessAction.End,
-                        //SuccessActionStepIndex = 1, // Proceed to next step on success
-                        FailureAction = FailureAction.Restart,
-                        //FailureActionStepIndex = 0 // Restart from first step on failure
+                        SuccessAction = SuccessAction.GoToStep,
+                        SuccessActionStepIndex = 1, // Proceed to next step on success
+                        FailureAction = FailureAction.RepeatStep,
+                        FailureActionStepIndex = 0 // Restart from first step on failure
                     }
                 };
 

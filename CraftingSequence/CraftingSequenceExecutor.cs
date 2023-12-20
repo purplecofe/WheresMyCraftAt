@@ -30,35 +30,45 @@ namespace WheresMyCraftAt.CraftingSequence
 
             while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
             {
+
                 var currentStep = steps[currentStepIndex];
-                bool success = true;
+                bool success = false;  // Defaulting success to false
 
                 try
                 {
-                    // Execute the conditional check before the method, if specified and applicable
                     if (currentStep.ConditionalCheck != null && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethod)
                     {
-                        if (!currentStep.ConditionalCheck())
+                        if (currentStep.ConditionalCheck())
                         {
+                            // If the conditional check before the method is true, skip method execution
+                            success = true;
+                            Main.DebugPrint($"CraftingSequenceStep: ConditionalCheck is {success}", WheresMyCraftAt.LogMessageType.Success);
+                        }
+                        else
+                        {
+                            // If the conditional check before the method is false, execute the method
                             success = await currentStep.Method(token);
+                            Main.DebugPrint($"CraftingSequenceStep: Method is {success}", WheresMyCraftAt.LogMessageType.Success);
                         }
                     }
                     else
                     {
-                        // Directly execute the method if no prior conditional check or if it's not applicable
+                        // Execute the method if no prior conditional check or if it's not applicable
                         success = await currentStep.Method(token);
+                        Main.DebugPrint($"CraftingSequenceStep: Method is {success}", WheresMyCraftAt.LogMessageType.Success);
                     }
 
-                    // Override success if AutomaticSuccess is true
-                    if (currentStep.AutomaticSuccess)
-                    {
-                        success = true;
-                    }
-
-                    // Execute the conditional check after the method, if specified
                     if (currentStep.ConditionalCheck != null && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethod)
                     {
+                        // Execute the conditional check after the method, if specified
                         success = success && currentStep.ConditionalCheck();
+                        Main.DebugPrint($"CraftingSequenceStep: ConditionalCheck is {success}", WheresMyCraftAt.LogMessageType.Success);
+                    }
+
+                    if (currentStep.AutomaticSuccess)
+                    {
+                        success = true;  // Override success if AutomaticSuccess is true
+                        Main.DebugPrint($"CraftingSequenceStep: AutomaticSuccess is {success}", WheresMyCraftAt.LogMessageType.Success);
                     }
                 }
                 catch (Exception ex)
@@ -70,6 +80,8 @@ namespace WheresMyCraftAt.CraftingSequence
                 // Determine the next step based on success or failure
                 if (success)
                 {
+
+                    Main.DebugPrint($"CraftingSequenceStep: True", WheresMyCraftAt.LogMessageType.Success);
                     switch (currentStep.SuccessAction)
                     {
                         case SuccessAction.Continue:
@@ -85,6 +97,8 @@ namespace WheresMyCraftAt.CraftingSequence
                 }
                 else
                 {
+
+                    Main.DebugPrint($"CraftingSequenceStep: False", WheresMyCraftAt.LogMessageType.Error);
                     switch (currentStep.FailureAction)
                     {
                         case FailureAction.RepeatStep:

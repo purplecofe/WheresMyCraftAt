@@ -126,16 +126,18 @@ namespace WheresMyCraftAt.Extensions
             {
                 var itemRarity = ItemHandler.GetRarityFromItem(item.Entity);
 
-                if (itemRarity == targetRarity)
-                    return true;
-
                 if (itemRarity == ItemRarity.Unique)
                     return false;
 
                 switch (itemRarity)
                 {
                     case ItemRarity.Normal:
-                        if (targetRarity == ItemRarity.Magic)
+                        if (targetRarity == ItemRarity.Normal)
+                        {
+                            // cannot possibly turn a normal into a normal without massive recursion setting in.
+                            return false;
+                        }
+                        else if (targetRarity == ItemRarity.Magic)
                         {
                             if (!await item.AsyncTryApplyOrb(Currency.OrbOfTransmutation, token))
                                 return false;
@@ -175,6 +177,9 @@ namespace WheresMyCraftAt.Extensions
                         }
                         else if (targetRarity == ItemRarity.Normal &&
                             !await item.AsyncTryApplyOrb(Currency.OrbOfScouring, token))
+                            return false;
+                        else if (targetRarity == ItemRarity.Magic &&
+                            !await item.AsyncTryApplyOrb(Currency.OrbOfAlteration, token))
                             return false;
                         break;
 

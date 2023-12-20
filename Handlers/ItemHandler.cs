@@ -32,7 +32,11 @@ namespace WheresMyCraftAt.Handlers
             if (!StashHandler.TryGetStashSpecialSlot(slot, out var specialItem))
                 return false;
 
-            return GetRarityFromItem(specialItem.Item) == rarity;
+            var result = GetRarityFromItem(specialItem.Item) == rarity;
+
+            Main.DebugPrint($"IsItemRarityFromSpecialSlotCondition = {result}", LogMessageType.Special);
+
+            return result;
         }
 
         public static async SyncTask<bool> AsyncWaitForItemOffCursor(CancellationToken token, int timeout = 2)
@@ -71,8 +75,19 @@ namespace WheresMyCraftAt.Handlers
                 );
         }
 
-        public static ItemRarity GetRarityFromItem(Entity item) =>
-            item.TryGetComponent<Mods>(out var modsComp) ? modsComp.ItemRarity : ItemRarity.Normal;
+        public static ItemRarity GetRarityFromItem(Entity item)
+        {
+            if (item.TryGetComponent<Mods>(out var modsComp))
+            {
+                Main.DebugPrint($"GetRarityFromItem: {modsComp.ItemRarity}", LogMessageType.Special);
+                return modsComp.ItemRarity;
+            }
+            else
+            {
+                Main.DebugPrint($"GetRarityFromItem: Could not get mods component from item.", LogMessageType.Error);
+                return ItemRarity.Normal;
+            }
+        }
 
         public static string GetBaseNameFromItem(Entity item) =>
             GetBaseNameFromPath(item?.Path);
