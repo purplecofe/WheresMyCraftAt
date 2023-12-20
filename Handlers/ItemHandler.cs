@@ -1,4 +1,5 @@
 ﻿using ExileCore;
+using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
@@ -20,7 +21,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForItemOffCursor(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => !InventoryHandler.IsAnItemPickedUpCondition(),
                 timeoutS: timeout,
                 token: token
@@ -29,7 +30,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForItemOnCursor(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => InventoryHandler.IsAnItemPickedUpCondition(),
                 timeoutS: timeout,
                 token: token
@@ -38,7 +39,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForRightClickedItemOffCursor(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => !IsItemRightClickedCondition(),
                 timeoutS: timeout,
                 token: token
@@ -47,20 +48,23 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForRightClickedItemOnCursor(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => IsItemRightClickedCondition(),
                 timeoutS: timeout,
                 token: token
                 );
         }
 
-        public static string GetBaseNameFromItem(Entity item) => 
+        public static ItemRarity GetRarityFromItem(Entity item) =>
+            item.TryGetComponent<Mods>(out var modsComp) ? modsComp.ItemRarity : ItemRarity.Normal;
+
+        public static string GetBaseNameFromItem(Entity item) =>
             GetBaseNameFromPath(item?.Path);
 
-        public static string GetBaseNameFromItem(NormalInventoryItem item) => 
+        public static string GetBaseNameFromItem(NormalInventoryItem item) =>
             GetBaseNameFromPath(item.Entity?.Path);
 
-        public static string GetBaseNameFromPath(string path) => 
+        public static string GetBaseNameFromPath(string path) =>
             GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
         public static string GetPickedUpItemBaseName() =>

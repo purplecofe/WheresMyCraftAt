@@ -15,12 +15,12 @@ namespace WheresMyCraftAt.Handlers
             Main = main;
         }
 
-        public static async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token) => 
+        public static async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token) =>
             await AsyncIsButtonDown(button, token) && await AsyncIsButtonUp(button, token);
 
         public static async SyncTask<bool> AsyncIsButtonDown(Keys button, CancellationToken token)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 action: () => PerformButtonAction(button, true),
                 condition: () => Input.GetKeyState(button),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,
@@ -29,7 +29,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncIsButtonUp(Keys button, CancellationToken token)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 action: () => PerformButtonAction(button, false),
                 condition: () => !Input.GetKeyState(button),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,

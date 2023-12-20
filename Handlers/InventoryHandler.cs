@@ -21,7 +21,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => IsInventoryPanelOpenCondition(),
                 timeoutS: timeout,
                 token: token

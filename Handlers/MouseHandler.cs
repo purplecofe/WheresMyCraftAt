@@ -22,7 +22,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 action: () => SetCursorPositionAction(position, applyOffset),
                 condition: () => IsMouseInPositionCondition(position),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,
@@ -35,7 +35,7 @@ namespace WheresMyCraftAt.Handlers
         public static async SyncTask<bool> AsyncMoveMouse(Vector2N position, bool applyOffset, CancellationToken token)
         {
             Main.DebugPrint($"Wanted Position({position})\n"
-                          + $"NormalizedPosition({NormalizePosition(position)})", 
+                          + $"NormalizedPosition({NormalizePosition(position)})",
                 WheresMyCraftAt.LogMessageType.Info);
 
             return await AsyncIsMouseInPlace(NormalizePosition(position), applyOffset, token);
@@ -52,7 +52,7 @@ namespace WheresMyCraftAt.Handlers
             );
         }
 
-        public static bool IsMouseInPositionCondition(Vector2N position) => 
+        public static bool IsMouseInPositionCondition(Vector2N position) =>
             GetCurrentMousePosition() == position;
 
         public static void SetCursorPositionAction(Vector2N position, bool applyOffset) =>

@@ -22,7 +22,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
         {
-            return await ExecuteHandler.ExecuteWithCancellationHandling(
+            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => IsStashPanelOpenCondition(),
                 timeoutS: timeout,
                 token: token

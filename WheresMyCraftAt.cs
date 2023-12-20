@@ -150,16 +150,22 @@ namespace WheresMyCraftAt
                 if (!isStashOpen || !isInvOpen)
                     return false;
 
-                if (!StashHandler.TryGetItemInStash("Orb of Transmutation", out var item))
-                    return false;
-
-                if (!await item.AsyncTryClick(true, token))
-                    return false;
-
                 if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var specialItem))
                     return false;
 
-                if (!await specialItem.AsyncTryClick(false, token))
+                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Normal, token))
+                    return false;
+
+                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out specialItem))
+                    return false;
+
+                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Magic, token))
+                    return false;
+
+                if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out specialItem))
+                    return false;
+
+                if (!await specialItem.AsyncChangeItemRarity(ExileCore.Shared.Enums.ItemRarity.Rare, token))
                     return false;
 
                 DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);

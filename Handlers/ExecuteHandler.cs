@@ -7,14 +7,16 @@ namespace WheresMyCraftAt.Handlers
 {
     public static class ExecuteHandler
     {
+        private static WheresMyCraftAt Main;
         private static GameController GC;
 
         public static void Initialize(WheresMyCraftAt main)
         {
+            Main = main;
             GC = main.GameController;
         }
 
-        public static async SyncTask<bool> ExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, CancellationToken token)
+        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, CancellationToken token)
         {
             using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
             ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
@@ -39,7 +41,7 @@ namespace WheresMyCraftAt.Handlers
             }
         }
 
-        public static async SyncTask<bool> ExecuteWithCancellationHandling(Action action, Func<bool> condition, int timeoutS, CancellationToken token)
+        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Action action, Func<bool> condition, int timeoutS, CancellationToken token)
         {
             using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
             ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
