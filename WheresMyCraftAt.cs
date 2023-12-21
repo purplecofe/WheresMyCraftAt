@@ -282,7 +282,7 @@ namespace WheresMyCraftAt
 
                     ImGui.Separator();
 
-                    if (ImGui.Button($"Insert Step##{i}"))
+                    if (ImGui.Button($"[+] Insert Step Below##{i}"))
                     {
                         currentSteps.Insert(i + 1, new CraftingStepInput());
                         i++; // Skip the newly added step in this iteration
@@ -290,7 +290,7 @@ namespace WheresMyCraftAt
                     }
 
                     ImGui.SameLine();
-                    if (ImGui.Button($"Remove THIS Step##{i}"))
+                    if (ImGui.Button($"[-] Remove THIS Step##{i}"))
                     {
                         currentSteps.RemoveAt(i);
                         i--; // Adjust index to account for the removed item
@@ -309,12 +309,12 @@ namespace WheresMyCraftAt
             // Reflect the changes back to Settings.SelectedCraftingStepInputs
             Settings.SelectedCraftingStepInputs = currentSteps;
 
-            if (ImGui.Button("Add New Step"))
+            if (ImGui.Button("[+] Add New Step"))
             {
                 Settings.SelectedCraftingStepInputs.Add(new CraftingSequenceBase.CraftingStepInput());
             }
-
-            if (ImGui.Button("Apply Steps"))
+            ImGui.Separator();
+            if (ImGui.Button("[X] Apply Steps"))
             {
                 SelectedCraftingSteps.Clear();
                 foreach (var input in Settings.SelectedCraftingStepInputs)
