@@ -1,6 +1,5 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
-using ExileCore.Shared.Enums;
 using ExileCore.Shared.Nodes;
 using ImGuiNET;
 using SharpDX;
@@ -52,6 +51,7 @@ namespace WheresMyCraftAt
 
             CraftingSequenceExecutor.Initialize(this);
             ElementHandler.Initialize(this);
+            HelperHandler.Initialize(this);
             ExecuteHandler.Initialize(this);
             GameHandler.Initialize(this);
             InventoryHandler.Initialize(this);
@@ -201,7 +201,7 @@ namespace WheresMyCraftAt
 
                 // Use a colored, collapsible header for each step
                 ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-                if (ImGui.CollapsingHeader($"Step {i}##header{i}", ImGuiTreeNodeFlags.DefaultOpen))
+                if (ImGui.CollapsingHeader($"Step [{i+1}]##header{i}", ImGuiTreeNodeFlags.DefaultOpen))
                 {
                     #region Step Settings
 
@@ -270,12 +270,29 @@ namespace WheresMyCraftAt
                         }
                         ImGui.SameLine(); ImGui.Text("On Failure");
 
-                        // Success Action Combo Box
-                        int conditionalCheckIndex = (int)stepInput.ItemRarityWanted;
-                        if (ImGui.Combo($"Conditional Rarity Check (Temp)##{i}", ref conditionalCheckIndex, Enum.GetNames(typeof(ItemRarity)), GetEnumLength<ItemRarity>()))
+                        // Manage Conditional Checks
+                        if (ImGui.Button($"Add Conditional Check##{i}"))
                         {
-                            stepInput.ItemRarityWanted = (ItemRarity)conditionalCheckIndex;
+                            stepInput.ConditionalCheckKeys.Add(""); // Add a new empty string to be filled out
                         }
+                        ImGui.Indent();
+                        for (int j = 0; j < stepInput.ConditionalCheckKeys.Count; j++)
+                        {
+                            if (ImGui.Button($"Remove##{i}_{j}"))
+                            {
+                                stepInput.ConditionalCheckKeys.RemoveAt(j);
+                                j--;
+                            }
+
+                            ImGui.SameLine();
+                            string checkKey = stepInput.ConditionalCheckKeys[j];
+                            if (ImGui.InputText($"IFL [{j+1}]##{i}_{j}", ref checkKey, 1000))
+                            {
+                                stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
+                            }
+                        }
+
+                        ImGui.Unindent();
                     }
 
                     #endregion Step Settings
@@ -285,16 +302,16 @@ namespace WheresMyCraftAt
                     if (ImGui.Button($"[+] Insert Step Below##{i}"))
                     {
                         currentSteps.Insert(i + 1, new CraftingStepInput());
-                        i++; // Skip the newly added step in this iteration
-                        continue; // Skip the rest of the loop for this iteration
+                        i++;
+                        continue;
                     }
 
                     ImGui.SameLine();
                     if (ImGui.Button($"[-] Remove THIS Step##{i}"))
                     {
                         currentSteps.RemoveAt(i);
-                        i--; // Adjust index to account for the removed item
-                        continue; // Skip the rest of the loop for this iteration
+                        i--;
+                        continue;
                     }
 
                     ImGui.Separator();
@@ -306,7 +323,6 @@ namespace WheresMyCraftAt
                 }
             }
 
-            // Reflect the changes back to Settings.SelectedCraftingStepInputs
             Settings.SelectedCraftingStepInputs = currentSteps;
 
             if (ImGui.Button("[+] Add New Step"))
@@ -322,12 +338,12 @@ namespace WheresMyCraftAt
                     CraftingSequenceBase.CraftingStep newStep = new CraftingSequenceBase.CraftingStep
                     {
                         Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
-                        ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, input.ItemRarityWanted),
+                        //ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, input.ItemRarityWanted),
                         AutomaticSuccess = input.AutomaticSuccess,
                         SuccessAction = input.SuccessAction,
-                        SuccessActionStepIndex = input.SuccessActionStepIndex,
+                        SuccessActionStepIndex = input.SuccessActionStepIndex-1,
                         FailureAction = input.FailureAction,
-                        FailureActionStepIndex = input.FailureActionStepIndex
+                        FailureActionStepIndex = input.FailureActionStepIndex-1
                     };
                     SelectedCraftingSteps.Add(newStep);
                 }

@@ -2,6 +2,7 @@
 using ExileCore.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequenceBase;
 
@@ -35,17 +36,15 @@ namespace WheresMyCraftAt.CraftingSequence
 
                 try
                 {
-                    if (currentStep.ConditionalCheck != null && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethod)
+                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethod)
                     {
-                        if (currentStep.ConditionalCheck())
+                        // All conditions must be true for success
+                        success = currentStep.ConditionalChecks.All(condition => condition());
+                        Main.DebugPrint($"CraftingSequenceStep: All ConditionalChecks before method are {success}", WheresMyCraftAt.LogMessageType.Success);
+
+                        if (!success)
                         {
-                            // If the conditional check before the method is true, skip method execution
-                            success = true;
-                            Main.DebugPrint($"CraftingSequenceStep: ConditionalCheck is {success}", WheresMyCraftAt.LogMessageType.Success);
-                        }
-                        else
-                        {
-                            // If the conditional check before the method is false, execute the method
+                            // If any conditional check before the method is false, execute the method
                             success = await currentStep.Method(token);
                             Main.DebugPrint($"CraftingSequenceStep: Method is {success}", WheresMyCraftAt.LogMessageType.Success);
                         }
@@ -57,11 +56,11 @@ namespace WheresMyCraftAt.CraftingSequence
                         Main.DebugPrint($"CraftingSequenceStep: Method is {success}", WheresMyCraftAt.LogMessageType.Success);
                     }
 
-                    if (currentStep.ConditionalCheck != null && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethod)
+                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethod)
                     {
                         // Execute the conditional check after the method, if specified
-                        success = success && currentStep.ConditionalCheck();
-                        Main.DebugPrint($"CraftingSequenceStep: ConditionalCheck is {success}", WheresMyCraftAt.LogMessageType.Success);
+                        success = success && currentStep.ConditionalChecks.All(condition => condition());
+                        Main.DebugPrint($"CraftingSequenceStep: All ConditionalChecks after method are {success}", WheresMyCraftAt.LogMessageType.Success);
                     }
 
                     if (currentStep.AutomaticSuccess)

@@ -1,6 +1,7 @@
 ﻿using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace WheresMyCraftAt.CraftingSequence
@@ -30,7 +31,7 @@ namespace WheresMyCraftAt.CraftingSequence
         public class CraftingStep
         {
             public Func<CancellationToken, SyncTask<bool>> Method { get; set; }
-            public Func<bool> ConditionalCheck { get; set; }
+            public List<Func<bool>> ConditionalChecks { get; set; } = [];
             public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethod;
             public bool AutomaticSuccess { get; set; } = false;
             public SuccessAction SuccessAction { get; set; }
@@ -43,11 +44,12 @@ namespace WheresMyCraftAt.CraftingSequence
         {
             public string CurrencyItem { get; set; } = string.Empty;
             public bool AutomaticSuccess { get; set; } = false;
-            public ItemRarity ItemRarityWanted { get; set; } = ItemRarity.Normal;
+            //public ItemRarity ItemRarityWanted { get; set; } = ItemRarity.Normal;
             public SuccessAction SuccessAction { get; set; } = SuccessAction.Continue;
-            public int SuccessActionStepIndex { get; set; } = 0;
+            public int SuccessActionStepIndex { get; set; } = 1;
             public FailureAction FailureAction { get; set; } = FailureAction.Restart;
-            public int FailureActionStepIndex { get; set; } = 0;
+            public int FailureActionStepIndex { get; set; } = 1;
+            public List<string> ConditionalCheckKeys { get; set; } = [];
             public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethod;
         }
     }
