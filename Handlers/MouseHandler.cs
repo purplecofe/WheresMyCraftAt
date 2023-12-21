@@ -2,8 +2,8 @@
 using ExileCore.Shared;
 using System;
 using System.Threading;
-using static WheresMyCraftAt.WheresMyCraftAt;
 using Vector2N = System.Numerics.Vector2;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {

@@ -61,6 +61,7 @@ namespace WheresMyCraftAt.Extensions
             }
             catch (OperationCanceledException)
             {
+                // store states later possibly and apply state correction based on the progress?
                 return false;
             }
         }

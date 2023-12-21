@@ -1,4 +1,5 @@
-﻿using ExileCore.Shared;
+﻿using ExileCore;
+using ExileCore.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;

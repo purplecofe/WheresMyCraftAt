@@ -1,4 +1,6 @@
 ﻿using ImGuiNET;
+using ItemFilterLibrary;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using WheresMyCraftAt.Handlers;
@@ -13,6 +15,7 @@ namespace WheresMyCraftAt.CraftingSequence
         {
             if (ImGui.Button("Remove All"))
             {
+                // TODO: Add confirmation dialog
                 Main.Settings.SelectedCraftingStepInputs.Clear();
             }
 
@@ -151,7 +154,7 @@ namespace WheresMyCraftAt.CraftingSequence
 
             if (ImGui.Button("[+] Add New Step"))
             {
-                Main.Settings.SelectedCraftingStepInputs.Add(new CraftingSequence.CraftingStepInput());
+                Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
             }
             ImGui.Separator();
             if (ImGui.Button("[X] Apply Steps"))
@@ -159,16 +162,32 @@ namespace WheresMyCraftAt.CraftingSequence
                 Main.SelectedCraftingSteps.Clear();
                 foreach (var input in Main.Settings.SelectedCraftingStepInputs)
                 {
-                    CraftingSequence.CraftingStep newStep = new CraftingSequence.CraftingStep
+                    CraftingStep newStep = new CraftingStep
                     {
                         Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
-                        //ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, input.ItemRarityWanted),
                         AutomaticSuccess = input.AutomaticSuccess,
                         SuccessAction = input.SuccessAction,
                         SuccessActionStepIndex = input.SuccessActionStepIndex - 1,
                         FailureAction = input.FailureAction,
-                        FailureActionStepIndex = input.FailureActionStepIndex - 1
+                        FailureActionStepIndex = input.FailureActionStepIndex - 1,
+                        ConditionalChecks = []
                     };
+
+                    foreach (var checkKey in input.ConditionalCheckKeys)
+                    {
+                        ItemFilter filter = ItemFilter.LoadFromString(checkKey);
+                        if (filter.Queries.Count == 0)
+                        {
+                            Main.DebugPrint($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}", LogMessageType.Error);
+                            return; // No point going on from here.
+                        }
+
+                        newStep.ConditionalChecks.Add(() =>
+                        {
+                            return FilterHandler.IsMatchingCondition(filter);
+                        });
+                    }
+
                     Main.SelectedCraftingSteps.Add(newStep);
                 }
             }

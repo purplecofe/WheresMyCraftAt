@@ -47,7 +47,7 @@ namespace WheresMyCraftAt
         public override bool Initialise()
         {
             Main = this;
-            RegisterHotkey(Settings.TestButton1);
+            RegisterHotkey(Settings.RunButton);
 
             return true;
         }
@@ -69,7 +69,7 @@ namespace WheresMyCraftAt
                 return null;
             }
 
-            if (Settings.TestButton1.PressedOnce())
+            if (Settings.RunButton.PressedOnce())
             {
                 if (_currentOperation is not null)
                 {

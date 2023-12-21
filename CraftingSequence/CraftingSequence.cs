@@ -1,4 +1,5 @@
 ﻿using ExileCore.Shared;
+using ItemFilterLibrary;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -37,16 +38,14 @@ namespace WheresMyCraftAt.CraftingSequence
             public int SuccessActionStepIndex { get; set; }
             public FailureAction FailureAction { get; set; }
             public int FailureActionStepIndex { get; set; }
+            public List<ItemFilter> PreCompiledFilterFromStrings { get; set; } = [];
         }
 
         public class CraftingStepInput
         {
             public string CurrencyItem { get; set; } = string.Empty;
             public bool AutomaticSuccess { get; set; } = false;
-
-            //public ItemRarity ItemRarityWanted { get; set; } = ItemRarity.Normal;
             public SuccessAction SuccessAction { get; set; } = SuccessAction.Continue;
-
             public int SuccessActionStepIndex { get; set; } = 1;
             public FailureAction FailureAction { get; set; } = FailureAction.Restart;
             public int FailureActionStepIndex { get; set; } = 1;
