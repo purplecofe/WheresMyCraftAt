@@ -22,11 +22,20 @@ namespace WheresMyCraftAt.Handlers
         }
         public static async SyncTask<bool> AsyncChangeItemRarity(SpecialSlot slot, ItemRarity rarity, CancellationToken token)
         {
-            if (!StashHandler.TryGetStashSpecialSlot(slot, out var specialItem))
+            if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
                 return false;
 
-            return await specialItem.AsyncChangeItemRarity(rarity, token);
+            return await slotItem.AsyncChangeItemRarity(rarity, token);
         }
+
+        public static async SyncTask<bool> AsyncTryApplyOrbToSlot(SpecialSlot slot, string orbName, CancellationToken token)
+        {
+            if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
+                return false;
+
+            return await slotItem.AsyncTryApplyOrb(orbName, token);
+        }
+
         public static bool IsItemRarityFromSpecialSlotCondition(SpecialSlot slot, ItemRarity rarity)
         {
             if (!StashHandler.TryGetStashSpecialSlot(slot, out var specialItem))

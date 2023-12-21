@@ -156,9 +156,9 @@ namespace WheresMyCraftAt
 
                 var craftingSteps = new List<CraftingStep>
                 {
-                    new() 
+                    new()
                     {
-                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Normal, token),
+                        Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, "Orb of Scouring", token),
                         ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Normal),
                         //AutomaticSuccess = false, // Set based on your method's logic
                         SuccessAction = SuccessAction.Continue,
@@ -167,23 +167,33 @@ namespace WheresMyCraftAt
                         //FailureActionStepIndex = 0 // Restart from first step on failure
                     },
                     new()
-                    {   // Loops back to step 0 due to SuccessAction.GoToStep(0)
-                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Magic, token),
+                    {
+                        Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, "Orb of Transmutation", token),
                         ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Magic),
                         //AutomaticSuccess = false, // Set based on your method's logic
                         SuccessAction = SuccessAction.Continue,
                         //SuccessActionStepIndex = 0, // Proceed to next step on success
                         FailureAction = FailureAction.Restart,
                         //FailureActionStepIndex = 0 // Restart from first step on failure
-                    }, 
+                    },
+                    new()
+                    {   // Loops back to step 0 due to SuccessAction.Restart
+                        Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, "Orb of Alteration", token),
+                        ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Magic),
+                        //AutomaticSuccess = false, // Set based on your method's logic
+                        SuccessAction = SuccessAction.Continue,
+                        //SuccessActionStepIndex = 0, // Proceed to next step on success
+                        FailureAction = FailureAction.Restart,
+                        //FailureActionStepIndex = 0 // Restart from first step on failure
+                    },
                     new() 
                     {
-                        Method = async (token) => await ItemHandler.AsyncChangeItemRarity(SpecialSlot.CurrencyTab, ItemRarity.Rare, token),
+                        Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, "Regal Orb", token),
                         ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, ItemRarity.Normal),
                         //AutomaticSuccess = false, // Set based on your method's logic
-                        SuccessAction = SuccessAction.GoToStep,
+                        SuccessAction = SuccessAction.End,
                         SuccessActionStepIndex = 1, // Proceed to next step on success
-                        FailureAction = FailureAction.RepeatStep,
+                        FailureAction = FailureAction.Restart,
                         FailureActionStepIndex = 0 // Restart from first step on failure
                     }
                 };
