@@ -34,7 +34,7 @@ namespace WheresMyCraftAt.Handlers
 
             var result = GetRarityFromItem(specialItem.Item) == rarity;
 
-            Main.DebugPrint($"IsItemRarityFromSpecialSlotCondition = {result}", LogMessageType.Special);
+            Logging.DebugPrint($"IsItemRarityFromSpecialSlotCondition = {result}", LogMessageType.Special);
 
             return result;
         }
@@ -79,12 +79,12 @@ namespace WheresMyCraftAt.Handlers
         {
             if (item.TryGetComponent<Mods>(out var modsComp))
             {
-                Main.DebugPrint($"GetRarityFromItem: {modsComp.ItemRarity}", LogMessageType.Special);
+                Logging.DebugPrint($"GetRarityFromItem: {modsComp.ItemRarity}", LogMessageType.Special);
                 return modsComp.ItemRarity;
             }
             else
             {
-                Main.DebugPrint($"GetRarityFromItem: Could not get mods component from item.", LogMessageType.Error);
+                Logging.DebugPrint($"GetRarityFromItem: Could not get mods component from item.", LogMessageType.Error);
                 return ItemRarity.Normal;
             }
         }

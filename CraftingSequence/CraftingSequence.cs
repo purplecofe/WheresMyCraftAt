@@ -50,6 +50,7 @@ namespace WheresMyCraftAt.CraftingSequence
             public FailureAction FailureAction { get; set; } = FailureAction.Restart;
             public int FailureActionStepIndex { get; set; } = 1;
             public List<string> ConditionalCheckKeys { get; set; } = [];
+            public List<string> ConditionalCheckKeysMultiLine { get; set; } = [];
             public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
         }
     }

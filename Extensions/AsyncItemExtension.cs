@@ -24,7 +24,7 @@ namespace WheresMyCraftAt.Extensions
                 var clickPosition = item.GetClientRectCache.Center.ToVector2Num();
                 var button = !rightClick ? Keys.LButton : Keys.RButton;
 
-                Main.DebugPrint($"AsyncTryClick Button is {button}", LogMessageType.Success);
+                Logging.DebugPrint($"AsyncTryClick Button is {button}", LogMessageType.Success);
 
                 if (!await MouseHandler.AsyncMoveMouse(clickPosition, token)
                     || !ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUIAction()))

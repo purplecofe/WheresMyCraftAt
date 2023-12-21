@@ -79,7 +79,7 @@ namespace WheresMyCraftAt
                 }
                 else
                 {
-                    DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
+                    Logging.DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
                     ResetCancellationTokenSource();
                     _currentOperation = AsyncStart(_operationCts.Token);
                 }
@@ -112,7 +112,7 @@ namespace WheresMyCraftAt
                 if (ItemHandler.IsItemRightClickedCondition())
                     Input.KeyPressRelease(Keys.Escape);
 
-                DebugPrint($"{Name}: Stop() has been ran.", LogMessageType.Warning);
+                Logging.DebugPrint($"{Name}: Stop() has been ran.", LogMessageType.Warning);
             }
         }
 
@@ -133,7 +133,7 @@ namespace WheresMyCraftAt
         {
             if (!GameHandler.IsInGameCondition())
             {
-                DebugPrint($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
+                Logging.DebugPrint($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
                 return false;
             }
 
@@ -150,7 +150,7 @@ namespace WheresMyCraftAt
                 if (!await giveItems.Execute(CancellationToken.None))
                     return false;
 
-                DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
+                Logging.DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
             }
             catch (OperationCanceledException)
             {
@@ -159,15 +159,6 @@ namespace WheresMyCraftAt
             }
 
             return true;
-        }
-
-        public void DebugPrint(string printString, LogMessageType messageType)
-        {
-            if (Settings.DebugPrint)
-            {
-                Color messageColor = _logMessageColors[messageType];
-                DebugWindow.LogMsg(printString, Settings.DebugPrintLingerTime, messageColor);
-            }
         }
 
         public override void DrawSettings()

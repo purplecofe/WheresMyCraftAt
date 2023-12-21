@@ -26,7 +26,7 @@ namespace WheresMyCraftAt.Handlers
 
         public static async SyncTask<bool> AsyncMoveMouse(Vector2N position, bool applyOffset, CancellationToken token)
         {
-            Main.DebugPrint($"Wanted Position({position})\n"
+            Logging.DebugPrint($"Wanted Position({position})\n"
                           + $"NormalizedPosition({NormalizePosition(position)})",
                 LogMessageType.Info);
 
