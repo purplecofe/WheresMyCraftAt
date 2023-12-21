@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace WheresMyCraftAt.CraftingSequence
 {
-    public class CraftingSequenceBase
+    public class CraftingSequence
     {
         public enum SuccessAction
         {

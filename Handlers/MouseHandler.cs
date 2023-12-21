@@ -2,21 +2,13 @@
 using ExileCore.Shared;
 using System;
 using System.Threading;
+using static WheresMyCraftAt.WheresMyCraftAt;
 using Vector2N = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt.Handlers
 {
     public static class MouseHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, CancellationToken token) =>
             await AsyncIsMouseInPlace(position, true, token);
 
@@ -36,13 +28,13 @@ namespace WheresMyCraftAt.Handlers
         {
             Main.DebugPrint($"Wanted Position({position})\n"
                           + $"NormalizedPosition({NormalizePosition(position)})",
-                WheresMyCraftAt.LogMessageType.Info);
+                LogMessageType.Info);
 
             return await AsyncIsMouseInPlace(NormalizePosition(position), applyOffset, token);
         }
 
         public static Vector2N GetCurrentMousePosition() =>
-            new(GC.IngameState.MousePosX, GC.IngameState.MousePosY);
+            new(Main.GameController.IngameState.MousePosX, Main.GameController.IngameState.MousePosY);
 
         public static Vector2N GetRelativeWinPos(Vector2N position)
         {

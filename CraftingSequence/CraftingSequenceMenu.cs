@@ -1,24 +1,14 @@
-﻿using ExileCore;
-using ImGuiNET;
+﻿using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using WheresMyCraftAt.Handlers;
-using static WheresMyCraftAt.CraftingSequence.CraftingSequenceBase;
+using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence
 {
     public static class CraftingSequenceMenu
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static void Draw()
         {
             if (ImGui.Button("Remove All"))
@@ -161,7 +151,7 @@ namespace WheresMyCraftAt.CraftingSequence
 
             if (ImGui.Button("[+] Add New Step"))
             {
-                Main.Settings.SelectedCraftingStepInputs.Add(new CraftingSequenceBase.CraftingStepInput());
+                Main.Settings.SelectedCraftingStepInputs.Add(new CraftingSequence.CraftingStepInput());
             }
             ImGui.Separator();
             if (ImGui.Button("[X] Apply Steps"))
@@ -169,7 +159,7 @@ namespace WheresMyCraftAt.CraftingSequence
                 Main.SelectedCraftingSteps.Clear();
                 foreach (var input in Main.Settings.SelectedCraftingStepInputs)
                 {
-                    CraftingSequenceBase.CraftingStep newStep = new CraftingSequenceBase.CraftingStep
+                    CraftingSequence.CraftingStep newStep = new CraftingSequence.CraftingStep
                     {
                         Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
                         //ConditionalCheck = () => ItemHandler.IsItemRarityFromSpecialSlotCondition(SpecialSlot.CurrencyTab, input.ItemRarityWanted),

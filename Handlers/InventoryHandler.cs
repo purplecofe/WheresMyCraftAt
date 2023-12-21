@@ -1,24 +1,15 @@
-﻿using ExileCore;
-using ExileCore.PoEMemory.MemoryObjects;
+﻿using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {
     public static class InventoryHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
@@ -29,10 +20,10 @@ namespace WheresMyCraftAt.Handlers
         }
 
         public static IList<Entity> GetItemsFromAnInventory(InventorySlotE invSlot) =>
-            GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
+            Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
 
         public static bool IsAnItemPickedUpCondition() =>
-            GC?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
+            Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
 
         public static bool IsInventoryPanelOpenCondition() => ElementHandler.IsIngameUiElementOpenCondition(ui => ui.InventoryPanel);
 

@@ -2,19 +2,12 @@
 using ExileCore.Shared;
 using System.Threading;
 using System.Windows.Forms;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {
     public static class KeyHandler
-
     {
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-        }
-
         public static async SyncTask<bool> AsyncButtonPress(Keys button, CancellationToken token) =>
             await AsyncIsButtonDown(button, token) && await AsyncIsButtonUp(button, token);
 

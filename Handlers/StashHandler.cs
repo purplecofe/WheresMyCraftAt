@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.PoEMemory.Elements.InventoryElements;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Collections.Generic;
@@ -11,15 +10,6 @@ namespace WheresMyCraftAt.Handlers
 {
     public static class StashHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
@@ -30,10 +20,10 @@ namespace WheresMyCraftAt.Handlers
         }
 
         public static InventoryType GetTypeOfCurrentVisibleStash() =>
-            GC?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ?? InventoryType.InvalidInventory;
+            Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ?? InventoryType.InvalidInventory;
 
         public static IList<NormalInventoryItem> GetVisibleStashInventory() =>
-            GC?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
+            Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
 
         public static bool IsStashPanelOpenCondition() => ElementHandler.IsIngameUiElementOpenCondition(ui => ui.StashElement);
 

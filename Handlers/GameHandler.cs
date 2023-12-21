@@ -1,22 +1,13 @@
-﻿using ExileCore;
-using ExileCore.Shared;
+﻿using ExileCore.Shared;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {
     public static class GameHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncWaitServerLatency(CancellationToken token)
         {
             await AsyncWait(Main.ServerLatency, token);
@@ -35,6 +26,6 @@ namespace WheresMyCraftAt.Handlers
             return true;
         }
 
-        public static bool IsInGameCondition() => GC?.Game?.IngameState?.InGame ?? false;
+        public static bool IsInGameCondition() => Main.GameController?.Game?.IngameState?.InGame ?? false;
     }
 }

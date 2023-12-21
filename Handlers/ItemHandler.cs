@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.PoEMemory.Components;
+﻿using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
@@ -12,15 +11,6 @@ namespace WheresMyCraftAt.Handlers
 {
     public static class ItemHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncChangeItemRarity(SpecialSlot slot, ItemRarity rarity, CancellationToken token)
         {
             if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
@@ -106,7 +96,7 @@ namespace WheresMyCraftAt.Handlers
             GetBaseNameFromPath(item.Entity?.Path);
 
         public static string GetBaseNameFromPath(string path) =>
-            GC?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
+            Main.GameController?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
         public static string GetPickedUpItemBaseName() =>
             InventoryHandler.TryGetPickedUpItem(out Entity pickedUpItem) ? GetBaseNameFromPath(pickedUpItem.Path) : string.Empty;

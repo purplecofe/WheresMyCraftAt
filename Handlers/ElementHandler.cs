@@ -1,32 +1,23 @@
-﻿using ExileCore;
-using ExileCore.PoEMemory;
+﻿using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System;
 using System.Threading;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {
     public static class ElementHandler
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static Element GetHoveredElementUIAction() =>
-            GC?.Game?.IngameState?.UIHoverElement;
+            Main.GameController?.Game?.IngameState?.UIHoverElement;
 
         public static bool IsElementsSameCondition(Element first, Element second) =>
             first.Address == second.Address;
 
         public static bool IsIngameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector) =>
-            panelSelector(GC?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
+            panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
 
         /*
          * Note: State doesnt change if you run out of the currency you were using if holding shift
@@ -34,7 +25,7 @@ namespace WheresMyCraftAt.Handlers
          */
 
         public static bool TryGetCursorStateCondition(out MouseActionType cursorState) =>
-            (cursorState = GC?.Game?.IngameState?.IngameUi?.Cursor?.Action ?? MouseActionType.Free) != MouseActionType.Free;
+            (cursorState = Main.GameController?.Game?.IngameState?.IngameUi?.Cursor?.Action ?? MouseActionType.Free) != MouseActionType.Free;
 
         public static async SyncTask<bool> AsyncExecuteNotSameElementWithCancellationHandling(Element elementToChange, int timeoutS, CancellationToken token)
         {
@@ -47,9 +38,9 @@ namespace WheresMyCraftAt.Handlers
                 {
                     await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    if (!ElementHandler.IsElementsSameCondition(elementToChange, ElementHandler.GetHoveredElementUIAction()))
+                    if (!IsElementsSameCondition(elementToChange, GetHoveredElementUIAction()))
                     {
-                        Main.DebugPrint($"AsyncExecuteNotSameElementWithCancellationHandling Pass", WheresMyCraftAt.LogMessageType.Success);
+                        Main.DebugPrint($"AsyncExecuteNotSameElementWithCancellationHandling Pass", LogMessageType.Success);
                         return true;
                     }
                 }

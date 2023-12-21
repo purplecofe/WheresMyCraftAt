@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.Shared;
+﻿using ExileCore.Shared;
 using System;
 using System.Threading;
 
@@ -7,15 +6,6 @@ namespace WheresMyCraftAt.Handlers
 {
     public static class ExecuteHandler
     {
-        private static WheresMyCraftAt Main;
-        private static GameController GC;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, CancellationToken token)
         {
             using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);

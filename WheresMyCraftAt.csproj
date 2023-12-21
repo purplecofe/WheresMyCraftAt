@@ -24,6 +24,9 @@
 	  <Reference Include="InputHumanizerLib">
 		  <HintPath>$(exapiPackage)\InputHumanizerLib.dll</HintPath>
 	  </Reference>
+	  <Reference Include="InputHumanizerLib">
+		  <HintPath>$(exapiPackage)\ItemFilterLibrary.dll</HintPath>
+	  </Reference>
   </ItemGroup>
 
   <ItemGroup>

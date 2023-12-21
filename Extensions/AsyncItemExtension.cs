@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.PoEMemory.Elements.InventoryElements;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using ExileCore.Shared.Helpers;
@@ -14,15 +13,6 @@ namespace WheresMyCraftAt.Extensions
 {
     public static class ItemExtensions
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static async SyncTask<bool> AsyncTryClick(this NormalInventoryItem item, bool rightClick, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
@@ -71,7 +61,6 @@ namespace WheresMyCraftAt.Extensions
             }
             catch (OperationCanceledException)
             {
-                // store states later possibly and apply state correction based on the progress?
                 return false;
             }
         }

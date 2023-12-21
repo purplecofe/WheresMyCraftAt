@@ -1,18 +1,7 @@
-﻿using ExileCore;
-
-namespace WheresMyCraftAt.Extensions
+﻿namespace WheresMyCraftAt.Extensions
 {
     public static partial class CurrencyExtensions
     {
-        private static GameController GC;
-        private static WheresMyCraftAt Main;
-
-        public static void Initialize(WheresMyCraftAt main)
-        {
-            Main = main;
-            GC = main.GameController;
-        }
-
         public static bool TryGetCurrencyName(Currency currencyName, out string rawName)
         {
             switch (currencyName)

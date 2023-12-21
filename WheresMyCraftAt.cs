@@ -7,9 +7,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using WheresMyCraftAt.CraftingSequence;
-using WheresMyCraftAt.Extensions;
 using WheresMyCraftAt.Handlers;
-using static WheresMyCraftAt.CraftingSequence.CraftingSequenceBase;
+using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using Vector2N = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt
@@ -37,6 +36,7 @@ namespace WheresMyCraftAt
         public Vector2 ClickWindowOffset;
         public int ServerLatency;
         public List<CraftingStep> SelectedCraftingSteps = [];
+        public static WheresMyCraftAt Main;
 
         public WheresMyCraftAt()
         {
@@ -46,20 +46,8 @@ namespace WheresMyCraftAt
 
         public override bool Initialise()
         {
+            Main = this;
             RegisterHotkey(Settings.TestButton1);
-
-            CraftingSequenceExecutor.Initialize(this);
-            CraftingSequenceMenu.Initialize(this);
-            ElementHandler.Initialize(this);
-            HelperHandler.Initialize(this);
-            ExecuteHandler.Initialize(this);
-            GameHandler.Initialize(this);
-            InventoryHandler.Initialize(this);
-            ItemExtensions.Initialize(this);
-            ItemHandler.Initialize(this);
-            KeyHandler.Initialize(this);
-            MouseHandler.Initialize(this);
-            StashHandler.Initialize(this);
 
             return true;
         }
@@ -86,6 +74,7 @@ namespace WheresMyCraftAt
                 if (_currentOperation is not null)
                 {
                     // Imediate cancelation called, release all buttons.
+                    // TODO: Get some help on how the hell this works.
                     Stop();
                 }
                 else
