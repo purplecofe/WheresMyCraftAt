@@ -1,6 +1,5 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
-using System;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;

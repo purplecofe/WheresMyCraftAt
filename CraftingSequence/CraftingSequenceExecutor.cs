@@ -36,7 +36,7 @@ namespace WheresMyCraftAt.CraftingSequence
 
                 try
                 {
-                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethod)
+                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
                     {
                         // All conditions must be true for success
                         success = currentStep.ConditionalChecks.All(condition => condition());
@@ -56,7 +56,7 @@ namespace WheresMyCraftAt.CraftingSequence
                         Main.DebugPrint($"CraftingSequenceStep: Method is {success}", WheresMyCraftAt.LogMessageType.Success);
                     }
 
-                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethod)
+                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
                     {
                         // Execute the conditional check after the method, if specified
                         success = success && currentStep.ConditionalChecks.All(condition => condition());

@@ -5,8 +5,8 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Threading;
-using static WheresMyCraftAt.WheresMyCraftAt;
 using WheresMyCraftAt.Extensions;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
 {
@@ -20,6 +20,7 @@ namespace WheresMyCraftAt.Handlers
             Main = main;
             GC = main.GameController;
         }
+
         public static async SyncTask<bool> AsyncChangeItemRarity(SpecialSlot slot, ItemRarity rarity, CancellationToken token)
         {
             if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
