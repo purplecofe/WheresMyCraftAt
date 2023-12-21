@@ -1,4 +1,5 @@
 ﻿using ExileCore.Shared;
+using ExileCore.Shared.Enums;
 using System;
 using System.Threading;
 
@@ -19,6 +20,7 @@ namespace WheresMyCraftAt.CraftingSequence
             Restart,
             GoToStep
         }
+
         public enum ConditionalCheckTiming
         {
             BeforeMethod,
@@ -35,6 +37,18 @@ namespace WheresMyCraftAt.CraftingSequence
             public int SuccessActionStepIndex { get; set; }
             public FailureAction FailureAction { get; set; }
             public int FailureActionStepIndex { get; set; }
+        }
+
+        public class CraftingStepInput
+        {
+            public string CurrencyItem { get; set; } = string.Empty;
+            public bool AutomaticSuccess { get; set; } = false;
+            public ItemRarity ItemRarityWanted { get; set; } = ItemRarity.Normal;
+            public SuccessAction SuccessAction { get; set; } = SuccessAction.Continue;
+            public int SuccessActionStepIndex { get; set; } = 0;
+            public FailureAction FailureAction { get; set; } = FailureAction.Restart;
+            public int FailureActionStepIndex { get; set; } = 0;
+            public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethod;
         }
     }
 }

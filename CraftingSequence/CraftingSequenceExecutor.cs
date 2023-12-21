@@ -30,7 +30,6 @@ namespace WheresMyCraftAt.CraftingSequence
 
             while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
             {
-
                 var currentStep = steps[currentStepIndex];
                 bool success = false;  // Defaulting success to false
 
@@ -80,7 +79,6 @@ namespace WheresMyCraftAt.CraftingSequence
                 // Determine the next step based on success or failure
                 if (success)
                 {
-
                     Main.DebugPrint($"CraftingSequenceStep: True", WheresMyCraftAt.LogMessageType.Success);
                     switch (currentStep.SuccessAction)
                     {
@@ -97,7 +95,6 @@ namespace WheresMyCraftAt.CraftingSequence
                 }
                 else
                 {
-
                     Main.DebugPrint($"CraftingSequenceStep: False", WheresMyCraftAt.LogMessageType.Error);
                     switch (currentStep.FailureAction)
                     {

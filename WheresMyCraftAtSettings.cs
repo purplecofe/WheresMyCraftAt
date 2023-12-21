@@ -1,6 +1,8 @@
 ﻿using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
+using System.Collections.Generic;
 using System.Windows.Forms;
+using WheresMyCraftAt.CraftingSequence;
 
 namespace WheresMyCraftAt
 {
@@ -16,5 +18,6 @@ namespace WheresMyCraftAt
         public RangeNode<int> MouseMoveX { get; set; } = new RangeNode<int>(0, 0, 2560);
         public RangeNode<int> MouseMoveY { get; set; } = new RangeNode<int>(0, 0, 1440);
         public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new RangeNode<int>(2, 1, 3);
+        public List<CraftingSequenceBase.CraftingStepInput> SelectedCraftingStepInputs { get; set; } = [];
     }
 }
