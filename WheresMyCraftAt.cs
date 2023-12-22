@@ -48,6 +48,7 @@ namespace WheresMyCraftAt
         {
             Main = this;
             RegisterHotkey(Settings.RunButton);
+            Logging.Init();
 
             return true;
         }
@@ -79,7 +80,7 @@ namespace WheresMyCraftAt
                 }
                 else
                 {
-                    Logging.DebugPrint($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
+                    Logging.Add($"{Name}: Attempting to Start New Operation.", LogMessageType.Info);
                     ResetCancellationTokenSource();
                     _currentOperation = AsyncStart(_operationCts.Token);
                 }
@@ -112,7 +113,7 @@ namespace WheresMyCraftAt
                 if (ItemHandler.IsItemRightClickedCondition())
                     Input.KeyPressRelease(Keys.Escape);
 
-                Logging.DebugPrint($"{Name}: Stop() has been ran.", LogMessageType.Warning);
+                Logging.Add($"{Name}: Stop() has been ran.", LogMessageType.Warning);
             }
         }
 
@@ -133,7 +134,7 @@ namespace WheresMyCraftAt
         {
             if (!GameHandler.IsInGameCondition())
             {
-                Logging.DebugPrint($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
+                Logging.Add($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
                 return false;
             }
 
@@ -150,7 +151,7 @@ namespace WheresMyCraftAt
                 if (!await giveItems.Execute(CancellationToken.None))
                     return false;
 
-                Logging.DebugPrint($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
+                Logging.Add($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
             }
             catch (OperationCanceledException)
             {
@@ -166,6 +167,12 @@ namespace WheresMyCraftAt
             base.DrawSettings();
 
             CraftingSequenceMenu.Draw();
+        }
+
+        public override void Render()
+        {
+            base.Render();
+            Logging.Render();
         }
     }
 }

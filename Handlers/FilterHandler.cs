@@ -16,7 +16,7 @@ namespace WheresMyCraftAt.Handlers
             var itemData = new CustomItemData(item.Item, Main.GameController);
             var result = filterQuery.Matches(itemData);
 
-            Logging.DebugPrint($"IsMatchCondition = {result}", LogMessageType.Special);
+            Logging.Add($"IsMatchCondition = {result}", LogMessageType.Special);
 
             return result;
         }   
@@ -26,7 +26,7 @@ namespace WheresMyCraftAt.Handlers
             var itemData = new CustomItemData(item, Main.GameController);
             var result = filterQuery.Matches(itemData);
 
-            Logging.DebugPrint($"IsItemMatchCondition = {result}", LogMessageType.Special);
+            Logging.Add($"IsItemMatchCondition = {result}", LogMessageType.Special);
 
             return result;
         }

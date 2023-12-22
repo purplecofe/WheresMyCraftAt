@@ -24,7 +24,7 @@ namespace WheresMyCraftAt.Extensions
                 var clickPosition = item.GetClientRectCache.Center.ToVector2Num();
                 var button = !rightClick ? Keys.LButton : Keys.RButton;
 
-                Logging.DebugPrint($"AsyncTryClick Button is {button}", LogMessageType.Success);
+                Logging.Add($"AsyncTryClick Button is {button}", LogMessageType.Success);
 
                 if (!await MouseHandler.AsyncMoveMouse(clickPosition, token)
                     || !ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUIAction()))
@@ -71,7 +71,7 @@ namespace WheresMyCraftAt.Extensions
             if (!TryGetCurrencyName(currencyType, out string currencyName) || string.IsNullOrEmpty(currencyName))
                 return false;
 
-            Main.DebugPrint($"AsyncTryApplyOrb CurrencyName is {currencyName}", LogMessageType.Success);
+            Logging.Add($"AsyncTryApplyOrb CurrencyName is {currencyName}", LogMessageType.Success);
 
             return await item.AsyncTryApplyOrb(currencyName, token);
         }
@@ -83,12 +83,12 @@ namespace WheresMyCraftAt.Extensions
                 if (!StashHandler.TryGetItemInStash(currencyName, out var orbItem))
                     return false;
 
-                Main.DebugPrint($"AsyncTryApplyOrb OrbItem is {ItemHandler.GetBaseNameFromItem(orbItem)}", LogMessageType.Success);
+                Logging.Add($"AsyncTryApplyOrb OrbItem is {ItemHandler.GetBaseNameFromItem(orbItem)}", LogMessageType.Success);
 
                 if (!await orbItem.AsyncTryClick(true, token))
                     return false;
 
-                Main.DebugPrint($"AsyncTryApplyOrb OrbItem Clicked", LogMessageType.Success);
+                Logging.Add($"AsyncTryApplyOrb OrbItem Clicked", LogMessageType.Success);
 
                 var elementone = item;
 

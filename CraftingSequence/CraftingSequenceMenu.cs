@@ -1,6 +1,5 @@
 ﻿using ImGuiNET;
 using ItemFilterLibrary;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using WheresMyCraftAt.Handlers;
@@ -178,7 +177,7 @@ namespace WheresMyCraftAt.CraftingSequence
                         ItemFilter filter = ItemFilter.LoadFromString(checkKey);
                         if (filter.Queries.Count == 0)
                         {
-                            Main.DebugPrint($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}", LogMessageType.Error);
+                            Logging.Add($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}", LogMessageType.Error);
                             return; // No point going on from here.
                         }
 

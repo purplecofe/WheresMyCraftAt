@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.Shared;
+﻿using ExileCore.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,45 +28,45 @@ namespace WheresMyCraftAt.CraftingSequence
                     {
                         // All conditions must be true for success
                         success = currentStep.ConditionalChecks.All(condition => condition());
-                        Logging.DebugPrint($"CraftingSequenceStep: All ConditionalChecks before method are {success}", LogMessageType.Success);
+                        Logging.Add($"CraftingSequenceStep: All ConditionalChecks before method are {success}", LogMessageType.Success);
 
                         if (!success)
                         {
                             // If any conditional check before the method is false, execute the method
                             success = await currentStep.Method(token);
-                            Logging.DebugPrint($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
+                            Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
                         }
                     }
                     else
                     {
                         // Execute the method if no prior conditional check or if it's not applicable
                         success = await currentStep.Method(token);
-                        Logging.DebugPrint($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
+                        Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
                     }
 
                     if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
                     {
                         // Execute the conditional check after the method, if specified
                         success = success && currentStep.ConditionalChecks.All(condition => condition());
-                        Logging.DebugPrint($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Success);
+                        Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Success);
                     }
 
                     if (currentStep.AutomaticSuccess)
                     {
                         success = true;  // Override success if AutomaticSuccess is true
-                        Logging.DebugPrint($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
+                        Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logging.DebugPrint($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}", LogMessageType.Error);
+                    Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}", LogMessageType.Error);
                     return false;
                 }
 
                 // Determine the next step based on success or failure
                 if (success)
                 {
-                    Logging.DebugPrint($"CraftingSequenceStep: True", LogMessageType.Success);
+                    Logging.Add($"CraftingSequenceStep: True", LogMessageType.Success);
                     switch (currentStep.SuccessAction)
                     {
                         case SuccessAction.Continue:
@@ -83,7 +82,7 @@ namespace WheresMyCraftAt.CraftingSequence
                 }
                 else
                 {
-                    Logging.DebugPrint($"CraftingSequenceStep: False", LogMessageType.Error);
+                    Logging.Add($"CraftingSequenceStep: False", LogMessageType.Error);
                     switch (currentStep.FailureAction)
                     {
                         case FailureAction.RepeatStep:

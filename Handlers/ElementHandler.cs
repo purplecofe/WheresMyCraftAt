@@ -40,7 +40,7 @@ namespace WheresMyCraftAt.Handlers
 
                     if (!IsElementsSameCondition(elementToChange, GetHoveredElementUIAction()))
                     {
-                        Main.DebugPrint($"AsyncExecuteNotSameElementWithCancellationHandling Pass", LogMessageType.Success);
+                        Logging.Add($"AsyncExecuteNotSameElementWithCancellationHandling Pass", LogMessageType.Success);
                         return true;
                     }
                 }
