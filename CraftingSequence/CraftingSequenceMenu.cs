@@ -1,10 +1,8 @@
 ﻿using ExileCore;
 using ImGuiNET;
 using ItemFilterLibrary;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
@@ -154,12 +152,13 @@ namespace WheresMyCraftAt.CraftingSequence
                             stepInput.ConditionalCheckKeys.Add(""); // Add a new empty string to be filled out
                         }
                         ImGui.Indent();
+                        List<int> checksToRemove = new List<int>(); // Track checks to remove
                         for (int j = 0; j < stepInput.ConditionalCheckKeys.Count; j++)
                         {
                             if (ImGui.Button($"Remove##{i}_{j}"))
                             {
-                                stepInput.ConditionalCheckKeys.RemoveAt(j);
-                                j--;
+                                checksToRemove.Add(j); // Mark this check for removal
+                                continue; // Skip the rest of the loop to avoid accessing a removed item
                             }
 
                             ImGui.SameLine();
@@ -168,6 +167,10 @@ namespace WheresMyCraftAt.CraftingSequence
                             {
                                 stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
                             }
+                        }
+                        foreach (int index in checksToRemove.OrderByDescending(j => j))
+                        {
+                            stepInput.ConditionalCheckKeys.RemoveAt(index); // Remove marked checks
                         }
 
                         ImGui.Unindent();
@@ -245,12 +248,6 @@ namespace WheresMyCraftAt.CraftingSequence
             }
         }
 
-        private static void LoadFile(string fileName)
-        {
-            var fileContent = File.ReadAllText(Path.Combine(Main.ConfigDirectory, $"{fileName}.json"));
-            Main.Settings.SelectedCraftingStepInputs = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
-        }
-
         public static bool ShowButtonPopup(string popupId, List<string> items, out int selectedIndex)
         {
             selectedIndex = -1;
@@ -274,23 +271,6 @@ namespace WheresMyCraftAt.CraftingSequence
             }
 
             return isItemClicked;
-        }
-
-        public static List<string> GetFiles()
-        {
-            var fileList = new List<string>();
-
-            try
-            {
-                var dir = new DirectoryInfo(Main.ConfigDirectory);
-                fileList = dir.GetFiles().Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
-            }
-            catch (Exception e)
-            {
-                DebugWindow.LogError($"{Main.Name}: An error occurred while getting files: {e.Message}", 30);
-            }
-
-            return fileList;
         }
 
         private static int GetEnumLength<T>()

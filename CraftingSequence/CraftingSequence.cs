@@ -1,8 +1,10 @@
-﻿using ExileCore.Shared;
+﻿using ExileCore;
+using ExileCore.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -62,18 +64,27 @@ namespace WheresMyCraftAt.CraftingSequence
             File.WriteAllText(fullPath, jsonString);
         }
 
-        public static List<CraftingStepInput> LoadFile(string filePath)
+        public static void LoadFile(string fileName)
         {
-            string fullPath = Path.Combine(Main.ConfigDirectory, filePath);
-            string jsonString = File.ReadAllText(fullPath);
-            return JsonConvert.DeserializeObject<List<CraftingStepInput>>(jsonString);
+            var fileContent = File.ReadAllText(Path.Combine(Main.ConfigDirectory, $"{fileName}.json"));
+            Main.Settings.SelectedCraftingStepInputs = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
         }
 
-        //public static List<string> GetFiles(string filePath)
-        //{
-        //    string fullPath = Path.Combine(Main.ConfigDirectory, filePath);
-        //    string jsonString = File.ReadAllText(fullPath);
-        //    return JsonConvert.DeserializeObject<List<CraftingStepInput>>(jsonString);
-        //}
+        public static List<string> GetFiles()
+        {
+            var fileList = new List<string>();
+
+            try
+            {
+                var dir = new DirectoryInfo(Main.ConfigDirectory);
+                fileList = dir.GetFiles().Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
+            }
+            catch (Exception e)
+            {
+                DebugWindow.LogError($"{Main.Name}: An error occurred while getting files: {e.Message}", 30);
+            }
+
+            return fileList;
+        }
     }
 }
