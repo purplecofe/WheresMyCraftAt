@@ -15,16 +15,6 @@ namespace WheresMyCraftAt
 {
     public partial class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
-        public readonly Dictionary<LogMessageType, Color> _logMessageColors = new()
-        {
-            { LogMessageType.Info, Color.White },
-            { LogMessageType.Warning, Color.Yellow },
-            { LogMessageType.Error, Color.Red },
-            { LogMessageType.Success, Color.Green },
-            { LogMessageType.Cancelled, Color.Orange },
-            { LogMessageType.Special, Color.Gray }
-        };
-
         public readonly Dictionary<SpecialSlot, Vector2N> specialSlotDimensionMap = new()
         {
             { SpecialSlot.CurrencyTab, new Vector2N(126f, 252f) },
@@ -150,7 +140,7 @@ namespace WheresMyCraftAt
                 if (!await giveItems.Execute(_operationCts.Token))
                     return false;
 
-                Logging.Add($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);
+                Logging.Add($"{Name}: AsyncStart() Completed.", LogMessageType.Success);
             }
             catch (OperationCanceledException)
             {

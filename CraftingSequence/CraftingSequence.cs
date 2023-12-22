@@ -38,7 +38,6 @@ namespace WheresMyCraftAt.CraftingSequence
             public int SuccessActionStepIndex { get; set; }
             public FailureAction FailureAction { get; set; }
             public int FailureActionStepIndex { get; set; }
-            public List<ItemFilter> PreCompiledFilterFromStrings { get; set; } = [];
         }
 
         public class CraftingStepInput

@@ -1,6 +1,7 @@
 ﻿using ExileCore.Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using WheresMyCraftAt.Handlers;
@@ -16,6 +17,7 @@ namespace WheresMyCraftAt.CraftingSequence
         public async SyncTask<bool> Execute(CancellationToken token)
         {
             int currentStepIndex = 0;
+            var stopwatch = new Stopwatch(); // Stopwatch to time each step
 
             while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
             {
@@ -25,6 +27,7 @@ namespace WheresMyCraftAt.CraftingSequence
                 try
                 {
                     Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex}]", LogMessageType.Info);
+                    stopwatch.Restart(); // Start timing
 
                     if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
                     {
@@ -58,10 +61,14 @@ namespace WheresMyCraftAt.CraftingSequence
                         success = true;  // Override success if AutomaticSuccess is true
                         Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
                     }
+
+                    stopwatch.Stop(); // Stop timing after the step is executed
+                    Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
                 }
                 catch (Exception ex)
                 {
                     Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}", LogMessageType.Error);
+                    Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
                     return false;
                 }
 

@@ -20,6 +20,17 @@ namespace WheresMyCraftAt.Handlers
             public Color Color { get; init; }
         }
 
+        private static readonly Dictionary<LogMessageType, Color> _logMessageColors = new()
+        {
+            { LogMessageType.Info, Color.White },
+            { LogMessageType.Warning, Color.Yellow },
+            { LogMessageType.Error, Color.Red },
+            { LogMessageType.Success, Color.Green },
+            { LogMessageType.Cancelled, Color.Orange },
+            { LogMessageType.Special, Color.Gray },
+            { LogMessageType.Profiler, Color.SkyBlue }
+        };
+
         private static readonly object locker = new();
         private static readonly List<DebugMsgDescription> MessagesList = new(24);
         private static Vector2 position;
@@ -60,7 +71,7 @@ namespace WheresMyCraftAt.Handlers
         {
             try
             {
-                Color color = Main._logMessageColors[messageType];
+                Color color = _logMessageColors[messageType];
                 var time = Main.Settings.DebugPrintLingerTime;
 
                 if (Main.Settings.DebugPrint)

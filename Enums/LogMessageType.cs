@@ -9,7 +9,8 @@
             Error,
             Success,
             Cancelled,
-            Special
+            Special,
+            Profiler
         }
     }
 }
