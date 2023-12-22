@@ -48,7 +48,6 @@ namespace WheresMyCraftAt
         {
             Main = this;
             RegisterHotkey(Settings.RunButton);
-            Logging.Init();
 
             return true;
         }

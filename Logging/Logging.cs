@@ -21,14 +21,8 @@ namespace WheresMyCraftAt.Handlers
         }
 
         private static readonly object locker = new();
-        private static List<DebugMsgDescription> MessagesList;
+        private static readonly List<DebugMsgDescription> MessagesList = new(24);
         private static Vector2 position;
-
-        public static void Init()
-        {
-            MessagesList = new List<DebugMsgDescription>(24);
-            Main.Graphics.InitImage("menu-background.png");
-        }
 
         public static void Render()
         {
