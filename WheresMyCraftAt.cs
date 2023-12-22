@@ -32,7 +32,7 @@ namespace WheresMyCraftAt
         };
 
         private CancellationTokenSource _operationCts;
-        private SyncTask<bool> _currentOperation;
+        public SyncTask<bool> _currentOperation;
         public Vector2 ClickWindowOffset;
         public int ServerLatency;
         public List<CraftingStep> SelectedCraftingSteps = [];
@@ -147,7 +147,7 @@ namespace WheresMyCraftAt
 
                 var giveItems = new CraftingSequenceExecutor(SelectedCraftingSteps);
 
-                if (!await giveItems.Execute(CancellationToken.None))
+                if (!await giveItems.Execute(_operationCts.Token))
                     return false;
 
                 Logging.Add($"{Name}: AsyncTestButton1Main() Completed.", LogMessageType.Success);

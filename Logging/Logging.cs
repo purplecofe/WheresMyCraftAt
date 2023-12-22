@@ -30,10 +30,16 @@ namespace WheresMyCraftAt.Handlers
                 return;
 
             using var fontPush = Main.Graphics.UseCurrentFont();
+            var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
+
+            if (Main._currentOperation is not null)
+            {
+                flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
+            }
 
             ImGui.SetNextWindowPos(new Vector2(10, 10), ImGuiCond.Once);
             ImGui.SetNextWindowSize(new Vector2(600, 1000), ImGuiCond.Once);
-            ImGui.Begin("WheresMyCraftAt Logs");
+            ImGui.Begin("WheresMyCraftAt Logs", flags);
 
             foreach (var msg in MessagesList)
             {
@@ -41,6 +47,12 @@ namespace WheresMyCraftAt.Handlers
                 ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
                 ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
                 ImGui.PopStyleColor();
+            }
+            if (Main._currentOperation is not null)
+            {
+                // Set auto scroll when running
+                if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+                    ImGui.SetScrollHereY(1.0f);
             }
 
             ImGui.End();

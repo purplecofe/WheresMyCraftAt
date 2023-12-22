@@ -33,21 +33,21 @@ namespace WheresMyCraftAt.CraftingSequence
                         if (!success)
                         {
                             // If any conditional check before the method is false, execute the method
-                            success = await currentStep.Method(token);
-                            Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
+                            await currentStep.Method(token);
+                            Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
                         }
                     }
                     else
                     {
                         // Execute the method if no prior conditional check or if it's not applicable
-                        success = await currentStep.Method(token);
-                        Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Success);
+                        await currentStep.Method(token);
+                        Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
                     }
 
                     if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
                     {
                         // Execute the conditional check after the method, if specified
-                        success = success && currentStep.ConditionalChecks.All(condition => condition());
+                        success = currentStep.ConditionalChecks.All(condition => condition());
                         Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Success);
                     }
 

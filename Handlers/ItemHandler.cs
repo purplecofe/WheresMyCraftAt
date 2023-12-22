@@ -3,6 +3,8 @@ using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using SharpDX;
+using System.Collections.Generic;
 using System.Threading;
 using WheresMyCraftAt.Extensions;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -87,6 +89,19 @@ namespace WheresMyCraftAt.Handlers
                 Logging.Add($"GetRarityFromItem: Could not get mods component from item.", LogMessageType.Error);
                 return ItemRarity.Normal;
             }
+        }
+
+        public static List<string> GetHumanModListFromItem(Entity item) =>
+            item.TryGetComponent<Mods>(out var modsComp) && modsComp.HumanStats.Count != 0
+                ? modsComp.HumanStats
+                : [];
+
+        public static void PrintHumanModListFromItem(Entity item)
+        {
+            Logging.Add($"Items Mods for: {item.Path}", LogMessageType.Info);
+
+            GetHumanModListFromItem(item)
+                       .ForEach(itemMod => Logging.Add($"ItemMod: {itemMod}", LogMessageType.Info));
         }
 
         public static string GetBaseNameFromItem(Entity item) =>

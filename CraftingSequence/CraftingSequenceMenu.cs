@@ -164,6 +164,7 @@ namespace WheresMyCraftAt.CraftingSequence
                     CraftingStep newStep = new CraftingStep
                     {
                         Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
+                        CheckTiming = input.CheckTiming,
                         AutomaticSuccess = input.AutomaticSuccess,
                         SuccessAction = input.SuccessAction,
                         SuccessActionStepIndex = input.SuccessActionStepIndex - 1,
