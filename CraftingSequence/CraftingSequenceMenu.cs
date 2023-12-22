@@ -291,24 +291,22 @@ public static class CraftingSequenceMenu
         var isItemClicked = false;
         var showPopup = true;
 
-        if (ImGui.BeginPopupModal(popupId, ref showPopup,
-                ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize))
-        {
-            for (var i = 0; i < items.Count; i++)
-            {
-                if (ImGui.Button(items[i]))
-                {
-                    selectedIndex = i;
-                    isItemClicked = true;
-                    showPopup = false;
-                    ImGui.CloseCurrentPopup();
-                }
+        if (!ImGui.BeginPopupModal(popupId, ref showPopup,
+                ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize)) return false;
 
-                ImGui.SameLine();
+        for (var i = 0; i < items.Count; i++)
+        {
+            if (ImGui.Button(items[i]))
+            {
+                selectedIndex = i;
+                isItemClicked = true;
+                ImGui.CloseCurrentPopup();
             }
 
-            ImGui.EndPopup();
+            ImGui.SameLine();
         }
+
+        ImGui.EndPopup();
 
         return isItemClicked;
     }
