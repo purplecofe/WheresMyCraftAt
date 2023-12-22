@@ -125,7 +125,7 @@ public static class CraftingSequenceMenu
 
                         ImGui.SameLine();
                         var checkKey = stepInput.ConditionalCheckKeys[j];
-                        if (ImGui.InputTextWithHint($"Condition [{j}]##{i}_{j}", "ItemFitlerLibrary filter string...",
+                        if (ImGui.InputTextWithHint($"Condition [{j}]##{i}_{j}", "ItemFilterLibrary filter string...",
                                 ref checkKey,
                                 1000)) stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
                     }
@@ -206,7 +206,7 @@ public static class CraftingSequenceMenu
                         return; // No point going on from here.
                     }
 
-                    newStep.ConditionalChecks.Add(() => { return FilterHandler.IsMatchingCondition(filter); });
+                    newStep.ConditionalChecks.Add(() => FilterHandler.IsMatchingCondition(filter));
                 }
 
                 Main.SelectedCraftingSteps.Add(newStep);
