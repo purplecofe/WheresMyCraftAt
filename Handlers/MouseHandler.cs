@@ -18,6 +18,7 @@ namespace WheresMyCraftAt.Handlers
                 action: () => SetCursorPositionAction(position, applyOffset),
                 condition: () => IsMouseInPositionCondition(position),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token);
         }
 

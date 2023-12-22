@@ -14,27 +14,29 @@ namespace WheresMyCraftAt.Handlers
         public static async SyncTask<bool> AsyncIsButtonDown(Keys button, CancellationToken token)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                action: () => PerformButtonAction(button, true),
-                condition: () => Input.GetKeyState(button),
+                action: () => PerformButtonAction(button, pressDown: true),
+                condition: () => Input.IsKeyDown(button),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token);
         }
 
         public static async SyncTask<bool> AsyncIsButtonUp(Keys button, CancellationToken token)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                action: () => PerformButtonAction(button, false),
-                condition: () => !Input.GetKeyState(button),
+                action: () => PerformButtonAction(button, pressDown: false),
+                condition: () => !Input.IsKeyDown(button),
                 timeoutS: Main.Settings.ActionTimeoutInSeconds,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token);
         }
 
         public static async SyncTask<bool> AsyncSetButtonDown(Keys button, CancellationToken token) =>
             await AsyncIsButtonDown(button, token);
 
-        public static void PerformButtonAction(Keys button, bool press)
+        public static void PerformButtonAction(Keys button, bool pressDown)
         {
-            if (press)
+            if (pressDown)
             {
                 if (button == Keys.LButton) Input.LeftDown();
                 else if (button == Keys.RButton) Input.RightDown();

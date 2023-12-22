@@ -24,8 +24,20 @@ namespace WheresMyCraftAt.Handlers
          * TODO: Must check before each click that we have that item in the stash tab when this is called (Solve performance issues at a later date for this)
          */
 
-        public static bool TryGetCursorStateCondition(out MouseActionType cursorState) =>
-            (cursorState = Main.GameController?.Game?.IngameState?.IngameUi?.Cursor?.Action ?? MouseActionType.Free) != MouseActionType.Free;
+        public static bool TryGetCursorStateCondition(out MouseActionType cursorState)
+        {
+            var gameController = Main.GameController;
+            if (gameController?.Game?.IngameState?.IngameUi?.Cursor != null)
+            {
+                cursorState = gameController.Game.IngameState.IngameUi.Cursor.Action;
+                return true;
+            }
+            else
+            {
+                cursorState = MouseActionType.HoldItemForSell; // Default value if the state cannot be retrieved
+                return false;
+            }
+        }
 
         public static async SyncTask<bool> AsyncExecuteNotSameElementWithCancellationHandling(Element elementToChange, int timeoutS, CancellationToken token)
         {

@@ -26,35 +26,24 @@ namespace WheresMyCraftAt.Extensions
 
                 Logging.Add($"AsyncTryClick Button is {button}", LogMessageType.Success);
 
-                if (!await MouseHandler.AsyncMoveMouse(clickPosition, token)
-                    || !ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUIAction()))
-                    return false;
-
-                token.ThrowIfCancellationRequested();
+                if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
+                    if (!ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUIAction()))
+                        return false;
 
                 if (!await KeyHandler.AsyncButtonPress(button, token))
                     return false;
 
-                token.ThrowIfCancellationRequested();
-
-                var itemOnCursor = false;
+                var booleanCheck = false;
 
                 if (cursorStateCondition == MouseActionType.UseItem || cursorStateCondition == MouseActionType.HoldItem)
-                {
-                    if (rightClick)
-                        itemOnCursor = await ItemHandler.AsyncWaitForItemOffCursor(token);
-                    else
-                        itemOnCursor = await ItemHandler.AsyncWaitForRightClickedItemOffCursor(token);
-                }
+                    booleanCheck = await ItemHandler.AsyncWaitForNoItemOnCursor(token);
                 else if (cursorStateCondition == MouseActionType.Free)
-                {
                     if (rightClick)
-                        itemOnCursor = await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token);
+                        booleanCheck = await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token);
                     else
-                        itemOnCursor = await ItemHandler.AsyncWaitForItemOnCursor(token);
-                }
+                        booleanCheck = await ItemHandler.AsyncWaitForItemOnCursor(token);
 
-                if (!itemOnCursor)
+                if (!booleanCheck)
                     return false;
 
                 return true;
@@ -80,23 +69,34 @@ namespace WheresMyCraftAt.Extensions
         {
             try
             {
-                if (!StashHandler.TryGetItemInStash(currencyName, out var orbItem))
+                var asyncResult = await StashHandler.AsyncTryGetItemInStash(currencyName, token);
+                if (!asyncResult.Item1)
+                {
+                    Main.Stop();
                     return false;
+                }
 
-                Logging.Add($"AsyncTryApplyOrb OrbItem is {ItemHandler.GetBaseNameFromItem(orbItem)}", LogMessageType.Success);
+                var orbItem = asyncResult.Item2;
 
-                if (!await orbItem.AsyncTryClick(true, token))
+                if (!await orbItem.AsyncTryClick(rightClick: true, token))
+                {
+                    Main.Stop();
                     return false;
-
-                Logging.Add($"AsyncTryApplyOrb OrbItem Clicked", LogMessageType.Success);
+                }
 
                 var elementone = item;
 
-                if (!await item.AsyncTryClick(false, token))
+                if (!await item.AsyncTryClick(rightClick: false, token))
+                {
+                    Main.Stop();
                     return false;
+                }
 
                 if (!await ElementHandler.AsyncExecuteNotSameElementWithCancellationHandling(elementone, 3, token))
+                {
+                    Main.Stop();
                     return false;
+                }
 
                 return true;
             }

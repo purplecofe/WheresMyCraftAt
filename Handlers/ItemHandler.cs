@@ -15,18 +15,20 @@ namespace WheresMyCraftAt.Handlers
     {
         public static async SyncTask<bool> AsyncChangeItemRarity(SpecialSlot slot, ItemRarity rarity, CancellationToken token)
         {
-            if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
+            var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
+            if (!asyncResult.Item1)
                 return false;
 
-            return await slotItem.AsyncChangeItemRarity(rarity, token);
+            return await asyncResult.Item2.AsyncChangeItemRarity(rarity, token);
         }
 
         public static async SyncTask<bool> AsyncTryApplyOrbToSlot(SpecialSlot slot, string orbName, CancellationToken token)
         {
-            if (!StashHandler.TryGetStashSpecialSlot(slot, out var slotItem))
+            var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
+            if (!asyncResult.Item1)
                 return false;
 
-            return await slotItem.AsyncTryApplyOrb(orbName, token);
+            return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
         }
 
         public static bool IsItemRarityFromSpecialSlotCondition(SpecialSlot slot, ItemRarity rarity)
@@ -41,29 +43,22 @@ namespace WheresMyCraftAt.Handlers
             return result;
         }
 
-        public static async SyncTask<bool> AsyncWaitForItemOffCursor(CancellationToken token, int timeout = 2)
-        {
-            return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                condition: () => !InventoryHandler.IsAnItemPickedUpCondition(),
-                timeoutS: timeout,
-                token: token
-                );
-        }
-
         public static async SyncTask<bool> AsyncWaitForItemOnCursor(CancellationToken token, int timeout = 2)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => InventoryHandler.IsAnItemPickedUpCondition(),
                 timeoutS: timeout,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token
                 );
         }
 
-        public static async SyncTask<bool> AsyncWaitForRightClickedItemOffCursor(CancellationToken token, int timeout = 2)
+        public static async SyncTask<bool> AsyncWaitForNoItemOnCursor(CancellationToken token, int timeout = 2)
         {
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                condition: () => !IsItemRightClickedCondition(),
+                condition: () => IsCursorFree(),
                 timeoutS: timeout,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token
                 );
         }
@@ -73,6 +68,7 @@ namespace WheresMyCraftAt.Handlers
             return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                 condition: () => IsItemRightClickedCondition(),
                 timeoutS: timeout,
+                loopDelay: HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
                 token: token
                 );
         }
@@ -121,5 +117,8 @@ namespace WheresMyCraftAt.Handlers
 
         public static bool IsItemRightClickedCondition() =>
             ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.UseItem;
+
+        public static bool IsCursorFree() =>
+            ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.Free;
     }
 }

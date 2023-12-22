@@ -22,7 +22,7 @@ namespace WheresMyCraftAt
             { SpecialSlot.EssenceTab, new Vector2N(127.2f, 254.4f) }
         };
 
-        private CancellationTokenSource _operationCts;
+        public CancellationTokenSource _operationCts;
         public SyncTask<bool> _currentOperation;
         public Vector2 ClickWindowOffset;
         public int ServerLatency;
@@ -82,7 +82,7 @@ namespace WheresMyCraftAt
             return null;
         }
 
-        private void Stop()
+        public void Stop()
         {
             if (_currentOperation is not null)
             {

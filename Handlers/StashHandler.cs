@@ -1,9 +1,12 @@
 ﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
+using System.Threading.Tasks;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers
@@ -37,6 +40,34 @@ namespace WheresMyCraftAt.Handlers
                         : null;
 
             return foundItem != null;
+        }
+
+
+        public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetItemInStash(string currencyName, CancellationToken token)
+        {
+            NormalInventoryItem orbItem = null;
+
+            bool result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
+                condition: () => TryGetItemInStash(currencyName, out orbItem),
+                timeoutS: 2,
+                loopDelay: 1,
+                token: token
+            );
+
+            return Tuple.Create(result, orbItem);
+        }
+        public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetStashSpecialSlot(SpecialSlot slotType, CancellationToken token)
+        {
+            NormalInventoryItem inventoryItem = null;
+
+            bool result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
+                condition: () => TryGetStashSpecialSlot(slotType, out inventoryItem),
+                timeoutS: 2,
+                loopDelay: 1,
+                token: token
+            );
+
+            return Tuple.Create(result, inventoryItem);
         }
 
         public static bool TryGetStashSpecialSlot(SpecialSlot slotType, out NormalInventoryItem inventoryItem)
