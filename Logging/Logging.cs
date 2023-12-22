@@ -37,8 +37,6 @@ namespace WheresMyCraftAt.Handlers
                 flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
             }
 
-            ImGui.SetNextWindowPos(new Vector2(10, 10), ImGuiCond.Once);
-            ImGui.SetNextWindowSize(new Vector2(600, 1000), ImGuiCond.Once);
             ImGui.Begin("WheresMyCraftAt Logs", flags);
 
             foreach (var msg in MessagesList)

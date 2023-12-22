@@ -24,6 +24,8 @@ namespace WheresMyCraftAt.CraftingSequence
 
                 try
                 {
+                    Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex}]", LogMessageType.Info);
+
                     if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
                     {
                         // All conditions must be true for success
@@ -98,6 +100,8 @@ namespace WheresMyCraftAt.CraftingSequence
                             break;
                     }
                 }
+
+                Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex}]", LogMessageType.Info);
             }
 
             return true;
