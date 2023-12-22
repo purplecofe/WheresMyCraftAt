@@ -3,6 +3,8 @@ using ImGuiNET;
 using ItemFilterLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
@@ -20,60 +22,20 @@ namespace WheresMyCraftAt.CraftingSequence
 
         public static void Draw()
         {
-            ImGui.Separator();
-            ImGui.InputTextWithHint("##SaveAs", "File Path...", ref FileSaveName, 100);
-            ImGui.SameLine();
-            if (ImGui.Button("Save To File"))
-            {
-                Files = GetFiles();
-                if (FileSaveName == string.Empty)
-                    DebugWindow.LogError($"{Main.Name}: File name must not be empty.", 30);
-                else if (Files.Contains(FileSaveName))
-                    ImGui.OpenPopup(OverwritePopup);
-                else
-                    SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{FileSaveName}.json");
-            }
+            DrawFileOptions();
 
-            ImGui.Separator();
-            if (ImGui.BeginCombo("Load File##LoadFile", selectedFileName))
-            {
-                Files = GetFiles();
-                foreach (var fileName in Files)
-                {
-                    bool isSelected = (selectedFileName == fileName);
-                    if (ImGui.Selectable(fileName, isSelected))
-                    {
-                        selectedFileName = fileName;
-                        LoadFile(fileName);
-                    }
-                    if (isSelected)
-                        ImGui.SetItemDefaultFocus();
-                }
-                ImGui.EndCombo();
-            }
+            DrawConfirmAndClear();
 
-            ImGui.Separator();
-            if (ImGui.Button("Clear All"))
-                ImGui.OpenPopup(DeletePopup);
+            DrawCraftingStepInputs();
+        }
 
-            if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOOOOP"], out var saveSelectedIndex))
-            {
-                if (saveSelectedIndex == 0)
-                    SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{FileSaveName}.json");
-            }
-
-            if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOOOOP"], out var clearSelectedIndex))
-            {
-                if (clearSelectedIndex == 0)
-                    Main.Settings.SelectedCraftingStepInputs.Clear();
-            }
-
+        private static void DrawCraftingStepInputs()
+        {
             var currentSteps = new List<CraftingStepInput>(Main.Settings.SelectedCraftingStepInputs);
 
             for (int i = 0; i < currentSteps.Count; i++)
             {
                 var stepInput = currentSteps[i];
-                ImGui.Separator();
 
                 // Use a colored, collapsible header for each step
                 ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
@@ -176,8 +138,6 @@ namespace WheresMyCraftAt.CraftingSequence
                         ImGui.Unindent();
                     }
 
-                    #endregion Step Settings
-
                     ImGui.Separator();
 
                     if (ImGui.Button($"[+] Insert Step Below##{i}"))
@@ -196,12 +156,14 @@ namespace WheresMyCraftAt.CraftingSequence
                     }
 
                     ImGui.Separator();
-                    ImGui.Unindent();
+
+                    #endregion Step Settings
                 }
                 else
                 {
                     ImGui.PopStyleColor();
                 }
+                ImGui.Unindent();
             }
 
             Main.Settings.SelectedCraftingStepInputs = currentSteps;
@@ -210,41 +172,119 @@ namespace WheresMyCraftAt.CraftingSequence
             {
                 Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
             }
-            ImGui.Separator();
-            if (ImGui.Button("[+] Apply Steps"))
-            {
-                Main.SelectedCraftingSteps.Clear();
-                foreach (var input in Main.Settings.SelectedCraftingStepInputs)
-                {
-                    CraftingStep newStep = new CraftingStep
-                    {
-                        Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
-                        CheckTiming = input.CheckTiming,
-                        AutomaticSuccess = input.AutomaticSuccess,
-                        SuccessAction = input.SuccessAction,
-                        SuccessActionStepIndex = input.SuccessActionStepIndex,
-                        FailureAction = input.FailureAction,
-                        FailureActionStepIndex = input.FailureActionStepIndex,
-                        ConditionalChecks = []
-                    };
+        }
 
-                    foreach (var checkKey in input.ConditionalCheckKeys)
+        private static void DrawConfirmAndClear()
+        {
+            ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
+            if (ImGui.CollapsingHeader($"Confirm / Clear Steps##{Main.Name}Confirm / Clear Steps", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                ImGui.Indent();
+                if (ImGui.Button("[+] Apply Steps"))
+                {
+                    Main.SelectedCraftingSteps.Clear();
+                    foreach (var input in Main.Settings.SelectedCraftingStepInputs)
                     {
-                        ItemFilter filter = ItemFilter.LoadFromString(checkKey);
-                        if (filter.Queries.Count == 0)
+                        CraftingStep newStep = new CraftingStep
                         {
-                            Logging.Add($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}", LogMessageType.Error);
-                            return; // No point going on from here.
+                            Method = async (token) => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
+                            CheckTiming = input.CheckTiming,
+                            AutomaticSuccess = input.AutomaticSuccess,
+                            SuccessAction = input.SuccessAction,
+                            SuccessActionStepIndex = input.SuccessActionStepIndex,
+                            FailureAction = input.FailureAction,
+                            FailureActionStepIndex = input.FailureActionStepIndex,
+                            ConditionalChecks = []
+                        };
+
+                        foreach (var checkKey in input.ConditionalCheckKeys)
+                        {
+                            ItemFilter filter = ItemFilter.LoadFromString(checkKey);
+                            if (filter.Queries.Count == 0)
+                            {
+                                Logging.Add($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}", LogMessageType.Error);
+                                return; // No point going on from here.
+                            }
+
+                            newStep.ConditionalChecks.Add(() =>
+                            {
+                                return FilterHandler.IsMatchingCondition(filter);
+                            });
                         }
 
-                        newStep.ConditionalChecks.Add(() =>
-                        {
-                            return FilterHandler.IsMatchingCondition(filter);
-                        });
+                        Main.SelectedCraftingSteps.Add(newStep);
                     }
-
-                    Main.SelectedCraftingSteps.Add(newStep);
                 }
+                ImGui.SameLine();
+                if (ImGui.Button("[x] Clear All"))
+                    ImGui.OpenPopup(DeletePopup);
+
+                if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOOOOP"], out var clearSelectedIndex))
+                {
+                    if (clearSelectedIndex == 0)
+                        Main.Settings.SelectedCraftingStepInputs.Clear();
+                }
+                ImGui.Separator();
+                ImGui.Unindent();
+            }
+        }
+
+        private static void DrawFileOptions()
+        {
+            ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
+            if (ImGui.CollapsingHeader($"Load / Save##{Main.Name}Load / Save", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                ImGui.Indent();
+                ImGui.InputTextWithHint("##SaveAs", "File Path...", ref FileSaveName, 100);
+                ImGui.SameLine();
+                if (ImGui.Button("Save To File"))
+                {
+                    Files = GetFiles();
+                    if (FileSaveName == string.Empty)
+                        DebugWindow.LogError($"{Main.Name}: File name must not be empty.", 30);
+                    else if (Files.Contains(FileSaveName))
+                        ImGui.OpenPopup(OverwritePopup);
+                    else
+                        SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{FileSaveName}.json");
+                }
+
+                ImGui.Separator();
+                if (ImGui.BeginCombo("Load File##LoadFile", selectedFileName))
+                {
+                    Files = GetFiles();
+                    foreach (var fileName in Files)
+                    {
+                        bool isSelected = (selectedFileName == fileName);
+                        if (ImGui.Selectable(fileName, isSelected))
+                        {
+                            selectedFileName = fileName;
+                            FileSaveName = fileName;
+                            LoadFile(fileName);
+                        }
+                        if (isSelected)
+                            ImGui.SetItemDefaultFocus();
+                    }
+                    ImGui.EndCombo();
+                }
+
+                ImGui.Separator();
+
+                if (ImGui.Button("Open Build Folder"))
+                {
+                    var configDir = Main.ConfigDirectory;
+                    var directoryToOpen = Directory.Exists(configDir);
+                    if (!directoryToOpen)
+                        DebugWindow.LogError($"{Main.Name}: Config directory does not exist.", 30);
+
+                    Process.Start("explorer.exe", configDir);
+                }
+
+                if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOOOOP"], out var saveSelectedIndex))
+                {
+                    if (saveSelectedIndex == 0)
+                        SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{FileSaveName}.json");
+                }
+                ImGui.Unindent();
             }
         }
 
