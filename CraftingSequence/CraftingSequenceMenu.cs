@@ -138,10 +138,9 @@ public static class CraftingSequenceMenu
 
                 ImGui.Separator();
 
-                if (ImGui.Button($"[+] Insert Step Below##{i}"))
+                if (ImGui.Button($"[+] Insert Step Above##{i}"))
                 {
-                    currentSteps.Insert(i + 1, new CraftingStepInput());
-                    i++;
+                    currentSteps.Insert(i, new CraftingStepInput());
                     continue;
                 }
 
