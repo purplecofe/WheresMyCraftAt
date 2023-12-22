@@ -222,7 +222,10 @@ namespace WheresMyCraftAt.CraftingSequence
                 if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOOOOP"], out var clearSelectedIndex))
                 {
                     if (clearSelectedIndex == 0)
+                    {
                         Main.Settings.SelectedCraftingStepInputs.Clear();
+                        Main.SelectedCraftingSteps.Clear();
+                    }
                 }
                 ImGui.Separator();
                 ImGui.Unindent();
