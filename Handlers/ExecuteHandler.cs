@@ -1,105 +1,102 @@
-﻿using ExileCore.Shared;
-using System;
+﻿using System;
 using System.Threading;
+using ExileCore.Shared;
 
-namespace WheresMyCraftAt.Handlers
+namespace WheresMyCraftAt.Handlers;
+
+public static class ExecuteHandler
 {
-    public static class ExecuteHandler
+    public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS,
+        CancellationToken token)
     {
-        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, CancellationToken token)
+        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
+
+        try
         {
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
-
-            try
+            while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
+                await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    if (condition())
-                    {
-                        return true;
-                    }
-                }
+                if (condition()) return true;
+            }
 
-                return false;
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
+            return false;
         }
-
-        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Action action, Func<bool> condition, int timeoutS, CancellationToken token)
+        catch (OperationCanceledException)
         {
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
-
-            try
-            {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    action();
-                    await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
-
-                    if (condition()) return true;
-                }
-
-                return false;
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
+            return false;
         }
+    }
 
-        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS, int loopDelay, CancellationToken token)
+    public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Action action, Func<bool> condition,
+        int timeoutS, CancellationToken token)
+    {
+        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
+
+        try
         {
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
-
-            try
+            while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
+                action();
+                await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                    if (condition())
-                    {
-                        return true;
-                    }
-                }
+                if (condition()) return true;
+            }
 
-                return false;
-            }
-            catch (OperationCanceledException)
-            {
-                return false;
-            }
+            return false;
         }
-
-        public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Action action, Func<bool> condition, int timeoutS, int loopDelay, CancellationToken token)
+        catch (OperationCanceledException)
         {
-            using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-            ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
+            return false;
+        }
+    }
 
-            try
+    public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Func<bool> condition, int timeoutS,
+        int loopDelay, CancellationToken token)
+    {
+        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
+
+        try
+        {
+            while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                while (!ctsTimeout.Token.IsCancellationRequested)
-                {
-                    action();
-                    await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
+                await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
 
-                    if (condition()) return true;
-                }
-
-                return false;
+                if (condition()) return true;
             }
-            catch (OperationCanceledException)
+
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    public static async SyncTask<bool> AsyncExecuteWithCancellationHandling(Action action, Func<bool> condition,
+        int timeoutS, int loopDelay, CancellationToken token)
+    {
+        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
+
+        try
+        {
+            while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                return false;
+                action();
+                await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
+
+                if (condition()) return true;
             }
+
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
         }
     }
 }

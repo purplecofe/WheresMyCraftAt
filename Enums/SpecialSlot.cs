@@ -1,11 +1,10 @@
-﻿namespace WheresMyCraftAt
+﻿namespace WheresMyCraftAt.Enums;
+
+public partial class WheresMyCraftAt
 {
-    public partial class WheresMyCraftAt
+    public enum SpecialSlot
     {
-        public enum SpecialSlot
-        {
-            CurrencyTab,
-            EssenceTab
-        }
+        CurrencyTab,
+        EssenceTab
     }
 }

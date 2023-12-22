@@ -1,99 +1,96 @@
-﻿using ExileCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ExileCore;
 using ExileCore.Shared.Helpers;
 using ImGuiNET;
-using System;
-using System.Collections.Generic;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Color = SharpDX.Color;
-using Vector2 = System.Numerics.Vector2;
 using Vector4 = System.Numerics.Vector4;
 
-namespace WheresMyCraftAt.Handlers
+namespace WheresMyCraftAt.Logging;
+
+public static class Logging
 {
-    public static class Logging
+    private static readonly Dictionary<Enums.WheresMyCraftAt.LogMessageType, Color> LogMessageColors = new()
     {
-        private class DebugMsgDescription
+        { Enums.WheresMyCraftAt.LogMessageType.Info, Color.White },
+        { Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow },
+        { Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red },
+        { Enums.WheresMyCraftAt.LogMessageType.Success, Color.Green },
+        { Enums.WheresMyCraftAt.LogMessageType.Cancelled, Color.Orange },
+        { Enums.WheresMyCraftAt.LogMessageType.Special, Color.Gray },
+        { Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue }
+    };
+
+    private static readonly object Locker = new();
+    private static readonly List<DebugMsgDescription> MessagesList = new(24);
+
+    public static void Render()
+    {
+        if (!Main.Settings.ShowLogWindow)
+            return;
+
+        using var fontPush = Main.Graphics.UseCurrentFont();
+        var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
+
+        if (Main.CurrentOperation is not null)
+            flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
+
+        ImGui.Begin("WheresMyCraftAt Logs", flags);
+
+        lock (Locker)
         {
-            public string Msg { get; init; }
-            public DateTime Time { get; init; }
-            public Vector4 ColorV4 { get; init; }
-            public Color Color { get; init; }
-        }
-
-        private static readonly Dictionary<LogMessageType, Color> _logMessageColors = new()
-        {
-            { LogMessageType.Info, Color.White },
-            { LogMessageType.Warning, Color.Yellow },
-            { LogMessageType.Error, Color.Red },
-            { LogMessageType.Success, Color.Green },
-            { LogMessageType.Cancelled, Color.Orange },
-            { LogMessageType.Special, Color.Gray },
-            { LogMessageType.Profiler, Color.SkyBlue }
-        };
-
-        private static readonly object locker = new();
-        private static readonly List<DebugMsgDescription> MessagesList = new(24);
-        private static Vector2 position;
-
-        public static void Render()
-        {
-            if (!Main.Settings.ShowLogWindow)
-                return;
-
-            using var fontPush = Main.Graphics.UseCurrentFont();
-            var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
-
-            if (Main._currentOperation is not null)
+            foreach (var msg in MessagesList.Where(msg => msg != null))
             {
-                flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
-            }
-
-            ImGui.Begin("WheresMyCraftAt Logs", flags);
-
-            foreach (var msg in MessagesList)
-            {
-                if (msg == null) continue;
                 ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
                 ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
                 ImGui.PopStyleColor();
             }
-            if (Main._currentOperation is not null)
-            {
-                // Set auto scroll when running
-                if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
-                    ImGui.SetScrollHereY(1.0f);
-            }
-
-            ImGui.End();
         }
 
-        public static void Add(string msg, LogMessageType messageType)
+        if (Main.CurrentOperation is not null)
+            // Set auto scroll when running
+            if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+                ImGui.SetScrollHereY(1.0f);
+
+        ImGui.End();
+    }
+
+    public static void Add(string msg, Enums.WheresMyCraftAt.LogMessageType messageType)
+    {
+        try
         {
-            try
+            var color = LogMessageColors[messageType];
+            var time = Main.Settings.DebugPrintLingerTime;
+
+            if (Main.Settings.DebugPrint)
+                DebugWindow.LogMsg(msg, Main.Settings.DebugPrintLingerTime, color);
+
+            var debugMsgDescription = new DebugMsgDescription
             {
-                Color color = _logMessageColors[messageType];
-                var time = Main.Settings.DebugPrintLingerTime;
+                Msg = msg,
+                Time = DateTime.Now,
+                ColorV4 = color.ToImguiVec4(),
+                Color = color
+            };
 
-                if (Main.Settings.DebugPrint)
-                    DebugWindow.LogMsg(msg, Main.Settings.DebugPrintLingerTime, color);
-
-                var debugMsgDescription = new DebugMsgDescription
-                {
-                    Msg = msg,
-                    Time = DateTime.Now,
-                    ColorV4 = color.ToImguiVec4(),
-                    Color = color
-                };
-
-                lock (locker)
-                {
-                    MessagesList.Add(debugMsgDescription);
-                }
-            }
-            catch (Exception e)
+            lock (Locker)
             {
-                DebugWindow.LogError($"{nameof(DebugWindow)} -> {e}");
+                MessagesList.Add(debugMsgDescription);
             }
         }
+        catch (Exception e)
+        {
+            DebugWindow.LogError($"{nameof(DebugWindow)} -> {e}");
+        }
+    }
+
+    private class DebugMsgDescription
+    {
+        public string Msg { get; init; }
+        public DateTime Time { get; init; }
+        public Vector4 ColorV4 { get; init; }
+        public Color Color { get; init; }
     }
 }

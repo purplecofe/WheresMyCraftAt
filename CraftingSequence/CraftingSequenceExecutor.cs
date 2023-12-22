@@ -1,117 +1,123 @@
-﻿using ExileCore.Shared;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using WheresMyCraftAt.Handlers;
+using ExileCore.Shared;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
-using static WheresMyCraftAt.WheresMyCraftAt;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 
-namespace WheresMyCraftAt.CraftingSequence
+namespace WheresMyCraftAt.CraftingSequence;
+
+public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 {
-    public class CraftingSequenceExecutor(List<CraftingStep> steps)
+    public async SyncTask<bool> Execute(CancellationToken token)
     {
-        private readonly List<CraftingStep> steps = steps;
+        var currentStepIndex = 0;
+        var stopwatch = new Stopwatch(); // Stopwatch to time each step
 
-        public async SyncTask<bool> Execute(CancellationToken token)
+        while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
-            int currentStepIndex = 0;
-            var stopwatch = new Stopwatch(); // Stopwatch to time each step
+            var currentStep = steps[currentStepIndex];
+            var success = false; // Defaulting success to false
 
-            while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
+            try
             {
-                var currentStep = steps[currentStepIndex];
-                bool success = false;  // Defaulting success to false
+                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex}]", LogMessageType.Info);
+                stopwatch.Restart(); // Start timing
 
-                try
+                if (currentStep.ConditionalChecks.Count != 0 &&
+                    currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
                 {
-                    Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex}]", LogMessageType.Info);
-                    stopwatch.Restart(); // Start timing
+                    // All conditions must be true for success
+                    success = currentStep.ConditionalChecks.All(condition => condition());
+                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks before method are {success}",
+                        LogMessageType.Success);
 
-                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
+                    if (!success)
                     {
-                        // All conditions must be true for success
-                        success = currentStep.ConditionalChecks.All(condition => condition());
-                        Logging.Add($"CraftingSequenceStep: All ConditionalChecks before method are {success}", LogMessageType.Success);
-
-                        if (!success)
-                        {
-                            // If any conditional check before the method is false, execute the method
-                            await currentStep.Method(token);
-                            Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
-                        }
-                    }
-                    else
-                    {
-                        // Execute the method if no prior conditional check or if it's not applicable
+                        // If any conditional check before the method is false, execute the method
                         await currentStep.Method(token);
-                        Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
-                    }
-
-                    if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
-                    {
-                        // Execute the conditional check after the method, if specified
-                        success = currentStep.ConditionalChecks.All(condition => condition());
-                        Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Success);
-                    }
-
-                    if (currentStep.AutomaticSuccess)
-                    {
-                        success = true;  // Override success if AutomaticSuccess is true
-                        Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
-                    }
-
-                    stopwatch.Stop(); // Stop timing after the step is executed
-                    Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
-                }
-                catch (Exception ex)
-                {
-                    Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}", LogMessageType.Error);
-                    Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
-                    return false;
-                }
-
-                // Determine the next step based on success or failure
-                if (success)
-                {
-                    Logging.Add($"CraftingSequenceStep: True", LogMessageType.Success);
-                    switch (currentStep.SuccessAction)
-                    {
-                        case SuccessAction.Continue:
-                            currentStepIndex++;
-                            break;
-
-                        case SuccessAction.End:
-                            return true; // End the execution of the sequence
-                        case SuccessAction.GoToStep:
-                            currentStepIndex = currentStep.SuccessActionStepIndex;
-                            break;
+                        Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
                     }
                 }
                 else
                 {
-                    Logging.Add($"CraftingSequenceStep: False", LogMessageType.Error);
-                    switch (currentStep.FailureAction)
-                    {
-                        case FailureAction.RepeatStep:
-                            // Stay on the current step
-                            break;
-
-                        case FailureAction.Restart:
-                            currentStepIndex = 0; // Restart from the first step
-                            break;
-
-                        case FailureAction.GoToStep:
-                            currentStepIndex = currentStep.FailureActionStepIndex;
-                            break;
-                    }
+                    // Execute the method if no prior conditional check or if it's not applicable
+                    await currentStep.Method(token);
+                    Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
                 }
 
-                Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex}]", LogMessageType.Info);
+                if (currentStep.ConditionalChecks.Count != 0 &&
+                    currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
+                {
+                    // Execute the conditional check after the method, if specified
+                    success = currentStep.ConditionalChecks.All(condition => condition());
+                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}",
+                        LogMessageType.Success);
+                }
+
+                if (currentStep.AutomaticSuccess)
+                {
+                    success = true; // Override success if AutomaticSuccess is true
+                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
+                }
+
+                stopwatch.Stop(); // Stop timing after the step is executed
+                Logging.Logging.Add(
+                    $"CraftingSequenceStep: Step [{currentStepIndex}] completed in {stopwatch.ElapsedMilliseconds} ms",
+                    LogMessageType.Profiler);
+            }
+            catch (Exception ex)
+            {
+                Logging.Logging.Add(
+                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}",
+                    LogMessageType.Error);
+                Logging.Logging.Add(
+                    $"CraftingSequenceStep: Step [{currentStepIndex}] failed after {stopwatch.ElapsedMilliseconds} ms",
+                    LogMessageType.Profiler);
+                return false;
             }
 
-            return true;
+            // Determine the next step based on success or failure
+            if (success)
+            {
+                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Success);
+                switch (currentStep.SuccessAction)
+                {
+                    case SuccessAction.Continue:
+                        currentStepIndex++;
+                        break;
+
+                    case SuccessAction.End:
+                        return true; // End the execution of the sequence
+                    case SuccessAction.GoToStep:
+                        currentStepIndex = currentStep.SuccessActionStepIndex;
+                        break;
+                }
+            }
+            else
+            {
+                Logging.Logging.Add("CraftingSequenceStep: False", LogMessageType.Error);
+                switch (currentStep.FailureAction)
+                {
+                    case FailureAction.RepeatStep:
+                        // Stay on the current step
+                        break;
+
+                    case FailureAction.Restart:
+                        currentStepIndex = 0; // Restart from the first step
+                        break;
+
+                    case FailureAction.GoToStep:
+                        currentStepIndex = currentStep.FailureActionStepIndex;
+                        break;
+                }
+            }
+
+            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex}]", LogMessageType.Info);
         }
+
+        return true;
     }
 }

@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Numerics;
 
-namespace WheresMyCraftAt.Handlers
-{
-    public static class HelperHandler
-    {
-        public static int GetRandomTimeInRange(Vector2 timeRange)
-        {
-            Random random = new Random();
-            int minMilliseconds = (int)timeRange.X;
-            int maxMilliseconds = (int)timeRange.Y;
+namespace WheresMyCraftAt.Handlers;
 
-            return random.Next(minMilliseconds, maxMilliseconds + 1);
-        }
+public static class HelperHandler
+{
+    public static int GetRandomTimeInRange(Vector2 timeRange)
+    {
+        var random = new Random();
+        var minMilliseconds = (int)timeRange.X;
+        var maxMilliseconds = (int)timeRange.Y;
+
+        return random.Next(minMilliseconds, maxMilliseconds + 1);
     }
 }

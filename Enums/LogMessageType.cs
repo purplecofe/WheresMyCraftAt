@@ -1,16 +1,15 @@
-﻿namespace WheresMyCraftAt
+﻿namespace WheresMyCraftAt.Enums;
+
+public partial class WheresMyCraftAt
 {
-    public partial class WheresMyCraftAt
+    public enum LogMessageType
     {
-        public enum LogMessageType
-        {
-            Info,
-            Warning,
-            Error,
-            Success,
-            Cancelled,
-            Special,
-            Profiler
-        }
+        Info,
+        Warning,
+        Error,
+        Success,
+        Cancelled,
+        Special,
+        Profiler
     }
 }

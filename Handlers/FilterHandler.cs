@@ -3,31 +3,30 @@ using ItemFilterLibrary;
 using WheresMyCraftAt.ItemFilterLibrary;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
-namespace WheresMyCraftAt.Handlers
+namespace WheresMyCraftAt.Handlers;
+
+public static class FilterHandler
 {
-    public static class FilterHandler
+    public static bool IsMatchingCondition(ItemFilter filterQuery)
     {
-        public static bool IsMatchingCondition(ItemFilter filterQuery)
+        if (!StashHandler.TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab, out var item))
         {
-            if (!StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var item))
-            {
-                Logging.Add($"IsMatchingCondition found no item", LogMessageType.Error);
-                return false;
-            }
-
-            return IsItemMatchingCondition(item.Item, filterQuery);
+            Logging.Logging.Add("IsMatchingCondition found no item", Enums.WheresMyCraftAt.LogMessageType.Error);
+            return false;
         }
 
-        public static bool IsItemMatchingCondition(Entity item, ItemFilter filterQuery)
-        {
-            ItemHandler.PrintHumanModListFromItem(item);
+        return IsItemMatchingCondition(item.Item, filterQuery);
+    }
 
-            var itemData = new CustomItemData(item, Main.GameController);
-            var result = filterQuery.Matches(itemData);
+    public static bool IsItemMatchingCondition(Entity item, ItemFilter filterQuery)
+    {
+        ItemHandler.PrintHumanModListFromItem(item);
 
-            Logging.Add($"IsItemMatchingCondition = {result}", LogMessageType.Special);
+        var itemData = new CustomItemData(item, Main.GameController);
+        var result = filterQuery.Matches(itemData);
 
-            return result;
-        }
+        Logging.Logging.Add($"IsItemMatchingCondition = {result}", Enums.WheresMyCraftAt.LogMessageType.Special);
+
+        return result;
     }
 }
