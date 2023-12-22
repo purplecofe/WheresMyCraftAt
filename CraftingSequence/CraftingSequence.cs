@@ -1,8 +1,10 @@
 ﻿using ExileCore.Shared;
-using ItemFilterLibrary;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence
 {
@@ -52,5 +54,26 @@ namespace WheresMyCraftAt.CraftingSequence
             public List<string> ConditionalCheckKeysMultiLine { get; set; } = [];
             public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
         }
+
+        public static void SaveFile(List<CraftingStepInput> input, string filePath)
+        {
+            string fullPath = Path.Combine(Main.ConfigDirectory, filePath);
+            string jsonString = JsonConvert.SerializeObject(input, Formatting.Indented);
+            File.WriteAllText(fullPath, jsonString);
+        }
+
+        public static List<CraftingStepInput> LoadFile(string filePath)
+        {
+            string fullPath = Path.Combine(Main.ConfigDirectory, filePath);
+            string jsonString = File.ReadAllText(fullPath);
+            return JsonConvert.DeserializeObject<List<CraftingStepInput>>(jsonString);
+        }
+
+        //public static List<string> GetFiles(string filePath)
+        //{
+        //    string fullPath = Path.Combine(Main.ConfigDirectory, filePath);
+        //    string jsonString = File.ReadAllText(fullPath);
+        //    return JsonConvert.DeserializeObject<List<CraftingStepInput>>(jsonString);
+        //}
     }
 }

@@ -2,7 +2,6 @@
 using ExileCore.Shared.Nodes;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using WheresMyCraftAt.CraftingSequence;
 
 namespace WheresMyCraftAt
 {

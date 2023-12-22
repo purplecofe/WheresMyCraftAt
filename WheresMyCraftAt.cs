@@ -4,6 +4,7 @@ using ExileCore.Shared.Nodes;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using WheresMyCraftAt.CraftingSequence;
@@ -124,6 +125,11 @@ namespace WheresMyCraftAt
             if (!GameHandler.IsInGameCondition())
             {
                 Logging.Add($"{Name}: Not in game, operation will be terminated.", LogMessageType.Error);
+                return false;
+            }
+            if (Settings.SelectedCraftingStepInputs.Count == 0 || Settings.SelectedCraftingStepInputs.Any(x => string.IsNullOrEmpty(x.CurrencyItem)))
+            {
+                Logging.Add($"{Name}: No Crafting Steps or currency to use is null, operation will be terminated.", LogMessageType.Error);
                 return false;
             }
 
