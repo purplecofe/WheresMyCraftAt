@@ -148,7 +148,6 @@ public static class CraftingSequenceMenu
                     ImGui.SetNextItemWidth(200);
                     var conditionalChecksTrue = stepInput.ConditionalsToBePassForSuccess;
 
-                    // User input
                     if (ImGui.InputInt($"Req Checks to Pass##conditionalChecksTrue{i}", ref conditionalChecksTrue))
                     {
                         // Clamp the value between 1 and the number of conditional checks
@@ -157,7 +156,6 @@ public static class CraftingSequenceMenu
                             Math.Min(conditionalChecksTrue, stepInput.Conditionals.Count)
                         );
 
-                        // Update the stepInput with the clamped value
                         stepInput.ConditionalsToBePassForSuccess = conditionalChecksTrue;
                     }
 
@@ -274,6 +272,22 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("Close"))
             ImGui.CloseCurrentPopup();
+
+        var conditionals = Main.Settings.SelectedCraftingStepInputs[i].Conditionals;
+
+        var conditionalNames = conditionals.Select(
+                                               (c, index) => string.IsNullOrEmpty(c.Name)
+                                                   ? $"Unnamed Conditional {index+1}"
+                                                   : c.Name
+                                           )
+                                           .ToArray();
+
+        var selectedIndex = -1;
+        ImGui.SameLine();
+
+        if (ImGui.Combo("Copy Conditional From", ref selectedIndex, conditionalNames, conditionalNames.Length))
+            if (selectedIndex >= 0 && selectedIndex < conditionals.Count)
+                tempCondValue = conditionals[selectedIndex].Value;
 
         ImGui.EndPopup();
     }
