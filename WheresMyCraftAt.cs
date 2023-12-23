@@ -40,6 +40,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         Main = this;
         RegisterHotkey(Settings.RunButton);
+        RegisterHotkey(Settings.ToggleDebugWindow);
         return true;
     }
 
@@ -53,6 +54,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         ClickWindowOffset = GameController.Window.GetWindowRectangle().TopLeft;
         ServerLatency = GameController.IngameState.ServerData.Latency;
+
+        if (Settings.ToggleDebugWindow.PressedOnce())
+            Settings.ShowLogWindow.Value = !Settings.ShowLogWindow.Value;
 
         if (!GameHandler.IsInGameCondition())
         {

@@ -1,4 +1,5 @@
 ﻿using ExileCore;
+using ExileCore.PoEMemory.Elements;
 using ExileCore.Shared.Helpers;
 using ImGuiNET;
 using System;
@@ -35,24 +36,30 @@ public static class Logging
             flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
 
         var isOpen = Main.Settings.ShowLogWindow.Value;
-        ImGui.Begin("WheresMyCraftAt Logs", ref isOpen, flags);
 
-        lock (Locker)
+        if (isOpen)
         {
-            foreach (var msg in MessagesList.Where(msg => msg != null))
+            ImGui.Begin("Wheres My Craft At Logs", ref isOpen, flags);
+
+            lock (Locker)
             {
-                ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
-                ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
-                ImGui.PopStyleColor();
+                foreach (var msg in MessagesList.Where(msg => msg != null))
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
+                    ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
+                    ImGui.PopStyleColor();
+                }
             }
+
+            if (Main.CurrentOperation is not null)
+                // Set auto scroll when running
+                if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+                    ImGui.SetScrollHereY(1.0f);
+
+            ImGui.End();
         }
 
-        if (Main.CurrentOperation is not null)
-            // Set auto scroll when running
-            if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
-                ImGui.SetScrollHereY(1.0f);
-
-        ImGui.End();
+        Main.Settings.ShowLogWindow.Value = isOpen;
     }
 
     public static void Add(string msg, Enums.WheresMyCraftAt.LogMessageType messageType)
