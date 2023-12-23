@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Windows.Forms;
-using ExileCore.PoEMemory.Elements.InventoryElements;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using ExileCore.Shared.Helpers;
+using System;
+using System.Threading;
+using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -20,9 +20,11 @@ public static class ItemExtensions
         try
         {
             ElementHandler.TryGetCursorStateCondition(out var cursorStateCondition);
-
             var clickPosition = item.GetClientRectCache.Center.ToVector2Num();
-            var button = !rightClick ? Keys.LButton : Keys.RButton;
+
+            var button = !rightClick
+                ? Keys.LButton
+                : Keys.RButton;
 
             Logging.Logging.Add($"AsyncTryClick Button is {button}", Enums.WheresMyCraftAt.LogMessageType.Success);
 
@@ -64,6 +66,7 @@ public static class ItemExtensions
         try
         {
             var (item1, orbItem) = await StashHandler.AsyncTryGetItemInStash(currencyName, token);
+
             if (!item1)
             {
                 Main.Stop();
@@ -82,13 +85,11 @@ public static class ItemExtensions
                 return false;
             }
 
-            if (!await ElementHandler.AsyncExecuteNotSameElementWithCancellationHandling(item, 3, token))
-            {
-                Main.Stop();
-                return false;
-            }
+            if (await ElementHandler.AsyncExecuteNotSameElementWithCancellationHandling(item, 3, token))
+                return true;
 
-            return true;
+            Main.Stop();
+            return false;
         }
         catch (OperationCanceledException)
         {

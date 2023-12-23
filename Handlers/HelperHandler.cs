@@ -10,7 +10,6 @@ public static class HelperHandler
         var random = new Random();
         var minMilliseconds = (int)timeRange.X;
         var maxMilliseconds = (int)timeRange.Y;
-
         return random.Next(minMilliseconds, maxMilliseconds + 1);
     }
 }

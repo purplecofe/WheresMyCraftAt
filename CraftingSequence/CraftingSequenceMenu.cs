@@ -1,11 +1,11 @@
-﻿using System;
+﻿using ExileCore;
+using ImGuiNET;
+using ItemFilterLibrary;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ExileCore;
-using ImGuiNET;
-using ItemFilterLibrary;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -23,9 +23,7 @@ public static class CraftingSequenceMenu
     public static void Draw()
     {
         DrawFileOptions();
-
         DrawConfirmAndClear();
-
         DrawCraftingStepInputs();
     }
 
@@ -39,6 +37,7 @@ public static class CraftingSequenceMenu
 
             // Use a colored, collapsible header for each step
             ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
+
             if (ImGui.CollapsingHeader($"STEP [{i}]##header{i}", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 #region Step Settings
@@ -46,33 +45,49 @@ public static class CraftingSequenceMenu
                 var availableWidth = ImGui.GetContentRegionAvail().X * 0.65f;
                 ImGui.Indent();
                 ImGui.PopStyleColor(); // Always pop style color to avoid styling issues
-
                 var dropdownWidth = availableWidth * 0.6f;
                 var inputWidth = availableWidth * 0.4f;
 
                 // Currency Item Input
                 var currencyItem = stepInput.CurrencyItem;
-                if (ImGui.InputTextWithHint($"Currency Item##{i}",
-                        "Case Sensitive Currency BaseName \"Orb of Transmutation\"...", ref currencyItem, 100))
+
+                if (ImGui.InputTextWithHint(
+                        $"Currency Item##{i}",
+                        "Case Sensitive Currency BaseName \"Orb of Transmutation\"...",
+                        ref currencyItem,
+                        100
+                    ))
                     stepInput.CurrencyItem = currencyItem;
 
                 // Automatic Success Checkbox
                 var autoSuccess = stepInput.AutomaticSuccess;
+
                 if (ImGui.Checkbox($"Automatic Success##{i}", ref autoSuccess))
                     stepInput.AutomaticSuccess = autoSuccess;
 
                 // Check Timing Combo Box
                 var checkTimingIndex = (int)stepInput.CheckTiming;
-                if (ImGui.Combo($"Check Conditionals When##{i}", ref checkTimingIndex,
-                        Enum.GetNames(typeof(ConditionalCheckTiming)), GetEnumLength<ConditionalCheckTiming>()))
+
+                if (ImGui.Combo(
+                        $"Check Conditionals When##{i}",
+                        ref checkTimingIndex,
+                        Enum.GetNames(typeof(ConditionalCheckTiming)),
+                        GetEnumLength<ConditionalCheckTiming>()
+                    ))
                     stepInput.CheckTiming = (ConditionalCheckTiming)checkTimingIndex;
 
                 // Success Action
                 var successActionIndex = (int)stepInput.SuccessAction;
+
                 if (stepInput.SuccessAction == SuccessAction.GoToStep)
                     ImGui.SetNextItemWidth(dropdownWidth);
-                if (ImGui.Combo($"##SuccessAction{i}", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)),
-                        GetEnumLength<SuccessAction>()))
+
+                if (ImGui.Combo(
+                        $"##SuccessAction{i}",
+                        ref successActionIndex,
+                        Enum.GetNames(typeof(SuccessAction)),
+                        GetEnumLength<SuccessAction>()
+                    ))
                     stepInput.SuccessAction = (SuccessAction)successActionIndex;
 
                 if (stepInput.SuccessAction == SuccessAction.GoToStep)
@@ -80,6 +95,7 @@ public static class CraftingSequenceMenu
                     ImGui.SameLine();
                     var successActionStepIndex = stepInput.SuccessActionStepIndex;
                     ImGui.SetNextItemWidth(inputWidth);
+
                     if (ImGui.InputInt($"##SuccessStepIndex{i}", ref successActionStepIndex))
                         stepInput.SuccessActionStepIndex = successActionStepIndex;
                 }
@@ -92,10 +108,16 @@ public static class CraftingSequenceMenu
                 {
                     // Failure Action
                     var failureActionIndex = (int)stepInput.FailureAction;
+
                     if (stepInput.FailureAction == FailureAction.GoToStep)
                         ImGui.SetNextItemWidth(dropdownWidth);
-                    if (ImGui.Combo($"##FailureAction{i}", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)),
-                            GetEnumLength<FailureAction>()))
+
+                    if (ImGui.Combo(
+                            $"##FailureAction{i}",
+                            ref failureActionIndex,
+                            Enum.GetNames(typeof(FailureAction)),
+                            GetEnumLength<FailureAction>()
+                        ))
                         stepInput.FailureAction = (FailureAction)failureActionIndex;
 
                     if (stepInput.FailureAction == FailureAction.GoToStep)
@@ -103,6 +125,7 @@ public static class CraftingSequenceMenu
                         ImGui.SameLine();
                         var failureActionStepIndex = stepInput.FailureActionStepIndex;
                         ImGui.SetNextItemWidth(inputWidth);
+
                         if (ImGui.InputInt($"##FailureStepIndex{i}", ref failureActionStepIndex))
                             stepInput.FailureActionStepIndex = failureActionStepIndex;
                     }
@@ -113,21 +136,28 @@ public static class CraftingSequenceMenu
                     // Manage Conditional Checks
                     if (ImGui.Button($"Add Conditional Check##{i}"))
                         stepInput.ConditionalCheckKeys.Add(""); // Add a new empty string to be filled out
+
                     ImGui.Indent();
                     var checksToRemove = new List<int>(); // Track checks to remove
+
                     for (var j = 0; j < stepInput.ConditionalCheckKeys.Count; j++)
                     {
                         if (ImGui.Button($"Remove##{i}_{j}"))
                         {
                             checksToRemove.Add(j); // Mark this check for removal
-                            continue; // Skip the rest of the loop to avoid accessing a removed item
+                            continue;              // Skip the rest of the loop to avoid accessing a removed item
                         }
 
                         ImGui.SameLine();
                         var checkKey = stepInput.ConditionalCheckKeys[j];
-                        if (ImGui.InputTextWithHint($"Condition [{j}]##{i}_{j}", "ItemFilterLibrary filter string...",
+
+                        if (ImGui.InputTextWithHint(
+                                $"Condition [{j}]##{i}_{j}",
+                                "ItemFilterLibrary filter string...",
                                 ref checkKey,
-                                1000)) stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
+                                1000
+                            ))
+                            stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
                     }
 
                     foreach (var index in checksToRemove.OrderByDescending(j => j))
@@ -145,6 +175,7 @@ public static class CraftingSequenceMenu
                 }
 
                 ImGui.SameLine();
+
                 if (ImGui.Button($"[-] Remove This Step##{i}"))
                 {
                     currentSteps.RemoveAt(i);
@@ -166,27 +197,35 @@ public static class CraftingSequenceMenu
 
         Main.Settings.SelectedCraftingStepInputs = currentSteps;
 
-        if (ImGui.Button("[=] Add New Step")) Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
+        if (ImGui.Button("[=] Add New Step"))
+            Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
     }
 
     private static void DrawConfirmAndClear()
     {
         ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-        if (!ImGui.CollapsingHeader($"Confirm / Clear Steps##{Main.Name}Confirm / Clear Steps",
-                ImGuiTreeNodeFlags.DefaultOpen)) return;
+
+        if (!ImGui.CollapsingHeader(
+                $"Confirm / Clear Steps##{Main.Name}Confirm / Clear Steps",
+                ImGuiTreeNodeFlags.DefaultOpen
+            ))
+            return;
 
         ImGui.Indent();
+
         if (ImGui.Button("[+] Apply Steps"))
         {
             Main.SelectedCraftingSteps.Clear();
+
             foreach (var input in Main.Settings.SelectedCraftingStepInputs)
             {
                 var newStep = new CraftingStep
                 {
-                    Method = async token =>
-                        await ItemHandler.AsyncTryApplyOrbToSlot(Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab,
-                            input.CurrencyItem,
-                            token),
+                    Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(
+                        Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab,
+                        input.CurrencyItem,
+                        token
+                    ),
                     CheckTiming = input.CheckTiming,
                     AutomaticSuccess = input.AutomaticSuccess,
                     SuccessAction = input.SuccessAction,
@@ -199,10 +238,14 @@ public static class CraftingSequenceMenu
                 foreach (var checkKey in input.ConditionalCheckKeys)
                 {
                     var filter = ItemFilter.LoadFromString(checkKey);
+
                     if (filter.Queries.Count == 0)
                     {
-                        Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from string: {checkKey}",
-                            Enums.WheresMyCraftAt.LogMessageType.Error);
+                        Logging.Logging.Add(
+                            $"CraftingSequenceMenu: Failed to load filter from string: {checkKey}",
+                            Enums.WheresMyCraftAt.LogMessageType.Error
+                        );
+
                         return; // No point going on from here.
                     }
 
@@ -214,10 +257,11 @@ public static class CraftingSequenceMenu
         }
 
         ImGui.SameLine();
+
         if (ImGui.Button("[x] Clear All"))
             ImGui.OpenPopup(DeletePopup);
 
-        if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOOOOP"], out var clearSelectedIndex))
+        if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOP"], out var clearSelectedIndex))
             if (clearSelectedIndex == 0)
             {
                 Main.Settings.SelectedCraftingStepInputs.Clear();
@@ -231,13 +275,18 @@ public static class CraftingSequenceMenu
     private static void DrawFileOptions()
     {
         ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-        if (!ImGui.CollapsingHeader($"Load / Save##{Main.Name}Load / Save", ImGuiTreeNodeFlags.DefaultOpen)) return;
+
+        if (!ImGui.CollapsingHeader($"Load / Save##{Main.Name}Load / Save", ImGuiTreeNodeFlags.DefaultOpen))
+            return;
+
         ImGui.Indent();
         ImGui.InputTextWithHint("##SaveAs", "File Path...", ref _fileSaveName, 100);
         ImGui.SameLine();
+
         if (ImGui.Button("Save To File"))
         {
             _files = GetFiles();
+
             if (_fileSaveName == string.Empty)
                 DebugWindow.LogError($"{Main.Name}: File name must not be empty.", 30);
             else if (_files.Contains(_fileSaveName))
@@ -247,12 +296,15 @@ public static class CraftingSequenceMenu
         }
 
         ImGui.Separator();
+
         if (ImGui.BeginCombo("Load File##LoadFile", _selectedFileName))
         {
             _files = GetFiles();
+
             foreach (var fileName in _files)
             {
                 var isSelected = _selectedFileName == fileName;
+
                 if (ImGui.Selectable(fileName, isSelected))
                 {
                     _selectedFileName = fileName;
@@ -273,15 +325,18 @@ public static class CraftingSequenceMenu
         {
             var configDir = Main.ConfigDirectory;
             var directoryToOpen = Directory.Exists(configDir);
+
             if (!directoryToOpen)
                 DebugWindow.LogError($"{Main.Name}: Config directory does not exist.", 30);
 
-            Process.Start("explorer.exe", configDir);
+            if (configDir != null)
+                Process.Start("explorer.exe", configDir);
         }
 
-        if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOOOOP"], out var saveSelectedIndex))
+        if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOP"], out var saveSelectedIndex))
             if (saveSelectedIndex == 0)
                 SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
+
         ImGui.Unindent();
     }
 
@@ -291,8 +346,12 @@ public static class CraftingSequenceMenu
         var isItemClicked = false;
         var showPopup = true;
 
-        if (!ImGui.BeginPopupModal(popupId, ref showPopup,
-                ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize)) return false;
+        if (!ImGui.BeginPopupModal(
+                popupId,
+                ref showPopup,
+                ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize
+            ))
+            return false;
 
         for (var i = 0; i < items.Count; i++)
         {
@@ -307,7 +366,6 @@ public static class CraftingSequenceMenu
         }
 
         ImGui.EndPopup();
-
         return isItemClicked;
     }
 

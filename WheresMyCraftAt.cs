@@ -1,12 +1,12 @@
-﻿using System;
+﻿using ExileCore;
+using ExileCore.Shared;
+using ExileCore.Shared.Nodes;
+using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using ExileCore;
-using ExileCore.Shared;
-using ExileCore.Shared.Nodes;
-using SharpDX;
 using WheresMyCraftAt.CraftingSequence;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
@@ -25,9 +25,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     };
 
     public Vector2 ClickWindowOffset;
-
     public SyncTask<bool> CurrentOperation;
-
     public CancellationTokenSource OperationCts;
     public List<CraftingStep> SelectedCraftingSteps = [];
     public int ServerLatency;
@@ -42,7 +40,6 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         Main = this;
         RegisterHotkey(Settings.RunButton);
-
         return true;
     }
 
@@ -67,14 +64,17 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         {
             if (CurrentOperation is not null)
             {
-                // Imediate cancelation called, release all buttons.
+                // Immediate cancellation called, release all buttons.
                 // TODO: Get some help on how the hell this works.
                 Stop();
             }
             else
             {
-                Logging.Logging.Add($"{Name}: Attempting to Start New Operation.",
-                    Enums.WheresMyCraftAt.LogMessageType.Info);
+                Logging.Logging.Add(
+                    $"{Name}: Attempting to Start New Operation.",
+                    Enums.WheresMyCraftAt.LogMessageType.Info
+                );
+
                 ResetCancellationTokenSource();
                 CurrentOperation = AsyncStart(OperationCts.Token);
             }
@@ -88,7 +88,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
     public void Stop()
     {
-        if (CurrentOperation is null) return;
+        if (CurrentOperation is null)
+            return;
+
         CurrentOperation = null;
 
         var keysToRelease = new List<Keys>
@@ -112,7 +114,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         if (OperationCts != null)
         {
-            if (!OperationCts.IsCancellationRequested) OperationCts.Cancel();
+            if (!OperationCts.IsCancellationRequested)
+                OperationCts.Cancel();
+
             OperationCts.Dispose();
         }
 
@@ -123,16 +127,22 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         if (!GameHandler.IsInGameCondition())
         {
-            Logging.Logging.Add($"{Name}: Not in game, operation will be terminated.",
-                Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.Add(
+                $"{Name}: Not in game, operation will be terminated.",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
+
             return false;
         }
 
         if (Settings.SelectedCraftingStepInputs.Count == 0 ||
             Settings.SelectedCraftingStepInputs.Any(x => string.IsNullOrEmpty(x.CurrencyItem)))
         {
-            Logging.Logging.Add($"{Name}: No Crafting Steps or currency to use is null, operation will be terminated.",
-                Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.Add(
+                $"{Name}: No Crafting Steps or currency to use is null, operation will be terminated.",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
+
             return false;
         }
 
@@ -163,7 +173,6 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public override void DrawSettings()
     {
         base.DrawSettings();
-
         CraftingSequenceMenu.Draw();
     }
 

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using ExileCore;
+using ExileCore.Shared;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using ExileCore;
-using ExileCore.Shared;
-using Newtonsoft.Json;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;

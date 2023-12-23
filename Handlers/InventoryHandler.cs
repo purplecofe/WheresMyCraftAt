@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using ExileCore.PoEMemory.MemoryObjects;
+﻿using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
@@ -32,7 +32,7 @@ public static class InventoryHandler
 
     public static bool IsInventoryPanelOpenCondition()
     {
-        return ElementHandler.IsIngameUiElementOpenCondition(ui => ui.InventoryPanel);
+        return ElementHandler.IsInGameUiElementOpenCondition(ui => ui.InventoryPanel);
     }
 
     public static bool TryGetPickedUpItem(out Entity pickedUpItem)

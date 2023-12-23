@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
-using ExileCore.PoEMemory;
+﻿using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using System;
+using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
@@ -20,7 +20,7 @@ public static class ElementHandler
         return first.Address == second.Address;
     }
 
-    public static bool IsIngameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector)
+    public static bool IsInGameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector)
     {
         return panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
     }
@@ -33,6 +33,7 @@ public static class ElementHandler
     public static bool TryGetCursorStateCondition(out MouseActionType cursorState)
     {
         var gameController = Main.GameController;
+
         if (gameController?.Game?.IngameState?.IngameUi?.Cursor != null)
         {
             cursorState = gameController.Game.IngameState.IngameUi.Cursor.Action;
@@ -55,12 +56,15 @@ public static class ElementHandler
             {
                 await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                if (!IsElementsSameCondition(elementToChange, GetHoveredElementUiAction()))
-                {
-                    Logging.Logging.Add("AsyncExecuteNotSameElementWithCancellationHandling Pass",
-                        Enums.WheresMyCraftAt.LogMessageType.Success);
-                    return true;
-                }
+                if (IsElementsSameCondition(elementToChange, GetHoveredElementUiAction()))
+                    continue;
+
+                Logging.Logging.Add(
+                    "AsyncExecuteNotSameElementWithCancellationHandling Pass",
+                    Enums.WheresMyCraftAt.LogMessageType.Success
+                );
+
+                return true;
             }
 
             return false;

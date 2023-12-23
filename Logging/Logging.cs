@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using ExileCore;
+﻿using ExileCore;
 using ExileCore.Shared.Helpers;
 using ImGuiNET;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Color = SharpDX.Color;
 using Vector4 = System.Numerics.Vector4;

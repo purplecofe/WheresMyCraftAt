@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ExileCore.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using ExileCore.Shared;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 
@@ -31,8 +31,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 {
                     // All conditions must be true for success
                     success = currentStep.ConditionalChecks.All(condition => condition());
-                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks before method are {success}",
-                        LogMessageType.Success);
+
+                    Logging.Logging.Add(
+                        $"CraftingSequenceStep: All ConditionalChecks before method are {success}",
+                        LogMessageType.Success
+                    );
 
                     if (!success)
                     {
@@ -53,8 +56,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 {
                     // Execute the conditional check after the method, if specified
                     success = currentStep.ConditionalChecks.All(condition => condition());
-                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}",
-                        LogMessageType.Success);
+
+                    Logging.Logging.Add(
+                        $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
+                        LogMessageType.Success
+                    );
                 }
 
                 if (currentStep.AutomaticSuccess)
@@ -64,18 +70,24 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
 
                 stopwatch.Stop(); // Stop timing after the step is executed
+
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Step [{currentStepIndex}] completed in {stopwatch.ElapsedMilliseconds} ms",
-                    LogMessageType.Profiler);
+                    LogMessageType.Profiler
+                );
             }
             catch (Exception ex)
             {
                 Logging.Logging.Add(
                     $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}",
-                    LogMessageType.Error);
+                    LogMessageType.Error
+                );
+
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Step [{currentStepIndex}] failed after {stopwatch.ElapsedMilliseconds} ms",
-                    LogMessageType.Profiler);
+                    LogMessageType.Profiler
+                );
+
                 return false;
             }
 
@@ -83,12 +95,12 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             if (success)
             {
                 Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Success);
+
                 switch (currentStep.SuccessAction)
                 {
                     case SuccessAction.Continue:
                         currentStepIndex++;
                         break;
-
                     case SuccessAction.End:
                         return true; // End the execution of the sequence
                     case SuccessAction.GoToStep:
@@ -99,16 +111,15 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             else
             {
                 Logging.Logging.Add("CraftingSequenceStep: False", LogMessageType.Error);
+
                 switch (currentStep.FailureAction)
                 {
                     case FailureAction.RepeatStep:
                         // Stay on the current step
                         break;
-
                     case FailureAction.Restart:
                         currentStepIndex = 0; // Restart from the first step
                         break;
-
                     case FailureAction.GoToStep:
                         currentStepIndex = currentStep.FailureActionStepIndex;
                         break;

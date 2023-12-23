@@ -1,10 +1,10 @@
-﻿using System;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
+using ExileCore.Shared;
+using ExileCore.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using ExileCore.PoEMemory.Elements.InventoryElements;
-using ExileCore.Shared;
-using ExileCore.Shared.Enums;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
@@ -13,11 +13,7 @@ public static class StashHandler
 {
     public static async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
     {
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-            IsStashPanelOpenCondition,
-            timeout,
-            token
-        );
+        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsStashPanelOpenCondition, timeout, token);
     }
 
     public static InventoryType GetTypeOfCurrentVisibleStash()
@@ -33,7 +29,7 @@ public static class StashHandler
 
     public static bool IsStashPanelOpenCondition()
     {
-        return ElementHandler.IsIngameUiElementOpenCondition(ui => ui.StashElement);
+        return ElementHandler.IsInGameUiElementOpenCondition(ui => ui.StashElement);
     }
 
     public static bool IsVisibleStashValidCondition()
@@ -50,7 +46,6 @@ public static class StashHandler
         return foundItem != null;
     }
 
-
     public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetItemInStash(string currencyName,
         CancellationToken token)
     {
@@ -66,8 +61,8 @@ public static class StashHandler
         return Tuple.Create(result, orbItem);
     }
 
-    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType,
-        CancellationToken token)
+    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetStashSpecialSlot(
+        Enums.WheresMyCraftAt.SpecialSlot slotType, CancellationToken token)
     {
         NormalInventoryItem inventoryItem = null;
 
@@ -81,7 +76,8 @@ public static class StashHandler
         return Tuple.Create(result, inventoryItem);
     }
 
-    public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, out NormalInventoryItem inventoryItem)
+    public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType,
+        out NormalInventoryItem inventoryItem)
     {
         inventoryItem = TryGetVisibleStashInventory(out var stashContents)
             ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType])
@@ -92,7 +88,10 @@ public static class StashHandler
 
     public static bool TryGetVisibleStashInventory(out IList<NormalInventoryItem> inventoryItems)
     {
-        inventoryItems = IsVisibleStashValidCondition() ? GetVisibleStashInventory() : null;
+        inventoryItems = IsVisibleStashValidCondition()
+            ? GetVisibleStashInventory()
+            : null;
+
         return inventoryItems != null;
     }
 }

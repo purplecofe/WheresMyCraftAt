@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using System.Windows.Forms;
-using ExileCore;
+﻿using ExileCore;
 using ExileCore.Shared;
+using System.Threading;
+using System.Windows.Forms;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
@@ -20,7 +20,8 @@ public static class KeyHandler
             () => Input.IsKeyDown(button),
             Main.Settings.ActionTimeoutInSeconds,
             HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
-            token);
+            token
+        );
     }
 
     public static async SyncTask<bool> AsyncIsButtonUp(Keys button, CancellationToken token)
@@ -30,7 +31,8 @@ public static class KeyHandler
             () => !Input.IsKeyDown(button),
             Main.Settings.ActionTimeoutInSeconds,
             HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
-            token);
+            token
+        );
     }
 
     public static async SyncTask<bool> AsyncSetButtonDown(Keys button, CancellationToken token)
@@ -41,7 +43,6 @@ public static class KeyHandler
     public static void PerformButtonAction(Keys button, bool pressDown)
     {
         if (pressDown)
-        {
             switch (button)
             {
                 case Keys.LButton:
@@ -54,9 +55,7 @@ public static class KeyHandler
                     Input.KeyDown(button);
                     break;
             }
-        }
         else
-        {
             switch (button)
             {
                 case Keys.LButton:
@@ -69,6 +68,5 @@ public static class KeyHandler
                     Input.KeyUp(button);
                     break;
             }
-        }
     }
 }

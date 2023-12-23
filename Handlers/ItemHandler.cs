@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using ExileCore.PoEMemory.Components;
+﻿using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using System.Collections.Generic;
+using System.Threading;
 using WheresMyCraftAt.Extensions;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -12,9 +12,11 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class ItemHandler
 {
-    public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName, CancellationToken token)
+    public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName,
+        CancellationToken token)
     {
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
+
         if (!asyncResult.Item1)
             return false;
 
@@ -55,11 +57,19 @@ public static class ItemHandler
     {
         if (item.TryGetComponent<Mods>(out var modsComp))
         {
-            Logging.Logging.Add($"GetRarityFromItem: {modsComp.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.Special);
+            Logging.Logging.Add(
+                $"GetRarityFromItem: {modsComp.ItemRarity}",
+                Enums.WheresMyCraftAt.LogMessageType.Special
+            );
+
             return modsComp.ItemRarity;
         }
 
-        Logging.Logging.Add("GetRarityFromItem: Could not get mods component from item.", Enums.WheresMyCraftAt.LogMessageType.Error);
+        Logging.Logging.Add(
+            "GetRarityFromItem: Could not get mods component from item.",
+            Enums.WheresMyCraftAt.LogMessageType.Error
+        );
+
         return ItemRarity.Normal;
     }
 

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ExileCore.Shared;
+using System;
 using System.Threading;
-using ExileCore.Shared;
 
 namespace WheresMyCraftAt.Handlers;
 
@@ -18,7 +18,8 @@ public static class ExecuteHandler
             {
                 await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                if (condition()) return true;
+                if (condition())
+                    return true;
             }
 
             return false;
@@ -42,7 +43,8 @@ public static class ExecuteHandler
                 action();
                 await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
-                if (condition()) return true;
+                if (condition())
+                    return true;
             }
 
             return false;
@@ -65,7 +67,8 @@ public static class ExecuteHandler
             {
                 await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
 
-                if (condition()) return true;
+                if (condition())
+                    return true;
             }
 
             return false;
@@ -89,7 +92,8 @@ public static class ExecuteHandler
                 action();
                 await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
 
-                if (condition()) return true;
+                if (condition())
+                    return true;
             }
 
             return false;
