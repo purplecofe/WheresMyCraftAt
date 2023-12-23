@@ -1,0 +1,100 @@
+[
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": false,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 5,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalsToBePassForSuccess": 1,
+    "Conditionals": [
+      {
+        "Name": "1 or more life",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+      },
+      {
+        "Name": "1 or more mana",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalsToBePassForSuccess": 1,
+    "Conditionals": [
+      {
+        "Name": "Open Prefix",
+        "Value": "ModsInfo.Prefixes.Count <= 2"
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Augmentation",
+    "AutomaticSuccess": false,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 5,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 0,
+    "ConditionalsToBePassForSuccess": 1,
+    "Conditionals": [
+      {
+        "Name": "1 or more life",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+      },
+      {
+        "Name": "1 or more mana",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Orb of Scouring",
+    "AutomaticSuccess": true,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalsToBePassForSuccess": 1,
+    "Conditionals": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Orb of Transmutation",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 0,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalsToBePassForSuccess": 1,
+    "Conditionals": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Regal Orb",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 3,
+    "ConditionalsToBePassForSuccess": 2,
+    "Conditionals": [
+      {
+        "Name": "1 or more life",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+      },
+      {
+        "Name": "1 or more mana",
+        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+      }
+    ],
+    "CheckType": 0
+  }
+]

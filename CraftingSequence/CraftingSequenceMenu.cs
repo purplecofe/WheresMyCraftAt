@@ -45,7 +45,7 @@ public static class CraftingSequenceMenu
             // Use a colored, collapsible header for each step
             ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
 
-            if (ImGui.CollapsingHeader($"STEP [{i}]##header{i}", ImGuiTreeNodeFlags.DefaultOpen))
+            if (ImGui.CollapsingHeader($"STEP [{i + 1}]##header{i}", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 #region Step Settings
 
@@ -55,33 +55,36 @@ public static class CraftingSequenceMenu
                 var dropdownWidth = availableWidth * 0.6f;
                 var inputWidth = availableWidth * 0.4f;
 
-                // Currency Item Input
-                var currencyItem = stepInput.CurrencyItem;
-
-                if (ImGui.InputTextWithHint(
-                        $"Currency Item##{i}",
-                        "Case Sensitive Currency BaseName \"Orb of Transmutation\"...",
-                        ref currencyItem,
-                        100
-                    ))
-                    stepInput.CurrencyItem = currencyItem;
-
-                // Automatic Success Checkbox
-                var autoSuccess = stepInput.AutomaticSuccess;
-
-                if (ImGui.Checkbox($"Automatic Success##{i}", ref autoSuccess))
-                    stepInput.AutomaticSuccess = autoSuccess;
-
                 // Check Timing Combo Box
-                var checkTimingIndex = (int)stepInput.CheckTiming;
+                var checkTimingIndex = (int)stepInput.CheckType;
 
                 if (ImGui.Combo(
-                        $"Check Conditionals When##{i}",
+                        $" Method Type##{i}",
                         ref checkTimingIndex,
-                        Enum.GetNames(typeof(ConditionalCheckTiming)),
-                        GetEnumLength<ConditionalCheckTiming>()
+                        Enum.GetNames(typeof(ConditionalCheckType)),
+                        GetEnumLength<ConditionalCheckType>()
                     ))
-                    stepInput.CheckTiming = (ConditionalCheckTiming)checkTimingIndex;
+                    stepInput.CheckType = (ConditionalCheckType)checkTimingIndex;
+
+                if (stepInput.CheckType != ConditionalCheckType.ConditionalCheckOnly)
+                {
+                    // Currency Item Input
+                    var currencyItem = stepInput.CurrencyItem;
+
+                    if (ImGui.InputTextWithHint(
+                            $"Currency Item##{i}",
+                            "Case Sensitive Currency BaseName \"Orb of Transmutation\"...",
+                            ref currencyItem,
+                            100
+                        ))
+                        stepInput.CurrencyItem = currencyItem;
+
+                    // Automatic Success Checkbox
+                    var autoSuccess = stepInput.AutomaticSuccess;
+
+                    if (ImGui.Checkbox($"Automatic Success##{i}", ref autoSuccess))
+                        stepInput.AutomaticSuccess = autoSuccess;
+                }
 
                 // Success Action
                 var successActionIndex = (int)stepInput.SuccessAction;
@@ -107,30 +110,23 @@ public static class CraftingSequenceMenu
 
                     // Generate step names, excluding the current step
                     var stepNames = new List<string>();
-
                     for (var step = 0; step < currentSteps.Count; step++)
+                    {
                         if (step != i) // Exclude the current step
-                            stepNames.Add($"STEP [{step}]");
+                        {
+                            stepNames.Add($"STEP [{step + 1}]");
+                        }
+                    }
 
-                    // Convert successActionStepIndex to index in stepNames
-                    var dropdownIndex = stepNames.IndexOf($"STEP [{successActionStepIndex}]");
-
-                    if (dropdownIndex < 0)
-                        dropdownIndex = 0; // Fallback if not found
+                    // Initialize dropdownIndex based on the successActionStepIndex
+                    var dropdownIndex = (successActionStepIndex >= i && successActionStepIndex < currentSteps.Count) ? successActionStepIndex - 1 : successActionStepIndex;
 
                     var comboItems = string.Join('\0', stepNames) + '\0';
 
                     if (ImGui.Combo($"##SuccessStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                     {
-                        // Parse the selected step index from the step name
-                        var selectedStepName = stepNames[dropdownIndex];
-
-                        var selectedStepIndex = int.Parse(
-                            selectedStepName.Substring(
-                                selectedStepName.IndexOf('[') + 1,
-                                selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
-                            )
-                        );
+                        // Adjust the selectedStepIndex based on the current step's position
+                        var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
 
                         stepInput.SuccessActionStepIndex = selectedStepIndex;
                     }
@@ -168,33 +164,27 @@ public static class CraftingSequenceMenu
 
                         // Generate step names, excluding the current step
                         var stepNames = new List<string>();
-
                         for (var step = 0; step < currentSteps.Count; step++)
+                        {
                             if (step != i) // Exclude the current step
-                                stepNames.Add($"STEP [{step}]");
+                            {
+                                stepNames.Add($"STEP [{step + 1}]");
+                            }
+                        }
 
-                        // Convert failureActionStepIndex to index in stepNames
-                        var dropdownIndex = stepNames.IndexOf($"STEP [{failureActionStepIndex}]");
-
-                        if (dropdownIndex < 0)
-                            dropdownIndex = 0; // Fallback if not found
+                        // Initialize dropdownIndex based on the failureActionStepIndex
+                        var dropdownIndex = (failureActionStepIndex >= i && failureActionStepIndex < currentSteps.Count) ? failureActionStepIndex - 1 : failureActionStepIndex;
 
                         var comboItems = string.Join('\0', stepNames) + '\0';
 
                         if (ImGui.Combo($"##FailureStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                         {
-                            // Parse the selected step index from the step name
-                            var selectedStepName = stepNames[dropdownIndex];
-
-                            var selectedStepIndex = int.Parse(
-                                selectedStepName.Substring(
-                                    selectedStepName.IndexOf('[') + 1,
-                                    selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
-                                )
-                            );
+                            // Adjust the selectedStepIndex based on the current step's position
+                            var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
 
                             stepInput.FailureActionStepIndex = selectedStepIndex;
                         }
+
                     }
 
                     #endregion
@@ -222,6 +212,46 @@ public static class CraftingSequenceMenu
                     }
 
                     ImGui.Indent();
+
+                    // Generate a list of step names, excluding the current step for dropdown selection
+                    var stepNamesForDropdown = new List<string>();
+
+                    for (var step = 0; step < currentSteps.Count; step++)
+                        if (step != i) // Exclude the current step
+                            stepNamesForDropdown.Add($"STEP [{step + 1}]");
+
+                    // Concatenate step names into a single string for the dropdown items
+                    var dropdownItemsForCopy = string.Join('\0', stepNamesForDropdown) + '\0';
+                    var currentStepIndex = -1; // Initialize to -1 to indicate no selection
+
+                    // Create a dropdown for selecting a step to copy conditionals from
+                    if (ImGui.Combo(
+                            $"Copy Conditionals From##CopyConditionsFrom{i}",
+                            ref currentStepIndex,
+                            dropdownItemsForCopy,
+                            stepNamesForDropdown.Count
+                        ))
+                        // Dropdown selection made, parse the selected step index
+                        if (currentStepIndex >= 0 && currentStepIndex < stepNamesForDropdown.Count)
+                        {
+                            var selectedStepName = stepNamesForDropdown[currentStepIndex];
+
+                            var parsedIndex = int.Parse(
+                                selectedStepName.Substring(
+                                    selectedStepName.IndexOf('[') + 1,
+                                    selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
+                                )
+                            );
+
+                            // Since step labels are 1-indexed (STEP [1], STEP [2], etc.), 
+                            // subtract 1 to get the actual 0-indexed step
+                            var selectedStepIndex = parsedIndex - 1;
+
+                            // Assign conditionals from the selected step to the current step's conditionals
+                            if (selectedStepIndex >= 0 && selectedStepIndex < currentSteps.Count)
+                                stepInput.Conditionals = currentSteps[selectedStepIndex].Conditionals;
+                        }
+
                     var checksToRemove = new List<int>(); // Track checks to remove
 
                     for (var j = 0; j < stepInput.Conditionals.Count; j++)
@@ -252,6 +282,8 @@ public static class CraftingSequenceMenu
                         ConditionValueEditPopup(showPopup, i, j, stepInput);
                     }
 
+                    ImGui.Unindent();
+
                     foreach (var index in checksToRemove.OrderByDescending(j => j))
                     {
                         if (stepInput.Conditionals.Count >= stepInput.ConditionalsToBePassForSuccess &&
@@ -260,14 +292,13 @@ public static class CraftingSequenceMenu
 
                         stepInput.Conditionals.RemoveAt(index); // Remove marked checks
                     }
-
-                    ImGui.Unindent();
                 }
 
                 ImGui.Separator();
 
                 if (ImGui.Button($"[+] Insert Step Above##{i}"))
                 {
+                    // Manually initialize the Conditionals
                     currentSteps.Insert(i, new CraftingStepInput());
                     continue;
                 }
@@ -282,6 +313,7 @@ public static class CraftingSequenceMenu
                 }
 
                 ImGui.Separator();
+                ImGui.Unindent();
 
                 #endregion Step Settings
             }
@@ -289,8 +321,6 @@ public static class CraftingSequenceMenu
             {
                 ImGui.PopStyleColor();
             }
-
-            ImGui.Unindent();
         }
 
         Main.Settings.SelectedCraftingStepInputs = currentSteps;
@@ -379,7 +409,7 @@ public static class CraftingSequenceMenu
                         input.CurrencyItem,
                         token
                     ),
-                    CheckTiming = input.CheckTiming,
+                    CheckType = input.CheckType,
                     AutomaticSuccess = input.AutomaticSuccess,
                     SuccessAction = input.SuccessAction,
                     SuccessActionStepIndex = input.SuccessActionStepIndex,
@@ -391,12 +421,15 @@ public static class CraftingSequenceMenu
 
                 foreach (var checkKey in input.Conditionals)
                 {
+                    if (input.AutomaticSuccess)
+                        continue;
+
                     var filter = ItemFilter.LoadFromString(checkKey.Value);
 
                     if (filter.Queries.Count == 0)
                     {
                         Logging.Logging.Add(
-                            $"CraftingSequenceMenu: Failed to load filter from string: {checkKey}",
+                            $"CraftingSequenceMenu: Failed to load filter from string: {checkKey.Name}",
                             Enums.WheresMyCraftAt.LogMessageType.Error
                         );
 

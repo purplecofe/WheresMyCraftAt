@@ -4,6 +4,7 @@ using ExileCore.Shared.Nodes;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -139,8 +140,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return false;
         }
 
-        if (Settings.SelectedCraftingStepInputs.Count == 0 ||
-            Settings.SelectedCraftingStepInputs.Any(x => string.IsNullOrEmpty(x.CurrencyItem)))
+        if (Settings.SelectedCraftingStepInputs.Count == 0 || Settings.SelectedCraftingStepInputs.Any(
+                x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)
+            ))
         {
             Logging.Logging.Add(
                 $"{Name}: No Crafting Steps or currency to use is null, operation will be terminated.",

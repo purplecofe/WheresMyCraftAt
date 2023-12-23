@@ -19,7 +19,7 @@ public static class FilterHandler
 
     public static bool IsItemMatchingCondition(Entity item, ItemFilter filterQuery)
     {
-        ItemHandler.PrintHumanModListFromItem(item);
+        //ItemHandler.PrintHumanModListFromItem(item);
         var itemData = new CustomItemData(item, Main.GameController);
         var result = filterQuery.Matches(itemData);
         Logging.Logging.Add($"IsItemMatchingCondition = {result}", Enums.WheresMyCraftAt.LogMessageType.Special);

@@ -23,11 +23,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
             try
             {
-                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex}]", LogMessageType.Info);
+                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex+1}]", LogMessageType.Info);
                 stopwatch.Restart(); // Start timing
 
                 if (currentStep.ConditionalChecks.Count != 0 &&
-                    currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
+                    currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
                     success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
@@ -52,7 +52,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
 
                 if (currentStep.ConditionalChecks.Count != 0 &&
-                    currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
+                    currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
                     success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
@@ -72,19 +72,19 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 stopwatch.Stop(); // Stop timing after the step is executed
 
                 Logging.Logging.Add(
-                    $"CraftingSequenceStep: Step [{currentStepIndex}] completed in {stopwatch.ElapsedMilliseconds} ms",
+                    $"CraftingSequenceStep: Step [{currentStepIndex+1}] completed in {stopwatch.ElapsedMilliseconds} ms",
                     LogMessageType.Profiler
                 );
             }
             catch (Exception ex)
             {
                 Logging.Logging.Add(
-                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex}:\n{ex}",
+                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex+1}:\n{ex}",
                     LogMessageType.Error
                 );
 
                 Logging.Logging.Add(
-                    $"CraftingSequenceStep: Step [{currentStepIndex}] failed after {stopwatch.ElapsedMilliseconds} ms",
+                    $"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms",
                     LogMessageType.Profiler
                 );
 
@@ -126,7 +126,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
             }
 
-            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex}]", LogMessageType.Info);
+            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex+1}]", LogMessageType.Info);
         }
 
         return true;

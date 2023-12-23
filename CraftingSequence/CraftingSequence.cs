@@ -12,10 +12,10 @@ namespace WheresMyCraftAt.CraftingSequence;
 
 public class CraftingSequence
 {
-    public enum ConditionalCheckTiming
+    public enum ConditionalCheckType
     {
-        BeforeMethodRun,
-        AfterMethodRun
+        ModifyThenCheck,
+        ConditionalCheckOnly
     }
 
     public enum FailureAction
@@ -67,7 +67,7 @@ public class CraftingSequence
         public Func<CancellationToken, SyncTask<bool>> Method { get; set; }
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
         public List<Func<bool>> ConditionalChecks { get; set; } = [];
-        public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
+        public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
         public bool AutomaticSuccess { get; set; } = false;
         public SuccessAction SuccessAction { get; set; }
         public int SuccessActionStepIndex { get; set; }
@@ -85,7 +85,7 @@ public class CraftingSequence
         public int FailureActionStepIndex { get; set; } = 1;
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
         public List<ConditionalKeys> Conditionals { get; set; } = [];
-        public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
+        public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
     }
 
     public class ConditionalKeys
