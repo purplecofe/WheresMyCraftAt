@@ -144,6 +144,23 @@ public static class CraftingSequenceMenu
                     if (ImGui.Button($"Add Conditional Check##{i}"))
                         stepInput.Conditionals.Add(new ConditionalKeys()); // Add a new empty string to be filled out
 
+                    ImGui.SameLine();
+                    ImGui.SetNextItemWidth(200);
+                    var conditionalChecksTrue = stepInput.ConditionalsToBePassForSuccess;
+
+                    // User input
+                    if (ImGui.InputInt($"Req Checks to Pass##conditionalChecksTrue{i}", ref conditionalChecksTrue))
+                    {
+                        // Clamp the value between 1 and the number of conditional checks
+                        conditionalChecksTrue = Math.Max(
+                            1,
+                            Math.Min(conditionalChecksTrue, stepInput.Conditionals.Count)
+                        );
+
+                        // Update the stepInput with the clamped value
+                        stepInput.ConditionalsToBePassForSuccess = conditionalChecksTrue;
+                    }
+
                     ImGui.Indent();
                     var checksToRemove = new List<int>(); // Track checks to remove
 
@@ -165,18 +182,24 @@ public static class CraftingSequenceMenu
                         var showPopup = true;
 
                         // Initialize both tempCondValue and condEditValue when opening the popup
-                        if (ImGui.Button("Edit"))
+                        if (ImGui.Button($"Edit##{i}_{j}"))
                         {
                             condEditValue = stepInput.Conditionals[j].Value;
                             tempCondValue = condEditValue;
-                            ImGui.OpenPopup(FilterEditPopup);
+                            ImGui.OpenPopup(FilterEditPopup + $"##conditionalEditPopup{i}_{j}");
                         }
 
                         ConditionValueEditPopup(showPopup, i, j, stepInput);
                     }
 
                     foreach (var index in checksToRemove.OrderByDescending(j => j))
+                    {
+                        if (stepInput.Conditionals.Count >= stepInput.ConditionalsToBePassForSuccess &&
+                            stepInput.ConditionalsToBePassForSuccess > 1)
+                            stepInput.ConditionalsToBePassForSuccess--; // Decrement the required checks to pass
+
                         stepInput.Conditionals.RemoveAt(index); // Remove marked checks
+                    }
 
                     ImGui.Unindent();
                 }
@@ -221,7 +244,11 @@ public static class CraftingSequenceMenu
 
     private static void ConditionValueEditPopup(bool showPopup, int i, int j, CraftingStepInput stepInput)
     {
-        if (!ImGui.BeginPopupModal(FilterEditPopup, ref showPopup, ImGuiWindowFlags.AlwaysAutoResize))
+        if (!ImGui.BeginPopupModal(
+                FilterEditPopup + $"##conditionalEditPopup{i}_{j}",
+                ref showPopup,
+                ImGuiWindowFlags.AlwaysAutoResize
+            ))
             return;
 
         ImGui.InputTextMultiline(
@@ -282,6 +309,7 @@ public static class CraftingSequenceMenu
                     SuccessActionStepIndex = input.SuccessActionStepIndex,
                     FailureAction = input.FailureAction,
                     FailureActionStepIndex = input.FailureActionStepIndex,
+                    ConditionalsToBePassForSuccess = input.ConditionalsToBePassForSuccess,
                     ConditionalChecks = []
                 };
 

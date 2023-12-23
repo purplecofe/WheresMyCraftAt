@@ -65,6 +65,7 @@ public class CraftingSequence
     public class CraftingStep
     {
         public Func<CancellationToken, SyncTask<bool>> Method { get; set; }
+        public int ConditionalsToBePassForSuccess { get; set; } = 1;
         public List<Func<bool>> ConditionalChecks { get; set; } = [];
         public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
         public bool AutomaticSuccess { get; set; } = false;
@@ -82,6 +83,7 @@ public class CraftingSequence
         public int SuccessActionStepIndex { get; set; } = 1;
         public FailureAction FailureAction { get; set; } = FailureAction.Restart;
         public int FailureActionStepIndex { get; set; } = 1;
+        public int ConditionalsToBePassForSuccess { get; set; } = 1;
         public List<ConditionalKeys> Conditionals { get; set; } = [];
         public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
     }

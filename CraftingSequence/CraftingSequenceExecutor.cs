@@ -29,8 +29,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 if (currentStep.ConditionalChecks.Count != 0 &&
                     currentStep.CheckTiming == ConditionalCheckTiming.BeforeMethodRun)
                 {
-                    // All conditions must be true for success
-                    success = currentStep.ConditionalChecks.All(condition => condition());
+                    // Count how many conditions are true and check if it meets or exceeds the required count
+                    success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks before method are {success}",
@@ -54,8 +54,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 if (currentStep.ConditionalChecks.Count != 0 &&
                     currentStep.CheckTiming == ConditionalCheckTiming.AfterMethodRun)
                 {
-                    // Execute the conditional check after the method, if specified
-                    success = currentStep.ConditionalChecks.All(condition => condition());
+                    // Count how many conditions are true and check if it meets or exceeds the required count
+                    success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
