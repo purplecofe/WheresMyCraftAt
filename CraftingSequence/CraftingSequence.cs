@@ -82,8 +82,13 @@ public class CraftingSequence
         public int SuccessActionStepIndex { get; set; } = 1;
         public FailureAction FailureAction { get; set; } = FailureAction.Restart;
         public int FailureActionStepIndex { get; set; } = 1;
-        public List<string> ConditionalCheckKeys { get; set; } = [];
-        public List<string> ConditionalCheckKeysMultiLine { get; set; } = [];
+        public List<ConditionalKeys> Conditionals { get; set; } = [];
         public ConditionalCheckTiming CheckTiming { get; set; } = ConditionalCheckTiming.AfterMethodRun;
+    }
+
+    public class ConditionalKeys
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
     }
 }

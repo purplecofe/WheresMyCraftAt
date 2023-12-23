@@ -1,7 +1,7 @@
-﻿using ExileCore.Shared;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using ExileCore.Shared;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -16,9 +17,12 @@ public static class CraftingSequenceMenu
 {
     private const string DeletePopup = "Delete Confirmation";
     private const string OverwritePopup = "Overwrite Confirmation";
+    private const string FilterEditPopup = "Filter (Multi-Line)";
     private static string _fileSaveName = string.Empty;
     private static List<string> _files = [];
     private static string _selectedFileName = string.Empty;
+    private static string tempCondValue = string.Empty;
+    private static string condEditValue = string.Empty;
 
     public static void Draw()
     {
@@ -135,12 +139,12 @@ public static class CraftingSequenceMenu
 
                     // Manage Conditional Checks
                     if (ImGui.Button($"Add Conditional Check##{i}"))
-                        stepInput.ConditionalCheckKeys.Add(""); // Add a new empty string to be filled out
+                        stepInput.Conditionals.Add(new ConditionalKeys()); // Add a new empty string to be filled out
 
                     ImGui.Indent();
                     var checksToRemove = new List<int>(); // Track checks to remove
 
-                    for (var j = 0; j < stepInput.ConditionalCheckKeys.Count; j++)
+                    for (var j = 0; j < stepInput.Conditionals.Count; j++)
                     {
                         if (ImGui.Button($"Remove##{i}_{j}"))
                         {
@@ -149,19 +153,27 @@ public static class CraftingSequenceMenu
                         }
 
                         ImGui.SameLine();
-                        var checkKey = stepInput.ConditionalCheckKeys[j];
+                        var checkKey = stepInput.Conditionals[j].Name;
 
-                        if (ImGui.InputTextWithHint(
-                                $"Condition [{j}]##{i}_{j}",
-                                "ItemFilterLibrary filter string...",
-                                ref checkKey,
-                                1000
-                            ))
-                            stepInput.ConditionalCheckKeys[j] = checkKey; // Update the check key
+                        if (ImGui.InputTextWithHint($"##{i}_{j}", "Name of condition...", ref checkKey, 1000))
+                            stepInput.Conditionals[j].Name = checkKey; // Update the check key
+
+                        ImGui.SameLine();
+                        var showPopup = true;
+
+                        // Initialize both tempCondValue and condEditValue when opening the popup
+                        if (ImGui.Button("Edit"))
+                        {
+                            condEditValue = stepInput.Conditionals[j].Value;
+                            tempCondValue = condEditValue;
+                            ImGui.OpenPopup(FilterEditPopup);
+                        }
+
+                        ConditionValueEditPopup(showPopup, i, j, stepInput);
                     }
 
                     foreach (var index in checksToRemove.OrderByDescending(j => j))
-                        stepInput.ConditionalCheckKeys.RemoveAt(index); // Remove marked checks
+                        stepInput.Conditionals.RemoveAt(index); // Remove marked checks
 
                     ImGui.Unindent();
                 }
@@ -201,6 +213,32 @@ public static class CraftingSequenceMenu
             Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
     }
 
+    private static void ConditionValueEditPopup(bool showPopup, int i, int j, CraftingStepInput stepInput)
+    {
+        if (!ImGui.BeginPopupModal(FilterEditPopup, ref showPopup, ImGuiWindowFlags.AlwaysAutoResize))
+            return;
+
+        ImGui.InputTextMultiline($"##text{i}_{j}", ref tempCondValue, 15000, new Vector2(800, 600));
+
+        if (ImGui.Button("Save"))
+        {
+            stepInput.Conditionals[j].Value = tempCondValue;
+            ImGui.CloseCurrentPopup();
+        }
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Revert"))
+            tempCondValue = condEditValue;
+
+        ImGui.SameLine();
+
+        if (ImGui.Button("Close"))
+            ImGui.CloseCurrentPopup();
+
+        ImGui.EndPopup();
+    }
+
     private static void DrawConfirmAndClear()
     {
         ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
@@ -235,9 +273,9 @@ public static class CraftingSequenceMenu
                     ConditionalChecks = []
                 };
 
-                foreach (var checkKey in input.ConditionalCheckKeys)
+                foreach (var checkKey in input.Conditionals)
                 {
-                    var filter = ItemFilter.LoadFromString(checkKey);
+                    var filter = ItemFilter.LoadFromString(checkKey.Value);
 
                     if (filter.Queries.Count == 0)
                     {

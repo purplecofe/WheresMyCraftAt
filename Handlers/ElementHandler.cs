@@ -1,9 +1,9 @@
-﻿using ExileCore.PoEMemory;
+﻿using System;
+using System.Threading;
+using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
-using System;
-using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
