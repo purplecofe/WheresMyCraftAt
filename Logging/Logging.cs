@@ -28,16 +28,14 @@ public static class Logging
 
     public static void Render()
     {
-        if (!Main.Settings.ShowLogWindow)
-            return;
-
         using var fontPush = Main.Graphics.UseCurrentFont();
         var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
 
         if (Main.CurrentOperation is not null)
             flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
 
-        ImGui.Begin("WheresMyCraftAt Logs", flags);
+        var isOpen = Main.Settings.ShowLogWindow.Value;
+        ImGui.Begin("WheresMyCraftAt Logs", ref isOpen, flags);
 
         lock (Locker)
         {

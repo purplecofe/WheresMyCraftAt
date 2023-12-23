@@ -224,7 +224,13 @@ public static class CraftingSequenceMenu
         if (!ImGui.BeginPopupModal(FilterEditPopup, ref showPopup, ImGuiWindowFlags.AlwaysAutoResize))
             return;
 
-        ImGui.InputTextMultiline($"##text{i}_{j}", ref tempCondValue, 15000, new Vector2(800, 600));
+        ImGui.InputTextMultiline(
+            $"##text{i}_{j}",
+            ref tempCondValue,
+            15000,
+            new Vector2(800, 600),
+            ImGuiInputTextFlags.AllowTabInput
+        );
 
         if (ImGui.Button("Save"))
         {
