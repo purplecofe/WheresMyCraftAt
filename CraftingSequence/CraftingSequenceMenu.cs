@@ -97,15 +97,46 @@ public static class CraftingSequenceMenu
                     ))
                     stepInput.SuccessAction = (SuccessAction)successActionIndex;
 
+                #region SuccessStepSelectorIndex
+
                 if (stepInput.SuccessAction == SuccessAction.GoToStep)
                 {
                     ImGui.SameLine();
                     var successActionStepIndex = stepInput.SuccessActionStepIndex;
                     ImGui.SetNextItemWidth(inputWidth);
 
-                    if (ImGui.InputInt($"##SuccessStepIndex{i}", ref successActionStepIndex))
-                        stepInput.SuccessActionStepIndex = successActionStepIndex;
+                    // Generate step names, excluding the current step
+                    var stepNames = new List<string>();
+
+                    for (var step = 0; step < currentSteps.Count; step++)
+                        if (step != i) // Exclude the current step
+                            stepNames.Add($"STEP [{step}]");
+
+                    // Convert successActionStepIndex to index in stepNames
+                    var dropdownIndex = stepNames.IndexOf($"STEP [{successActionStepIndex}]");
+
+                    if (dropdownIndex < 0)
+                        dropdownIndex = 0; // Fallback if not found
+
+                    var comboItems = string.Join('\0', stepNames) + '\0';
+
+                    if (ImGui.Combo($"##SuccessStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
+                    {
+                        // Parse the selected step index from the step name
+                        var selectedStepName = stepNames[dropdownIndex];
+
+                        var selectedStepIndex = int.Parse(
+                            selectedStepName.Substring(
+                                selectedStepName.IndexOf('[') + 1,
+                                selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
+                            )
+                        );
+
+                        stepInput.SuccessActionStepIndex = selectedStepIndex;
+                    }
                 }
+
+                #endregion
 
                 ImGui.SameLine();
                 ImGui.Text("On Success");
@@ -127,15 +158,46 @@ public static class CraftingSequenceMenu
                         ))
                         stepInput.FailureAction = (FailureAction)failureActionIndex;
 
+                    #region FailureStepSelectorIndex
+
                     if (stepInput.FailureAction == FailureAction.GoToStep)
                     {
                         ImGui.SameLine();
                         var failureActionStepIndex = stepInput.FailureActionStepIndex;
                         ImGui.SetNextItemWidth(inputWidth);
 
-                        if (ImGui.InputInt($"##FailureStepIndex{i}", ref failureActionStepIndex))
-                            stepInput.FailureActionStepIndex = failureActionStepIndex;
+                        // Generate step names, excluding the current step
+                        var stepNames = new List<string>();
+
+                        for (var step = 0; step < currentSteps.Count; step++)
+                            if (step != i) // Exclude the current step
+                                stepNames.Add($"STEP [{step}]");
+
+                        // Convert failureActionStepIndex to index in stepNames
+                        var dropdownIndex = stepNames.IndexOf($"STEP [{failureActionStepIndex}]");
+
+                        if (dropdownIndex < 0)
+                            dropdownIndex = 0; // Fallback if not found
+
+                        var comboItems = string.Join('\0', stepNames) + '\0';
+
+                        if (ImGui.Combo($"##FailureStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
+                        {
+                            // Parse the selected step index from the step name
+                            var selectedStepName = stepNames[dropdownIndex];
+
+                            var selectedStepIndex = int.Parse(
+                                selectedStepName.Substring(
+                                    selectedStepName.IndexOf('[') + 1,
+                                    selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
+                                )
+                            );
+
+                            stepInput.FailureActionStepIndex = selectedStepIndex;
+                        }
                     }
+
+                    #endregion
 
                     ImGui.SameLine();
                     ImGui.Text("On Failure");
@@ -277,7 +339,7 @@ public static class CraftingSequenceMenu
 
         var conditionalNames = conditionals.Select(
                                                (c, index) => string.IsNullOrEmpty(c.Name)
-                                                   ? $"Unnamed Conditional {index+1}"
+                                                   ? $"Unnamed Conditional {index + 1}"
                                                    : c.Name
                                            )
                                            .ToArray();
