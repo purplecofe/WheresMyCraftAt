@@ -18,9 +18,12 @@ public static class CraftingSequenceMenu
     private const string DeletePopup = "Delete Confirmation";
     private const string OverwritePopup = "Overwrite Confirmation";
     private const string FilterEditPopup = "Filter (Multi-Line)";
-    private static string _fileSaveName = string.Empty;
+
+    // Load last saved for both on initialization as its less confusing
+    private static string _fileSaveName = Main.Settings.CraftingSequenceLastSaved;
+    private static string _selectedFileName = Main.Settings.CraftingSequenceLastSaved;
+
     private static List<string> _files = [];
-    private static string _selectedFileName = string.Empty;
     private static string tempCondValue = string.Empty;
     private static string condEditValue = string.Empty;
 
@@ -211,6 +214,9 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("[=] Add New Step"))
             Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
+
+        Main.Settings.CraftingSequenceLastSaved = _fileSaveName;
+        Main.Settings.CraftingSequenceLastSelected = _selectedFileName;
     }
 
     private static void ConditionValueEditPopup(bool showPopup, int i, int j, CraftingStepInput stepInput)

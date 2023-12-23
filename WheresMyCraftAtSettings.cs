@@ -20,5 +20,7 @@ public class WheresMyCraftAtSettings : ISettings
         new Vector2(600, 600)
     );
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
+    public string CraftingSequenceLastSaved { get; set; } = "";
+    public string CraftingSequenceLastSelected { get; set; } = "";
     public List<CraftingSequence.CraftingSequence.CraftingStepInput> SelectedCraftingStepInputs { get; set; } = [];
 }
