@@ -441,6 +441,10 @@ public static class CraftingSequenceMenu
         {
             _files = GetFiles();
 
+            // Sanitize the file name by replacing invalid characters
+            foreach (var c in Path.GetInvalidFileNameChars())
+                _fileSaveName = _fileSaveName.Replace(c, '_');
+
             if (_fileSaveName == string.Empty)
                 DebugWindow.LogError($"{Main.Name}: File name must not be empty.", 30);
             else if (_files.Contains(_fileSaveName))
