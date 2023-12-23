@@ -479,7 +479,7 @@ public static class CraftingSequenceMenu
 
         ImGui.Separator();
 
-        if (ImGui.Button("Open Build Folder"))
+        if (ImGui.Button("Open Crafting Template Folder"))
         {
             var configDir = Main.ConfigDirectory;
             var directoryToOpen = Directory.Exists(configDir);
