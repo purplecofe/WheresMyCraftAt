@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading;
-using ExileCore.PoEMemory;
+﻿using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
-using System.Runtime.InteropServices;
+using System;
+using System.Threading;
 using WheresMyCraftAt.Extensions;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
@@ -43,39 +43,8 @@ public static class ElementHandler
             return true;
         }
 
-        cursorState = MouseActionType.HoldItemForSell; // Default value if the state cannot be retrieved
+        cursorState = MouseActionType.HoldItemForSell;
         return false;
-    }
-
-    public static async SyncTask<bool> AsyncExecuteNotSameElementWithCancellationHandling(Element elementToChange,
-        int timeoutS, CancellationToken token)
-    {
-        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
-
-        try
-        {
-            while (!ctsTimeout.Token.IsCancellationRequested)
-            {
-                await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
-
-                if (IsElementsSameCondition(elementToChange, GetHoveredElementUiAction()))
-                    continue;
-
-                Logging.Logging.Add(
-                    "AsyncExecuteNotSameElementWithCancellationHandling Pass",
-                    Enums.WheresMyCraftAt.LogMessageType.Success
-                );
-
-                return true;
-            }
-
-            return false;
-        }
-        catch (OperationCanceledException)
-        {
-            return false;
-        }
     }
 
     public static async SyncTask<bool> AsyncExecuteNotSameItemWithCancellationHandling(long itemToChange, int timeoutS,
@@ -94,25 +63,35 @@ public static class ElementHandler
                 if (HelperHandler.IsAddressSameCondition(itemToChange, hoveredEntity))
                 {
                     Logging.Logging.Add(
-                        $"AsyncExecuteNotSameItemWithCancellationHandling !IsAddressSameCondition({itemToChange:X}, {hoveredEntity:X}) Fail",
-                        Enums.WheresMyCraftAt.LogMessageType.Error
+                        "AsyncExecuteNotSameItemWithCancellationHandling: Item address is the same. Waiting for change.",
+                        LogMessageType.Info
                     );
 
                     continue;
                 }
 
                 Logging.Logging.Add(
-                    $"AsyncExecuteNotSameItemWithCancellationHandling !IsElementsSameCondition({itemToChange:X}, {hoveredEntity:X}) Pass",
-                    Enums.WheresMyCraftAt.LogMessageType.Success
+                    "AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.",
+                    LogMessageType.Info
                 );
 
                 return true;
             }
 
+            Logging.Logging.Add(
+                "AsyncExecuteNotSameItemWithCancellationHandling: Timeout occurred.",
+                LogMessageType.Warning
+            );
+
             return false;
         }
         catch (OperationCanceledException)
         {
+            Logging.Logging.Add(
+                "AsyncExecuteNotSameItemWithCancellationHandling: Operation canceled.",
+                LogMessageType.Info
+            );
+
             return false;
         }
     }
@@ -126,40 +105,49 @@ public static class ElementHandler
 
             if (!item1)
             {
-                Logging.Logging.Add($"AsyncTryApplyOrb StashHandler.AsyncTryGetItemInStash() has failed", Enums.WheresMyCraftAt.LogMessageType.Error);
+                Logging.Logging.Add("AsyncTryApplyOrb: Required orb item not found in stash.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             var storeAddressOfItem = item.Item.Address;
-            Logging.Logging.Add($"AsyncTryApplyOrb storeAddressOfItem is {storeAddressOfItem:X}", Enums.WheresMyCraftAt.LogMessageType.Warning);
+
+            Logging.Logging.Add(
+                $"AsyncTryApplyOrb: Store address of item is {storeAddressOfItem:X}.",
+                LogMessageType.Info
+            );
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
+                Logging.Logging.Add("AsyncTryApplyOrb: Failed to click orb item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await item.AsyncTryClick(false, token))
             {
+                Logging.Logging.Add("AsyncTryApplyOrb: Failed to click target item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
-            if (!await AsyncExecuteNotSameItemWithCancellationHandling(storeAddressOfItem, Main.Settings.ActionTimeoutInSeconds, token))
+            if (!await AsyncExecuteNotSameItemWithCancellationHandling(
+                    storeAddressOfItem,
+                    Main.Settings.ActionTimeoutInSeconds,
+                    token
+                ))
             {
-                Logging.Logging.Add($"AsyncTryApplyOrb AsyncExecuteNotSameItemWithCancellationHandling(item, {Main.Settings.ActionTimeoutInSeconds.Value}, token) is false",
-                                    Enums.WheresMyCraftAt.LogMessageType.Error);
+                Logging.Logging.Add("AsyncTryApplyOrb: Item did not change after applying orb.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
+            Logging.Logging.Add("AsyncTryApplyOrb: Orb successfully applied to item.", LogMessageType.Info);
             return true;
-
         }
         catch (OperationCanceledException)
         {
-            // Handle cancellation logic or state correction here if necessary
+            Logging.Logging.Add("AsyncTryApplyOrb: Operation canceled.", LogMessageType.Info);
             return false;
         }
     }

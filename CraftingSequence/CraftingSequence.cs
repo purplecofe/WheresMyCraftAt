@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.Shared;
+﻿using ExileCore.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -34,15 +33,48 @@ public class CraftingSequence
 
     public static void SaveFile(List<CraftingStepInput> input, string filePath)
     {
-        var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
-        var jsonString = JsonConvert.SerializeObject(input, Formatting.Indented);
-        File.WriteAllText(fullPath, jsonString);
+        try
+        {
+            var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
+            var jsonString = JsonConvert.SerializeObject(input, Formatting.Indented);
+            File.WriteAllText(fullPath, jsonString);
+            Logging.Logging.Add($"Successfully saved file to {fullPath}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        }
+        catch (Exception e)
+        {
+            var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
+
+            Logging.Logging.Add(
+                $"Error saving file to {fullPath}: {e.Message}",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
+        }
     }
 
     public static void LoadFile(string fileName)
     {
-        var fileContent = File.ReadAllText(Path.Combine(Main.ConfigDirectory, $"{fileName}.json"));
-        Main.Settings.SelectedCraftingStepInputs = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
+        try
+        {
+            var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
+            var fileContent = File.ReadAllText(fullPath);
+
+            Main.Settings.SelectedCraftingStepInputs
+                = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
+
+            Logging.Logging.Add(
+                $"Successfully loaded file from {fullPath}.",
+                Enums.WheresMyCraftAt.LogMessageType.Info
+            );
+        }
+        catch (Exception e)
+        {
+            var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
+
+            Logging.Logging.Add(
+                $"Error loading file from {fullPath}: {e.Message}",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
+        }
     }
 
     public static List<string> GetFiles()
@@ -53,10 +85,18 @@ public class CraftingSequence
         {
             var dir = new DirectoryInfo(Main.ConfigDirectory);
             fileList = dir.GetFiles().Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
+
+            Logging.Logging.Add(
+                $"Retrieved {fileList.Count} files from {Main.ConfigDirectory}.",
+                Enums.WheresMyCraftAt.LogMessageType.Info
+            );
         }
         catch (Exception e)
         {
-            DebugWindow.LogError($"{Main.Name}: An error occurred while getting files: {e.Message}", 30);
+            Logging.Logging.Add(
+                $"{Main.Name}: An error occurred while getting files: {e.Message}",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
         }
 
         return fileList;

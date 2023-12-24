@@ -9,20 +9,27 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class MouseHandler
 {
-    public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, CancellationToken token)
-    {
-        return await AsyncIsMouseInPlace(position, true, token);
-    }
-
     public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
     {
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
+        Logging.Logging.Add(
+            $"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => SetCursorPositionAction(position, applyOffset),
             () => IsMouseInPositionCondition(position),
             Main.Settings.ActionTimeoutInSeconds,
             HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
             token
         );
+
+        Logging.Logging.Add(
+            $"Mouse position check result: {result} (Desired position: {position})",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
+        return result;
     }
 
     public static async SyncTask<bool> AsyncMoveMouse(Vector2N position, CancellationToken token)
@@ -33,11 +40,19 @@ public static class MouseHandler
     public static async SyncTask<bool> AsyncMoveMouse(Vector2N position, bool applyOffset, CancellationToken token)
     {
         Logging.Logging.Add(
-            $"Wanted Position({position}) | NormalizedPosition({NormalizePosition(position)})",
+            $"Moving mouse to position {position} (Offset applied: {applyOffset}).",
             Enums.WheresMyCraftAt.LogMessageType.Info
         );
 
-        return await AsyncIsMouseInPlace(NormalizePosition(position), applyOffset, token);
+        var normalizedPosition = NormalizePosition(position);
+        var result = await AsyncIsMouseInPlace(normalizedPosition, applyOffset, token);
+
+        Logging.Logging.Add(
+            $"Mouse move result: {result} (Target position: {normalizedPosition})",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
+        return result;
     }
 
     public static Vector2N GetCurrentMousePosition()

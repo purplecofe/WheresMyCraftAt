@@ -75,12 +75,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             else
             {
                 Logging.Logging.MessagesList.Clear();
-
-                Logging.Logging.Add(
-                    $"{Name}: Attempting to Start New Operation.",
-                    Enums.WheresMyCraftAt.LogMessageType.Info
-                );
-
+                Logging.Logging.Add("Attempting to Start New Operation.", Enums.WheresMyCraftAt.LogMessageType.Info);
                 ResetCancellationTokenSource();
                 CurrentOperation = AsyncStart(OperationCts.Token);
             }
@@ -113,7 +108,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         if (ItemHandler.IsItemRightClickedCondition())
             Input.KeyPressRelease(Keys.Escape);
 
-        Logging.Logging.Add($"{Name}: Stop() has been ran.", Enums.WheresMyCraftAt.LogMessageType.Warning);
+        Logging.Logging.Add("Stop() has been ran.", Enums.WheresMyCraftAt.LogMessageType.Warning);
     }
 
     private void ResetCancellationTokenSource()
@@ -134,7 +129,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         if (!GameHandler.IsInGameCondition())
         {
             Logging.Logging.Add(
-                $"{Name}: Not in game, operation will be terminated.",
+                "Not in game, operation will be terminated.",
                 Enums.WheresMyCraftAt.LogMessageType.Error
             );
 
@@ -146,7 +141,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             ))
         {
             Logging.Logging.Add(
-                $"{Name}: No Crafting Steps or currency to use is null, operation will be terminated.",
+                "No Crafting Steps or currency to use is null, operation will be terminated.",
                 Enums.WheresMyCraftAt.LogMessageType.Error
             );
 
@@ -155,25 +150,39 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
         try
         {
+            Logging.Logging.Add("Beginning inventory and stash handling.", Enums.WheresMyCraftAt.LogMessageType.Debug);
             var isInvOpen = await InventoryHandler.AsyncWaitForInventoryOpen(token);
             var isStashOpen = await StashHandler.AsyncWaitForStashOpen(token);
 
             if (!isStashOpen || !isInvOpen)
+            {
+                Logging.Logging.Add(
+                    "Inventory or Stash could not be opened.",
+                    Enums.WheresMyCraftAt.LogMessageType.Warning
+                );
+
                 return false;
+            }
 
-            var giveItems = new CraftingSequenceExecutor(SelectedCraftingSteps);
+            Logging.Logging.Add("Executing crafting sequence.", Enums.WheresMyCraftAt.LogMessageType.Debug);
+            var craftingSequenceExecutor = new CraftingSequenceExecutor(SelectedCraftingSteps);
 
-            if (!await giveItems.Execute(OperationCts.Token))
+            if (!await craftingSequenceExecutor.Execute(OperationCts.Token))
+            {
+                Logging.Logging.Add("Crafting sequence execution failed.", Enums.WheresMyCraftAt.LogMessageType.Error);
                 return false;
+            }
 
-            Logging.Logging.Add($"{Name}: AsyncStart() Completed.", Enums.WheresMyCraftAt.LogMessageType.Success);
+            Logging.Logging.Add("AsyncStart() Completed.", Enums.WheresMyCraftAt.LogMessageType.Info);
         }
         catch (OperationCanceledException)
         {
+            Logging.Logging.Add("Operation was canceled.", Enums.WheresMyCraftAt.LogMessageType.Warning);
             Stop();
             return false;
         }
 
+        Logging.Logging.Add("AsyncStart() method completed successfully.", Enums.WheresMyCraftAt.LogMessageType.Info);
         return true;
     }
 

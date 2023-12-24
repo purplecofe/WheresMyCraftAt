@@ -23,6 +23,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
             try
             {
+                // Info: Starting a new step
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]",
                     LogMessageType.Info
@@ -39,7 +40,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
-                        LogMessageType.Success
+                        LogMessageType.Info
                     );
                 }
                 else
@@ -58,18 +59,19 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
-                        LogMessageType.Success
+                        LogMessageType.Info
                     );
                 }
 
                 if (currentStep.AutomaticSuccess)
                 {
                     success = true; // Override success if AutomaticSuccess is true
-                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Success);
+                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Info);
                 }
 
                 stopwatch.Stop(); // Stop timing after the step is executed
 
+                // Profiler: Time taken for step execution
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms",
                     LogMessageType.Profiler
@@ -79,7 +81,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 Logging.Logging.Add(
                     $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}",
-                    LogMessageType.Error
+                    LogMessageType.Info
                 );
 
                 Logging.Logging.Add(
@@ -93,7 +95,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             // Determine the next step based on success or failure
             if (success)
             {
-                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Success);
+                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Info);
 
                 switch (currentStep.SuccessAction)
                 {
@@ -125,8 +127,15 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
             }
 
+            // Info: Next step to be executed
             Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]", LogMessageType.Info);
         }
+
+        // Info: Sequence completed successfully
+        Logging.Logging.Add(
+            "CraftingSequenceExecutor: Sequence execution completed successfully.",
+            LogMessageType.Info
+        );
 
         return true;
     }

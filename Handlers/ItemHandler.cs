@@ -14,16 +14,35 @@ public static class ItemHandler
     public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName,
         CancellationToken token)
     {
+        Logging.Logging.Add(
+            $"Attempting to apply orb '{orbName}' to slot '{slot}'.",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
 
         if (!asyncResult.Item1)
+        {
+            Logging.Logging.Add(
+                $"Failed to get stash slot '{slot}' for orb '{orbName}'.",
+                Enums.WheresMyCraftAt.LogMessageType.Error
+            );
+
             return false;
+        }
+
+        Logging.Logging.Add(
+            $"Stash slot '{slot}' retrieved successfully. Applying orb '{orbName}'.",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
 
         return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
     }
 
     public static async SyncTask<bool> AsyncWaitForItemOnCursor(CancellationToken token, int timeout = 2)
     {
+        Logging.Logging.Add("Waiting for an item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
+
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             InventoryHandler.IsAnItemPickedUpCondition,
             timeout,
@@ -34,6 +53,8 @@ public static class ItemHandler
 
     public static async SyncTask<bool> AsyncWaitForNoItemOnCursor(CancellationToken token, int timeout = 2)
     {
+        Logging.Logging.Add("Waiting for no item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
+
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             IsCursorFree,
             timeout,
@@ -44,32 +65,17 @@ public static class ItemHandler
 
     public static async SyncTask<bool> AsyncWaitForRightClickedItemOnCursor(CancellationToken token, int timeout = 2)
     {
+        Logging.Logging.Add(
+            "Waiting for a right-clicked item to be on the cursor.",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             IsItemRightClickedCondition,
             timeout,
             HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
             token
         );
-    }
-
-    public static ItemRarity GetRarityFromItem(Entity item)
-    {
-        if (item.TryGetComponent<Mods>(out var modsComp))
-        {
-            Logging.Logging.Add(
-                $"GetRarityFromItem: {modsComp.ItemRarity}",
-                Enums.WheresMyCraftAt.LogMessageType.Special
-            );
-
-            return modsComp.ItemRarity;
-        }
-
-        Logging.Logging.Add(
-            "GetRarityFromItem: Could not get mods component from item.",
-            Enums.WheresMyCraftAt.LogMessageType.Error
-        );
-
-        return ItemRarity.Normal;
     }
 
     public static List<string> GetHumanModListFromItem(Entity item)
@@ -82,14 +88,13 @@ public static class ItemHandler
     public static void PrintHumanModListFromItem(Entity item)
     {
         Logging.Logging.Add($"Items Mods for: {item.Path}", Enums.WheresMyCraftAt.LogMessageType.Info);
+        var modsList = GetHumanModListFromItem(item);
 
-        GetHumanModListFromItem(item)
-            .ForEach(itemMod => Logging.Logging.Add($"ItemMod: {itemMod}", Enums.WheresMyCraftAt.LogMessageType.Info));
-    }
-
-    public static string GetBaseNameFromItem(Entity item)
-    {
-        return GetBaseNameFromPath(item?.Path);
+        if (modsList.Count != 0)
+            foreach (var itemMod in modsList)
+                Logging.Logging.Add($"ItemMod: {itemMod}", Enums.WheresMyCraftAt.LogMessageType.Info);
+        else
+            Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.Info);
     }
 
     public static string GetBaseNameFromItem(NormalInventoryItem item)

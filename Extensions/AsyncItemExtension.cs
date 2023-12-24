@@ -6,7 +6,7 @@ using System;
 using System.Threading;
 using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
-using static WheresMyCraftAt.WheresMyCraftAt;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Extensions;
 
@@ -26,14 +26,19 @@ public static class ItemExtensions
                 ? Keys.LButton
                 : Keys.RButton;
 
-            Logging.Logging.Add($"AsyncTryClick Button is {button}", Enums.WheresMyCraftAt.LogMessageType.Success);
+            // Log info about the click action
+            Logging.Logging.Add($"AsyncTryClick: Clicking with {button} on item.", LogMessageType.Info);
 
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
                 if (!ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()))
                     return false;
 
             if (!await KeyHandler.AsyncButtonPress(button, token))
+            {
+                // Log warning if button press fails
+                Logging.Logging.Add("AsyncTryClick: Failed to press button.", LogMessageType.Warning);
                 return false;
+            }
 
             var booleanCheck = false;
 
@@ -51,49 +56,13 @@ public static class ItemExtensions
                     break;
             }
 
+            // Log success of the click action
+            Logging.Logging.Add("AsyncTryClick: Click action completed successfully.", LogMessageType.Info);
             return booleanCheck;
         }
         catch (OperationCanceledException)
         {
             // store states later possibly and apply state correction based on the progress?
-            return false;
-        }
-    }
-
-    public static async SyncTask<bool> AsyncTryApplyOrb(this NormalInventoryItem item, string currencyName,
-        CancellationToken token)
-    {
-        try
-        {
-            var (item1, orbItem) = await StashHandler.AsyncTryGetItemInStash(currencyName, token);
-
-            if (!item1)
-            {
-                Main.Stop();
-                return false;
-            }
-
-            if (!await orbItem.AsyncTryClick(true, token))
-            {
-                Main.Stop();
-                return false;
-            }
-
-            if (!await item.AsyncTryClick(false, token))
-            {
-                Main.Stop();
-                return false;
-            }
-
-            if (await ElementHandler.AsyncExecuteNotSameElementWithCancellationHandling(item, 3, token))
-                return true;
-
-            Main.Stop();
-            return false;
-        }
-        catch (OperationCanceledException)
-        {
-            // Handle cancellation logic or state correction here if necessary
             return false;
         }
     }

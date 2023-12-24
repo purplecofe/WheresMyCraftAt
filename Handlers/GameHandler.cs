@@ -1,5 +1,4 @@
 ﻿using ExileCore.Shared;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -11,12 +10,6 @@ public static class GameHandler
     public static async SyncTask<bool> AsyncWaitServerLatency(CancellationToken token)
     {
         await AsyncWait(Main.ServerLatency, token);
-        return true;
-    }
-
-    public static async SyncTask<bool> AsyncWaitRandomRange(Vector2 relayRange, CancellationToken token)
-    {
-        await AsyncWait(HelperHandler.GetRandomTimeInRange(relayRange), token);
         return true;
     }
 

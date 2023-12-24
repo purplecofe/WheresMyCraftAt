@@ -1,10 +1,10 @@
 ﻿using ExileCore;
-using ExileCore.PoEMemory.Elements;
 using ExileCore.Shared.Helpers;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Color = SharpDX.Color;
 using Vector4 = System.Numerics.Vector4;
@@ -15,13 +15,14 @@ public static class Logging
 {
     private static readonly Dictionary<Enums.WheresMyCraftAt.LogMessageType, Color> LogMessageColors = new()
     {
-        { Enums.WheresMyCraftAt.LogMessageType.Info, Color.White },
-        { Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow },
-        { Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red },
-        { Enums.WheresMyCraftAt.LogMessageType.Success, Color.Green },
-        { Enums.WheresMyCraftAt.LogMessageType.Cancelled, Color.Orange },
-        { Enums.WheresMyCraftAt.LogMessageType.Special, Color.Gray },
-        { Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue }
+        { Enums.WheresMyCraftAt.LogMessageType.Trace, Color.LightGray },  // Light gray for detailed, low-level messages
+        { Enums.WheresMyCraftAt.LogMessageType.Debug, Color.Cyan },       // Cyan for debug-level messages
+        { Enums.WheresMyCraftAt.LogMessageType.Info, Color.White },       // White for informational messages
+        { Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow },   // Yellow for warnings
+        { Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red },        // Red for errors
+        { Enums.WheresMyCraftAt.LogMessageType.Critical, Color.DarkRed }, // Dark red for critical errors
+        { Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue }, // Sky blue for profiler messages
+        { Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta }   // Magenta for special messages
     };
 
     private static readonly object Locker = new();
@@ -40,22 +41,35 @@ public static class Logging
         if (isOpen)
         {
             ImGui.Begin("Wheres My Craft At Logs", ref isOpen, flags);
+            var logMessageTypes = Main.Settings.LogMessageFilters.Keys.ToList();
+
+            for (var index = 0; index < logMessageTypes.Count; index++)
+            {
+                var logMessageType = logMessageTypes[index];
+                var isEnabled = Main.Settings.LogMessageFilters[logMessageType];
+                ImGui.Checkbox(logMessageType.ToString(), ref isEnabled);
+                Main.Settings.LogMessageFilters[logMessageType] = isEnabled;
+
+                if (index != logMessageTypes.Count - 1)
+                    ImGui.SameLine();
+            }
+
+            ImGui.BeginChild("LogMessages", new Vector2(0, 0), ImGuiChildFlags.Border);
 
             lock (Locker)
             {
                 foreach (var msg in MessagesList.Where(msg => msg != null))
                 {
+                    if (!Main.Settings.LogMessageFilters[msg.LogType])
+                        continue;
+
                     ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
                     ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
                     ImGui.PopStyleColor();
                 }
             }
 
-            if (Main.CurrentOperation is not null)
-                // Set auto scroll when running
-                if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
-                    ImGui.SetScrollHereY(1.0f);
-
+            ImGui.EndChild();
             ImGui.End();
         }
 
@@ -67,7 +81,6 @@ public static class Logging
         try
         {
             var color = LogMessageColors[messageType];
-            var time = Main.Settings.DebugPrintLingerTime;
 
             if (Main.Settings.DebugPrint)
                 DebugWindow.LogMsg(msg, Main.Settings.DebugPrintLingerTime, color);
@@ -77,7 +90,8 @@ public static class Logging
                 Msg = msg,
                 Time = DateTime.Now,
                 ColorV4 = color.ToImguiVec4(),
-                Color = color
+                Color = color,
+                LogType = messageType
             };
 
             lock (Locker)
@@ -97,5 +111,6 @@ public static class Logging
         public DateTime Time { get; init; }
         public Vector4 ColorV4 { get; init; }
         public Color Color { get; init; }
+        public Enums.WheresMyCraftAt.LogMessageType LogType { get; init; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ImGuiNET;
+﻿using ImGuiNET;
 using ItemFilterLibrary;
 using System;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Numerics;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;
@@ -406,7 +406,7 @@ public static class CraftingSequenceMenu
                 var newStep = new CraftingStep
                 {
                     Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(
-                        Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab,
+                        SpecialSlot.CurrencyTab,
                         input.CurrencyItem,
                         token
                     ),
@@ -431,7 +431,7 @@ public static class CraftingSequenceMenu
                     {
                         Logging.Logging.Add(
                             $"CraftingSequenceMenu: Failed to load filter from string: {checkKey.Name}",
-                            Enums.WheresMyCraftAt.LogMessageType.Error
+                            LogMessageType.Error
                         );
 
                         return; // No point going on from here.
@@ -480,11 +480,26 @@ public static class CraftingSequenceMenu
                 _fileSaveName = _fileSaveName.Replace(c, '_');
 
             if (_fileSaveName == string.Empty)
-                DebugWindow.LogError($"{Main.Name}: File name must not be empty.", 30);
+            {
+                // Log error when the file name is empty
+                Logging.Logging.Add("Attempted to save file without a name.", LogMessageType.Error);
+            }
             else if (_files.Contains(_fileSaveName))
+            {
                 ImGui.OpenPopup(OverwritePopup);
+
+                // Log info for overwrite confirmation
+                Logging.Logging.Add(
+                    $"File {_fileSaveName} already exists, requesting overwrite confirmation.",
+                    LogMessageType.Info
+                );
+            }
             else
+            {
                 SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
+                // Log success when file is saved
+                Logging.Logging.Add($"File {_fileSaveName}.json saved successfully.", LogMessageType.Info);
+            }
         }
 
         ImGui.Separator();
@@ -502,6 +517,8 @@ public static class CraftingSequenceMenu
                     _selectedFileName = fileName;
                     _fileSaveName = fileName;
                     LoadFile(fileName);
+                    // Log success when a file is loaded
+                    Logging.Logging.Add($"File {fileName} loaded successfully.", LogMessageType.Info);
                 }
 
                 if (isSelected)
@@ -519,15 +536,28 @@ public static class CraftingSequenceMenu
             var directoryToOpen = Directory.Exists(configDir);
 
             if (!directoryToOpen)
-                DebugWindow.LogError($"{Main.Name}: Config directory does not exist.", 30);
+                // Log error when the config directory doesn't exist
+                Logging.Logging.Add("Unable to open config directory because it does not exist.", LogMessageType.Error);
 
             if (configDir != null)
+            {
                 Process.Start("explorer.exe", configDir);
+                // Log info when opening the config directory
+                Logging.Logging.Add("Opened config directory in explorer.", LogMessageType.Info);
+            }
         }
 
         if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOP"], out var saveSelectedIndex))
             if (saveSelectedIndex == 0)
+            {
                 SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
+
+                // Log success when file is saved after overwrite confirmation
+                Logging.Logging.Add(
+                    $"File {_fileSaveName}.json saved successfully after overwrite confirmation.",
+                    LogMessageType.Info
+                );
+            }
 
         ImGui.Unindent();
     }
