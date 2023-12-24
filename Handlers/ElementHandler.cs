@@ -119,14 +119,14 @@ public static class ElementHandler
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
-                Logging.Logging.Add("AsyncTryApplyOrb: Failed to click orb item.", LogMessageType.Error);
+                Logging.Logging.Add($"AsyncTryApplyOrb: Failed to right click orb '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await item.AsyncTryClick(false, token))
             {
-                Logging.Logging.Add("AsyncTryApplyOrb: Failed to click target item.", LogMessageType.Error);
+                Logging.Logging.Add("AsyncTryApplyOrb: Failed to left click target item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
@@ -137,12 +137,12 @@ public static class ElementHandler
                     token
                 ))
             {
-                Logging.Logging.Add("AsyncTryApplyOrb: Item did not change after applying orb.", LogMessageType.Error);
+                Logging.Logging.Add($"AsyncTryApplyOrb: Item did not change after applying '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
-            Logging.Logging.Add("AsyncTryApplyOrb: Orb successfully applied to item.", LogMessageType.Info);
+            Logging.Logging.Add($"AsyncTryApplyOrb: '{currencyName}' successfully applied to item.", LogMessageType.Info);
             return true;
         }
         catch (OperationCanceledException)

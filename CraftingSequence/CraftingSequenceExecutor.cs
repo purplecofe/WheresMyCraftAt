@@ -26,7 +26,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 // Info: Starting a new step
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]",
-                    LogMessageType.Info
+                    LogMessageType.Special
                 );
 
                 stopwatch.Restart(); // Start timing
@@ -40,14 +40,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
-                        LogMessageType.Info
+                        LogMessageType.Special
                     );
                 }
                 else
                 {
                     // Execute the method if no prior conditional check or if it's not applicable
                     await currentStep.Method(token);
-                    Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
+                    Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Special);
                 }
 
                 if (currentStep.ConditionalChecks.Count != 0 &&
@@ -59,14 +59,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
-                        LogMessageType.Info
+                        LogMessageType.Special
                     );
                 }
 
                 if (currentStep.AutomaticSuccess)
                 {
                     success = true; // Override success if AutomaticSuccess is true
-                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Info);
+                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
                 }
 
                 stopwatch.Stop(); // Stop timing after the step is executed
@@ -81,7 +81,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 Logging.Logging.Add(
                     $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}",
-                    LogMessageType.Info
+                    LogMessageType.Error
                 );
 
                 Logging.Logging.Add(
@@ -95,7 +95,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             // Determine the next step based on success or failure
             if (success)
             {
-                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Info);
+                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Special);
 
                 switch (currentStep.SuccessAction)
                 {
@@ -111,7 +111,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
             else
             {
-                Logging.Logging.Add("CraftingSequenceStep: False", LogMessageType.Error);
+                Logging.Logging.Add("CraftingSequenceStep: False", LogMessageType.Special);
 
                 switch (currentStep.FailureAction)
                 {
@@ -128,13 +128,13 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
 
             // Info: Next step to be executed
-            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]", LogMessageType.Info);
+            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]", LogMessageType.Special);
         }
 
         // Info: Sequence completed successfully
         Logging.Logging.Add(
             "CraftingSequenceExecutor: Sequence execution completed successfully.",
-            LogMessageType.Info
+            LogMessageType.Special
         );
 
         return true;
