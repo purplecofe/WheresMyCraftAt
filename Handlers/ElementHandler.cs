@@ -17,7 +17,7 @@ public static class ElementHandler
 
     public static bool IsElementsSameCondition(Element first, Element second) => first.Address == second.Address;
 
-    public static bool IsInGameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector) =>
+    public static bool IsInGameUiElementVisibleCondition(Func<IngameUIElements, Element> panelSelector) =>
         panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
 
     /*

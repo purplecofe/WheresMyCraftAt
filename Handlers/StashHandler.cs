@@ -23,7 +23,7 @@ public static class StashHandler
 
     public static bool IsStashPanelOpenCondition()
     {
-        return ElementHandler.IsInGameUiElementOpenCondition(ui => ui.StashElement);
+        return ElementHandler.IsInGameUiElementVisibleCondition(ui => ui.StashElement);
     }
 
     public static bool IsVisibleStashValidCondition() =>

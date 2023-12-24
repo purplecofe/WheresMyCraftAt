@@ -1,7 +1,6 @@
 ﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
-using ExileCore.Shared.Helpers;
 using System;
 using System.Threading;
 using System.Windows.Forms;
@@ -20,7 +19,7 @@ public static class ItemExtensions
         try
         {
             ElementHandler.TryGetCursorStateCondition(out var cursorStateCondition);
-            var clickPosition = item.GetClientRectCache.Center.ToVector2Num();
+            var clickPosition = item.GetClientRectCache.GetRandomPointWithinWithPerlin(15, 80);
 
             var button = !rightClick
                 ? Keys.LButton

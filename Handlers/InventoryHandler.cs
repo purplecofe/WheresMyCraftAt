@@ -34,7 +34,7 @@ public static class InventoryHandler
 
     public static bool IsInventoryPanelOpenCondition()
     {
-        return ElementHandler.IsInGameUiElementOpenCondition(ui => ui.InventoryPanel);
+        return ElementHandler.IsInGameUiElementVisibleCondition(ui => ui.InventoryPanel);
     }
 
     public static bool TryGetPickedUpItem(out Entity pickedUpItem)
