@@ -75,6 +75,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             }
             else
             {
+                Logging.Logging.MessagesList.Clear();
                 Logging.Logging.Add(
                     $"{Name}: Attempting to Start New Operation.",
                     Enums.WheresMyCraftAt.LogMessageType.Info

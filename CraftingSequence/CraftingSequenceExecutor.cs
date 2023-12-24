@@ -26,23 +26,15 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex+1}]", LogMessageType.Info);
                 stopwatch.Restart(); // Start timing
 
-                if (currentStep.ConditionalChecks.Count != 0 &&
-                    currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
+                if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
                     success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
 
                     Logging.Logging.Add(
-                        $"CraftingSequenceStep: All ConditionalChecks before method are {success}",
+                        $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
                         LogMessageType.Success
                     );
-
-                    if (!success)
-                    {
-                        // If any conditional check before the method is false, execute the method
-                        await currentStep.Method(token);
-                        Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Info);
-                    }
                 }
                 else
                 {

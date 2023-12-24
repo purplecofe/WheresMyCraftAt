@@ -25,7 +25,7 @@ public static class Logging
     };
 
     private static readonly object Locker = new();
-    private static readonly List<DebugMsgDescription> MessagesList = new(24);
+    public static List<DebugMsgDescription> MessagesList = new(24);
 
     public static void Render()
     {
@@ -91,7 +91,7 @@ public static class Logging
         }
     }
 
-    private class DebugMsgDescription
+    public class DebugMsgDescription
     {
         public string Msg { get; init; }
         public DateTime Time { get; init; }

@@ -39,9 +39,23 @@ public static class StashHandler
 
     public static bool TryGetItemInStash(string baseName, out NormalInventoryItem foundItem)
     {
-        foundItem = TryGetVisibleStashInventory(out var stashContents)
-            ? stashContents.FirstOrDefault(item => ItemHandler.GetBaseNameFromItem(item) == baseName)
-            : null;
+        foundItem = null;
+        if (TryGetVisibleStashInventory(out var stashContents))
+        {
+            // Generate a string of all items in the stash for logging purposes.
+            var itemBaseNames = stashContents.Select(ItemHandler.GetBaseNameFromItem);
+            var itemsString = string.Join(",\n", itemBaseNames);
+            Logging.Logging.Add($"Items in stash [{itemsString}]", Enums.WheresMyCraftAt.LogMessageType.Info);
+
+            // Find the first item that matches the base name.
+            foundItem = stashContents.FirstOrDefault(item => ItemHandler.GetBaseNameFromItem(item) == baseName);
+        }
+
+        // Log whether the item was found or not.
+        if (foundItem == null)
+            Logging.Logging.Add($"Could not find {baseName} in stash", Enums.WheresMyCraftAt.LogMessageType.Error);
+        else
+            Logging.Logging.Add($"Found {baseName} [W:{foundItem.Width}, H:{foundItem.Height}] in stash", Enums.WheresMyCraftAt.LogMessageType.Success);
 
         return foundItem != null;
     }
@@ -54,7 +68,7 @@ public static class StashHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => TryGetItemInStash(currencyName, out orbItem),
             2,
-            1,
+            Main.ServerLatency,
             token
         );
 
@@ -69,7 +83,7 @@ public static class StashHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => TryGetStashSpecialSlot(slotType, out inventoryItem),
             2,
-            1,
+            Main.ServerLatency,
             token
         );
 

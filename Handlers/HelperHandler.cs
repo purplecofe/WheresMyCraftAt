@@ -12,4 +12,9 @@ public static class HelperHandler
         var maxMilliseconds = (int)timeRange.Y;
         return random.Next(minMilliseconds, maxMilliseconds + 1);
     }
+
+    public static bool IsAddressSameCondition(long addressFirst, long addressSecond)
+    {
+        return addressFirst == addressSecond;
+    }
 }
