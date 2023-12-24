@@ -36,7 +36,7 @@ public static class ItemExtensions
             if (!await KeyHandler.AsyncButtonPress(button, token))
             {
                 // Log warning if button press fails
-                Logging.Logging.Add("AsyncTryClick: Failed to press button.", LogMessageType.Warning);
+                Logging.Logging.Add($"Failed to press {button}.", LogMessageType.Warning);
                 return false;
             }
 
@@ -57,7 +57,7 @@ public static class ItemExtensions
             }
 
             // Log success of the click action
-            Logging.Logging.Add("AsyncTryClick: Click action completed successfully.", LogMessageType.Info);
+            Logging.Logging.Add($"Click action for {button} completed successfully.", LogMessageType.Info);
             return booleanCheck;
         }
         catch (OperationCanceledException)

@@ -105,7 +105,7 @@ public static class ElementHandler
 
             if (!item1)
             {
-                Logging.Logging.Add("AsyncTryApplyOrb: Required orb item not found in stash.", LogMessageType.Error);
+                Logging.Logging.Add($"'{currencyName}' not found in stash.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
@@ -113,20 +113,20 @@ public static class ElementHandler
             var storeAddressOfItem = item.Item.Address;
 
             Logging.Logging.Add(
-                $"AsyncTryApplyOrb: Store address of item is {storeAddressOfItem:X}.",
+                $"Address of item before trying to modify item is {storeAddressOfItem:X}.",
                 LogMessageType.Info
             );
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
-                Logging.Logging.Add($"AsyncTryApplyOrb: Failed to right click orb '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.Add($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await item.AsyncTryClick(false, token))
             {
-                Logging.Logging.Add("AsyncTryApplyOrb: Failed to left click target item.", LogMessageType.Error);
+                Logging.Logging.Add("Failed to left click target item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
@@ -137,17 +137,17 @@ public static class ElementHandler
                     token
                 ))
             {
-                Logging.Logging.Add($"AsyncTryApplyOrb: Item did not change after applying '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.Add($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
-            Logging.Logging.Add($"AsyncTryApplyOrb: '{currencyName}' successfully applied to item.", LogMessageType.Info);
+            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.Info);
             return true;
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add("AsyncTryApplyOrb: Operation canceled.", LogMessageType.Info);
+            Logging.Logging.Add("Operation canceled.", LogMessageType.Info);
             return false;
         }
     }

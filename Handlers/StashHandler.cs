@@ -65,7 +65,7 @@ public static class StashHandler
         NormalInventoryItem orbItem = null;
 
         Logging.Logging.Add(
-            $"AsyncTryGetItemInStash: Attempting to find item '{currencyName}' in stash.",
+            $"Attempting to find item '{currencyName}' in stash.",
             Enums.WheresMyCraftAt.LogMessageType.Info
         );
 
@@ -77,7 +77,7 @@ public static class StashHandler
         );
 
         Logging.Logging.Add(
-            $"AsyncTryGetItemInStash: Item '{currencyName}' found status: {result}.",
+            $"Item '{currencyName}' found status: {result}.",
             Enums.WheresMyCraftAt.LogMessageType.Info
         );
 
@@ -90,7 +90,7 @@ public static class StashHandler
         NormalInventoryItem inventoryItem = null;
 
         Logging.Logging.Add(
-            $"AsyncTryGetStashSpecialSlot: Attempting to find special slot '{slotType}' in stash.",
+            $"Attempting to find special slot '{slotType}' in stash.",
             Enums.WheresMyCraftAt.LogMessageType.Info
         );
 
@@ -102,7 +102,7 @@ public static class StashHandler
         );
 
         Logging.Logging.Add(
-            $"AsyncTryGetStashSpecialSlot: Special slot '{slotType}' found status: {result}.",
+            $"Special slot '{slotType}' found status: {result}.",
             Enums.WheresMyCraftAt.LogMessageType.Info
         );
 
@@ -118,12 +118,12 @@ public static class StashHandler
 
         if (inventoryItem == null)
             Logging.Logging.Add(
-                $"TryGetStashSpecialSlot: Special slot '{slotType}' not found.",
+                $"Special slot '{slotType}' not found.",
                 Enums.WheresMyCraftAt.LogMessageType.Warning
             );
         else
             Logging.Logging.Add(
-                $"TryGetStashSpecialSlot: Found special slot '{slotType}'.",
+                $"Found special slot '{slotType}'.",
                 Enums.WheresMyCraftAt.LogMessageType.Info
             );
 
@@ -138,12 +138,12 @@ public static class StashHandler
 
         if (inventoryItems == null)
             Logging.Logging.Add(
-                "TryGetVisibleStashInventory: Visible stash inventory not found.",
+                "Visible stash inventory not found.",
                 Enums.WheresMyCraftAt.LogMessageType.Warning
             );
         else
             Logging.Logging.Add(
-                "TryGetVisibleStashInventory: Visible stash inventory retrieved.",
+                "Visible stash inventory retrieved.",
                 Enums.WheresMyCraftAt.LogMessageType.Info
             );
 

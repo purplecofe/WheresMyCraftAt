@@ -27,12 +27,12 @@ public class WheresMyCraftAtSettings : ISettings
 
     public Dictionary<Enums.WheresMyCraftAt.LogMessageType, bool> LogMessageFilters = new()
     {
-        { Enums.WheresMyCraftAt.LogMessageType.Trace, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Debug, true },
         { Enums.WheresMyCraftAt.LogMessageType.Info, true },
         { Enums.WheresMyCraftAt.LogMessageType.Warning, true },
         { Enums.WheresMyCraftAt.LogMessageType.Error, true },
         { Enums.WheresMyCraftAt.LogMessageType.Critical, true },
+        { Enums.WheresMyCraftAt.LogMessageType.Trace, true },
+        { Enums.WheresMyCraftAt.LogMessageType.Debug, true },
         { Enums.WheresMyCraftAt.LogMessageType.Profiler, true },
         { Enums.WheresMyCraftAt.LogMessageType.Special, true }
     };

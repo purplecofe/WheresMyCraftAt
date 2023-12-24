@@ -10,16 +10,16 @@ public static class FilterHandler
 {
     public static bool IsMatchingCondition(ItemFilter filterQuery)
     {
-        Logging.Logging.Add("IsMatchingCondition: Attempting to match item with filter query.", LogMessageType.Debug);
+        Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
 
         if (StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var item))
         {
             var isMatch = IsItemMatchingCondition(item.Item, filterQuery);
-            Logging.Logging.Add($"IsMatchingCondition: Item match found: {isMatch}", LogMessageType.Info);
+            Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
             return isMatch;
         }
 
-        Logging.Logging.Add("IsMatchingCondition: No item found to match condition.", LogMessageType.Error);
+        Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
         return false;
     }
 
@@ -29,7 +29,7 @@ public static class FilterHandler
         // ItemHandler.PrintHumanModListFromItem(item);
         var itemData = new CustomItemData(item, Main.GameController);
         var result = filterQuery.Matches(itemData);
-        Logging.Logging.Add($"IsItemMatchingCondition: Item match result is {result}", LogMessageType.Special);
+        Logging.Logging.Add($"Item match result is {result}", LogMessageType.Special);
         return result;
     }
 }

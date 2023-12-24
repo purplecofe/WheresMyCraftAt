@@ -13,7 +13,7 @@ public static class InventoryHandler
 {
     public static async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
     {
-        Logging.Logging.Add("AsyncWaitForInventoryOpen: Waiting for inventory to open.", LogMessageType.Info);
+        Logging.Logging.Add("Waiting for inventory to open.", LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             IsInventoryPanelOpenCondition,
@@ -21,7 +21,7 @@ public static class InventoryHandler
             token
         );
 
-        Logging.Logging.Add($"AsyncWaitForInventoryOpen: Inventory open status: {result}.", LogMessageType.Info);
+        Logging.Logging.Add($"Inventory open status: {result}.", LogMessageType.Info);
         return result;
     }
 
@@ -48,9 +48,9 @@ public static class InventoryHandler
             : null;
 
         if (pickedUpItem != null)
-            Logging.Logging.Add("TryGetPickedUpItem: An item is picked up.", LogMessageType.Info);
+            Logging.Logging.Add("An item is picked up.", LogMessageType.Info);
         else
-            Logging.Logging.Add("TryGetPickedUpItem: No item is picked up.", LogMessageType.Debug);
+            Logging.Logging.Add("No item is picked up.", LogMessageType.Warning);
 
         return pickedUpItem != null;
     }
