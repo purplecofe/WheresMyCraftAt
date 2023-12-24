@@ -47,6 +47,7 @@ public static class HelperHandler
         var noiseValue = PerlinNoiseHandler.Generate(perlinTime / 100.0f, 0);
         var range = ceiling - floor;
         var dynamicShrinkPercentage = (noiseValue + 1) * 0.5f * range + floor;
+        dynamicShrinkPercentage = Math.Clamp(dynamicShrinkPercentage, floor, ceiling);
 
         Logging.Logging.Add(
             $"Generated Perlin noise value: {noiseValue} (Dynamic shrink percentage: {dynamicShrinkPercentage})",
