@@ -13,20 +13,12 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class ElementHandler
 {
-    public static Element GetHoveredElementUiAction()
-    {
-        return Main.GameController?.Game?.IngameState?.UIHoverElement;
-    }
+    public static Element GetHoveredElementUiAction() => Main.GameController?.Game?.IngameState?.UIHoverElement;
 
-    public static bool IsElementsSameCondition(Element first, Element second)
-    {
-        return first.Address == second.Address;
-    }
+    public static bool IsElementsSameCondition(Element first, Element second) => first.Address == second.Address;
 
-    public static bool IsInGameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector)
-    {
-        return panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
-    }
+    public static bool IsInGameUiElementOpenCondition(Func<IngameUIElements, Element> panelSelector) =>
+        panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
 
     /*
      * Note: State doesnt change if you run out of the currency you were using if holding shift

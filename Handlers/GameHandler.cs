@@ -19,8 +19,5 @@ public static class GameHandler
         return true;
     }
 
-    public static bool IsInGameCondition()
-    {
-        return Main.GameController?.Game?.IngameState?.InGame ?? false;
-    }
+    public static bool IsInGameCondition() => Main.GameController?.Game?.IngameState?.InGame ?? false;
 }

@@ -78,12 +78,10 @@ public static class ItemHandler
         );
     }
 
-    public static List<string> GetHumanModListFromItem(Entity item)
-    {
-        return item.TryGetComponent<Mods>(out var modsComp) && modsComp.HumanStats.Count != 0
+    public static List<string> GetHumanModListFromItem(Entity item) =>
+        item.TryGetComponent<Mods>(out var modsComp) && modsComp.HumanStats.Count != 0
             ? modsComp.HumanStats
             : [];
-    }
 
     public static void PrintHumanModListFromItem(Entity item)
     {
@@ -97,29 +95,17 @@ public static class ItemHandler
             Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.Info);
     }
 
-    public static string GetBaseNameFromItem(NormalInventoryItem item)
-    {
-        return GetBaseNameFromPath(item.Entity?.Path);
-    }
+    public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);
 
-    public static string GetBaseNameFromPath(string path)
-    {
-        return Main.GameController?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
-    }
+    public static string GetBaseNameFromPath(string path) =>
+        Main.GameController?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
-    public static bool IsItemOnLeftClickCondition()
-    {
-        return ElementHandler.TryGetCursorStateCondition(out var cursorState) &&
-               cursorState == MouseActionType.HoldItem;
-    }
+    public static bool IsItemOnLeftClickCondition() =>
+        ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.HoldItem;
 
-    public static bool IsItemRightClickedCondition()
-    {
-        return ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.UseItem;
-    }
+    public static bool IsItemRightClickedCondition() =>
+        ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.UseItem;
 
-    public static bool IsCursorFree()
-    {
-        return ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.Free;
-    }
+    public static bool IsCursorFree() =>
+        ElementHandler.TryGetCursorStateCondition(out var cursorState) && cursorState == MouseActionType.Free;
 }

@@ -591,8 +591,5 @@ public static class CraftingSequenceMenu
         return isItemClicked;
     }
 
-    private static int GetEnumLength<T>()
-    {
-        return Enum.GetNames(typeof(T)).Length;
-    }
+    private static int GetEnumLength<T>() => Enum.GetNames(typeof(T)).Length;
 }

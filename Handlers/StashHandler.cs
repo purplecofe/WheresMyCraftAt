@@ -11,31 +11,23 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class StashHandler
 {
-    public static async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2)
-    {
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsStashPanelOpenCondition, timeout, token);
-    }
+    public static async SyncTask<bool> AsyncWaitForStashOpen(CancellationToken token, int timeout = 2) =>
+        await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsStashPanelOpenCondition, timeout, token);
 
-    public static InventoryType GetTypeOfCurrentVisibleStash()
-    {
-        return Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ??
-               InventoryType.InvalidInventory;
-    }
+    public static InventoryType GetTypeOfCurrentVisibleStash() =>
+        Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ??
+        InventoryType.InvalidInventory;
 
-    public static IList<NormalInventoryItem> GetVisibleStashInventory()
-    {
-        return Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
-    }
+    public static IList<NormalInventoryItem> GetVisibleStashInventory() =>
+        Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
 
     public static bool IsStashPanelOpenCondition()
     {
         return ElementHandler.IsInGameUiElementOpenCondition(ui => ui.StashElement);
     }
 
-    public static bool IsVisibleStashValidCondition()
-    {
-        return GetTypeOfCurrentVisibleStash() != InventoryType.InvalidInventory;
-    }
+    public static bool IsVisibleStashValidCondition() =>
+        GetTypeOfCurrentVisibleStash() != InventoryType.InvalidInventory;
 
     public static bool TryGetItemInStash(string baseName, out NormalInventoryItem foundItem)
     {
@@ -117,15 +109,9 @@ public static class StashHandler
             : null;
 
         if (inventoryItem == null)
-            Logging.Logging.Add(
-                $"Special slot '{slotType}' not found.",
-                Enums.WheresMyCraftAt.LogMessageType.Warning
-            );
+            Logging.Logging.Add($"Special slot '{slotType}' not found.", Enums.WheresMyCraftAt.LogMessageType.Warning);
         else
-            Logging.Logging.Add(
-                $"Found special slot '{slotType}'.",
-                Enums.WheresMyCraftAt.LogMessageType.Info
-            );
+            Logging.Logging.Add($"Found special slot '{slotType}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return inventoryItem != null;
     }
@@ -137,15 +123,9 @@ public static class StashHandler
             : null;
 
         if (inventoryItems == null)
-            Logging.Logging.Add(
-                "Visible stash inventory not found.",
-                Enums.WheresMyCraftAt.LogMessageType.Warning
-            );
+            Logging.Logging.Add("Visible stash inventory not found.", Enums.WheresMyCraftAt.LogMessageType.Warning);
         else
-            Logging.Logging.Add(
-                "Visible stash inventory retrieved.",
-                Enums.WheresMyCraftAt.LogMessageType.Info
-            );
+            Logging.Logging.Add("Visible stash inventory retrieved.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return inventoryItems != null;
     }

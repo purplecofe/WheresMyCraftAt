@@ -25,16 +25,12 @@ public static class InventoryHandler
         return result;
     }
 
-    public static IList<Entity> GetItemsFromAnInventory(InventorySlotE invSlot)
-    {
-        return Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
-    }
+    public static IList<Entity> GetItemsFromAnInventory(InventorySlotE invSlot) =>
+        Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
 
-    public static bool IsAnItemPickedUpCondition()
-    {
-        return Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]
-                   ?.Inventory?.ItemCount > 0;
-    }
+    public static bool IsAnItemPickedUpCondition() =>
+        Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory
+            ?.ItemCount > 0;
 
     public static bool IsInventoryPanelOpenCondition()
     {
