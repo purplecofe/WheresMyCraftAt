@@ -46,8 +46,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 else
                 {
                     // Execute the method if no prior conditional check or if it's not applicable
-                    await currentStep.Method(token);
-                    Logging.Logging.Add($"CraftingSequenceStep: Method is {success}", LogMessageType.Special);
+                    var methodResult = await currentStep.Method(token);
+                    Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
                 }
 
                 if (currentStep.ConditionalChecks.Count != 0 &&
@@ -128,7 +128,13 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
 
             // Info: Next step to be executed
-            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]", LogMessageType.Special);
+            Logging.Logging.Add(
+                currentStepIndex < steps.Count - 1 // Check if it's not the last step
+                    ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
+                    // If it's the last step, you might want to log a different message or nothing at all
+                    : "CraftingSequenceStep: Reached the last step in the sequence.",
+                LogMessageType.Special
+            );
         }
 
         // Info: Sequence completed successfully
