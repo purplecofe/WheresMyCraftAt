@@ -1,6 +1,6 @@
-﻿using System;
+﻿using ExileCore.Shared;
+using System;
 using System.Threading;
-using ExileCore.Shared;
 
 namespace WheresMyCraftAt.Handlers;
 

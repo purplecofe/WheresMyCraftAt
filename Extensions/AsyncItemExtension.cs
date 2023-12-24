@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Windows.Forms;
-using ExileCore.PoEMemory.Elements.InventoryElements;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using ExileCore.Shared.Helpers;
+using System;
+using System.Threading;
+using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -90,7 +90,6 @@ public static class ItemExtensions
 
             Main.Stop();
             return false;
-
         }
         catch (OperationCanceledException)
         {

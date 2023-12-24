@@ -14,7 +14,6 @@ public static class FilterHandler
 
         Logging.Logging.Add("IsMatchingCondition found no item", Enums.WheresMyCraftAt.LogMessageType.Error);
         return false;
-
     }
 
     public static bool IsItemMatchingCondition(Entity item, ItemFilter filterQuery)

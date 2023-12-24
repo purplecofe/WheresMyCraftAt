@@ -4,7 +4,6 @@ using ExileCore.Shared.Nodes;
 using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -76,6 +75,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             else
             {
                 Logging.Logging.MessagesList.Clear();
+
                 Logging.Logging.Add(
                     $"{Name}: Attempting to Start New Operation.",
                     Enums.WheresMyCraftAt.LogMessageType.Info

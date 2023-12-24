@@ -40,6 +40,7 @@ public static class StashHandler
     public static bool TryGetItemInStash(string baseName, out NormalInventoryItem foundItem)
     {
         foundItem = null;
+
         if (TryGetVisibleStashInventory(out var stashContents))
         {
             // Generate a string of all items in the stash for logging purposes.
@@ -55,7 +56,10 @@ public static class StashHandler
         if (foundItem == null)
             Logging.Logging.Add($"Could not find {baseName} in stash", Enums.WheresMyCraftAt.LogMessageType.Error);
         else
-            Logging.Logging.Add($"Found {baseName} [W:{foundItem.Width}, H:{foundItem.Height}] in stash", Enums.WheresMyCraftAt.LogMessageType.Success);
+            Logging.Logging.Add(
+                $"Found {baseName} [W:{foundItem.Width}, H:{foundItem.Height}] in stash",
+                Enums.WheresMyCraftAt.LogMessageType.Success
+            );
 
         return foundItem != null;
     }

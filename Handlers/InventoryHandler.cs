@@ -12,11 +12,7 @@ public static class InventoryHandler
 {
     public static async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
     {
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-            IsInventoryPanelOpenCondition,
-            timeout,
-            token
-        );
+        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsInventoryPanelOpenCondition, timeout, token);
     }
 
     public static IList<Entity> GetItemsFromAnInventory(InventorySlotE invSlot)
@@ -27,7 +23,7 @@ public static class InventoryHandler
     public static bool IsAnItemPickedUpCondition()
     {
         return Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]
-            ?.Inventory?.ItemCount > 0;
+                   ?.Inventory?.ItemCount > 0;
     }
 
     public static bool IsInventoryPanelOpenCondition()

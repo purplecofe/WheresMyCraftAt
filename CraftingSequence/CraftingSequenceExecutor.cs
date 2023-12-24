@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ExileCore.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using ExileCore.Shared;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 
@@ -23,13 +23,19 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
             try
             {
-                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex+1}]", LogMessageType.Info);
+                Logging.Logging.Add(
+                    $"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]",
+                    LogMessageType.Info
+                );
+
                 stopwatch.Restart(); // Start timing
 
-                if (currentStep.ConditionalChecks.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
+                if (currentStep.ConditionalChecks.Count != 0 &&
+                    currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
+                    success = currentStep.ConditionalChecks.Count(condition => condition()) >=
+                              currentStep.ConditionalsToBePassForSuccess;
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
@@ -47,7 +53,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                     currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = currentStep.ConditionalChecks.Count(condition => condition()) >= currentStep.ConditionalsToBePassForSuccess;
+                    success = currentStep.ConditionalChecks.Count(condition => condition()) >=
+                              currentStep.ConditionalsToBePassForSuccess;
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
@@ -64,14 +71,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 stopwatch.Stop(); // Stop timing after the step is executed
 
                 Logging.Logging.Add(
-                    $"CraftingSequenceStep: Step [{currentStepIndex+1}] completed in {stopwatch.ElapsedMilliseconds} ms",
+                    $"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms",
                     LogMessageType.Profiler
                 );
             }
             catch (Exception ex)
             {
                 Logging.Logging.Add(
-                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex+1}:\n{ex}",
+                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}",
                     LogMessageType.Error
                 );
 
@@ -118,7 +125,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
             }
 
-            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex+1}]", LogMessageType.Info);
+            Logging.Logging.Add($"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]", LogMessageType.Info);
         }
 
         return true;

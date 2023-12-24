@@ -110,23 +110,24 @@ public static class CraftingSequenceMenu
 
                     // Generate step names, excluding the current step
                     var stepNames = new List<string>();
+
                     for (var step = 0; step < currentSteps.Count; step++)
-                    {
                         if (step != i) // Exclude the current step
-                        {
                             stepNames.Add($"STEP [{step + 1}]");
-                        }
-                    }
 
                     // Initialize dropdownIndex based on the successActionStepIndex
-                    var dropdownIndex = (successActionStepIndex >= i && successActionStepIndex < currentSteps.Count) ? successActionStepIndex - 1 : successActionStepIndex;
+                    var dropdownIndex = successActionStepIndex >= i && successActionStepIndex < currentSteps.Count
+                        ? successActionStepIndex - 1
+                        : successActionStepIndex;
 
                     var comboItems = string.Join('\0', stepNames) + '\0';
 
                     if (ImGui.Combo($"##SuccessStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                     {
                         // Adjust the selectedStepIndex based on the current step's position
-                        var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
+                        var selectedStepIndex = dropdownIndex >= i
+                            ? dropdownIndex + 1
+                            : dropdownIndex;
 
                         stepInput.SuccessActionStepIndex = selectedStepIndex;
                     }
@@ -164,27 +165,27 @@ public static class CraftingSequenceMenu
 
                         // Generate step names, excluding the current step
                         var stepNames = new List<string>();
+
                         for (var step = 0; step < currentSteps.Count; step++)
-                        {
                             if (step != i) // Exclude the current step
-                            {
                                 stepNames.Add($"STEP [{step + 1}]");
-                            }
-                        }
 
                         // Initialize dropdownIndex based on the failureActionStepIndex
-                        var dropdownIndex = (failureActionStepIndex >= i && failureActionStepIndex < currentSteps.Count) ? failureActionStepIndex - 1 : failureActionStepIndex;
+                        var dropdownIndex = failureActionStepIndex >= i && failureActionStepIndex < currentSteps.Count
+                            ? failureActionStepIndex - 1
+                            : failureActionStepIndex;
 
                         var comboItems = string.Join('\0', stepNames) + '\0';
 
                         if (ImGui.Combo($"##FailureStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                         {
                             // Adjust the selectedStepIndex based on the current step's position
-                            var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
+                            var selectedStepIndex = dropdownIndex >= i
+                                ? dropdownIndex + 1
+                                : dropdownIndex;
 
                             stepInput.FailureActionStepIndex = selectedStepIndex;
                         }
-
                     }
 
                     #endregion

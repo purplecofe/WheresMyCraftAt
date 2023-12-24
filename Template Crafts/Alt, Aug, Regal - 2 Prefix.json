@@ -30,7 +30,7 @@
     "Conditionals": [
       {
         "Name": "Open Prefix",
-        "Value": "ModsInfo.Prefixes.Count <= 2"
+        "Value": "ModsInfo.Prefixes.Count == 0"
       }
     ],
     "CheckType": 1

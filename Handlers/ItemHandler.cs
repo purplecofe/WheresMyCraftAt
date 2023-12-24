@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using ExileCore.PoEMemory.Components;
+﻿using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
-using WheresMyCraftAt.Extensions;
+using System.Collections.Generic;
+using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Handlers;
