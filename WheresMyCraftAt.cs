@@ -33,6 +33,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public CancellationTokenSource OperationCts;
     public List<CraftingStep> SelectedCraftingSteps = [];
     public int ServerLatency;
+    private List<Keys> keysToRelease = [];
 
     public WheresMyCraftAt()
     {
@@ -45,6 +46,12 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         Main = this;
         RegisterHotkey(Settings.RunButton);
         RegisterHotkey(Settings.ToggleDebugWindow);
+
+        keysToRelease = [Keys.LButton, Keys.RButton];
+
+        foreach (var key in keysToRelease)
+            Input.RegisterKey(key);
+
         return true;
     }
 
@@ -103,14 +110,6 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         }
 
         CurrentOperation = null;
-
-        var keysToRelease = new List<Keys>
-        {
-            Keys.LControlKey,
-            Keys.ShiftKey,
-            Keys.LButton,
-            Keys.RButton
-        };
 
         foreach (var key in keysToRelease.Where(Input.GetKeyState))
             Input.KeyUp(key);
