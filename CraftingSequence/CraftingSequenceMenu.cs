@@ -578,7 +578,7 @@ public static class CraftingSequenceMenu
         {
             // Use a different symbol or format for the header line
             ImGui.Text(
-                $"HAS {currentStep.ConditionalsToBePassForSuccess} or more of the following conditions are met:"
+                $"HAS {currentStep.ConditionalsToBePassForSuccess} or more of the following conditions pass:"
             );
 
             ImGui.Indent();
