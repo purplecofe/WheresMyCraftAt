@@ -65,6 +65,7 @@ public static class KeyHandler
     public static void PerformButtonAction(Keys button, bool pressDown)
     {
         if (pressDown)
+        {
             switch (button)
             {
                 case Keys.LButton:
@@ -77,7 +78,9 @@ public static class KeyHandler
                     Input.KeyDown(button);
                     break;
             }
+        }
         else
+        {
             switch (button)
             {
                 case Keys.LButton:
@@ -90,5 +93,6 @@ public static class KeyHandler
                     Input.KeyUp(button);
                     break;
             }
+        }
     }
 }

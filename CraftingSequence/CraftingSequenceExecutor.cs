@@ -47,7 +47,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 {
                     // Execute the method if no prior conditional check or if it's not applicable
                     var methodResult = await currentStep.Method(token);
-                    Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
+
+                    Logging.Logging.Add(
+                        $"CraftingSequenceStep: Method result is {methodResult}",
+                        LogMessageType.Special
+                    );
                 }
 
                 if (currentStep.ConditionalChecks.Count != 0 &&

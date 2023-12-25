@@ -15,14 +15,45 @@ public static class Logging
 {
     private static readonly Dictionary<Enums.WheresMyCraftAt.LogMessageType, Color> LogMessageColors = new()
     {
-        { Enums.WheresMyCraftAt.LogMessageType.Trace, Color.LightGray },  // Light gray for detailed, low-level messages
-        { Enums.WheresMyCraftAt.LogMessageType.Debug, Color.Cyan },       // Cyan for debug-level messages
-        { Enums.WheresMyCraftAt.LogMessageType.Info, Color.White },       // White for informational messages
-        { Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow },   // Yellow for warnings
-        { Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red },        // Red for errors
-        { Enums.WheresMyCraftAt.LogMessageType.Critical, Color.DarkRed }, // Dark red for critical errors
-        { Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue }, // Sky blue for profiler messages
-        { Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta }   // Magenta for special messages
+        // Light gray for detailed, low-level messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Trace, Color.LightGray
+        },
+
+        // Cyan for debug-level messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Debug, Color.Cyan
+        },
+
+        // White for informational messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Info, Color.White
+        },
+
+        // Yellow for warnings
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow
+        },
+
+        // Red for errors
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red
+        },
+
+        // Dark red for critical errors
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Critical, Color.DarkRed
+        },
+
+        // Sky blue for profiler messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue
+        },
+
+        // Magenta for special messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta
+        }
     };
 
     private static readonly object Locker = new();
@@ -34,7 +65,9 @@ public static class Logging
         var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
 
         if (Main.CurrentOperation is not null)
+        {
             flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
+        }
 
         var isOpen = Main.Settings.ShowLogWindow.Value;
 
@@ -51,7 +84,9 @@ public static class Logging
                 Main.Settings.LogMessageFilters[logMessageType] = isEnabled;
 
                 if (index != logMessageTypes.Count - 1)
+                {
                     ImGui.SameLine();
+                }
             }
 
             ImGui.BeginChild("LogMessages", new Vector2(0, 0), ImGuiChildFlags.Border);
@@ -61,7 +96,9 @@ public static class Logging
                 foreach (var msg in MessagesList.Where(msg => msg != null))
                 {
                     if (!Main.Settings.LogMessageFilters[msg.LogType])
+                    {
                         continue;
+                    }
 
                     ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
                     ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
@@ -83,7 +120,9 @@ public static class Logging
             var color = LogMessageColors[messageType];
 
             if (Main.Settings.DebugPrint)
+            {
                 DebugWindow.LogMsg(msg, Main.Settings.DebugPrintLingerTime, color);
+            }
 
             var debugMsgDescription = new DebugMsgDescription
             {

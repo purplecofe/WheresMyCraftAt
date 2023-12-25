@@ -64,7 +64,9 @@ public static class CraftingSequenceMenu
                         Enum.GetNames(typeof(ConditionalCheckType)),
                         GetEnumLength<ConditionalCheckType>()
                     ))
+                {
                     stepInput.CheckType = (ConditionalCheckType)checkTimingIndex;
+                }
 
                 if (stepInput.CheckType != ConditionalCheckType.ConditionalCheckOnly)
                 {
@@ -77,20 +79,26 @@ public static class CraftingSequenceMenu
                             ref currencyItem,
                             100
                         ))
+                    {
                         stepInput.CurrencyItem = currencyItem;
+                    }
 
                     // Automatic Success Checkbox
                     var autoSuccess = stepInput.AutomaticSuccess;
 
                     if (ImGui.Checkbox($"Automatic Success##{i}", ref autoSuccess))
+                    {
                         stepInput.AutomaticSuccess = autoSuccess;
+                    }
                 }
 
                 // Success Action
                 var successActionIndex = (int)stepInput.SuccessAction;
 
                 if (stepInput.SuccessAction == SuccessAction.GoToStep)
+                {
                     ImGui.SetNextItemWidth(dropdownWidth);
+                }
 
                 if (ImGui.Combo(
                         $"##SuccessAction{i}",
@@ -98,7 +106,9 @@ public static class CraftingSequenceMenu
                         Enum.GetNames(typeof(SuccessAction)),
                         GetEnumLength<SuccessAction>()
                     ))
+                {
                     stepInput.SuccessAction = (SuccessAction)successActionIndex;
+                }
 
                 #region SuccessStepSelectorIndex
 
@@ -113,22 +123,20 @@ public static class CraftingSequenceMenu
 
                     for (var step = 0; step < currentSteps.Count; step++)
                         if (step != i) // Exclude the current step
+                        {
                             stepNames.Add($"STEP [{step + 1}]");
+                        }
 
                     // Initialize dropdownIndex based on the successActionStepIndex
                     var dropdownIndex = successActionStepIndex >= i && successActionStepIndex < currentSteps.Count
-                        ? successActionStepIndex - 1
-                        : successActionStepIndex;
+                        ? successActionStepIndex - 1 : successActionStepIndex;
 
                     var comboItems = string.Join('\0', stepNames) + '\0';
 
                     if (ImGui.Combo($"##SuccessStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                     {
                         // Adjust the selectedStepIndex based on the current step's position
-                        var selectedStepIndex = dropdownIndex >= i
-                            ? dropdownIndex + 1
-                            : dropdownIndex;
-
+                        var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
                         stepInput.SuccessActionStepIndex = selectedStepIndex;
                     }
                 }
@@ -145,7 +153,9 @@ public static class CraftingSequenceMenu
                     var failureActionIndex = (int)stepInput.FailureAction;
 
                     if (stepInput.FailureAction == FailureAction.GoToStep)
+                    {
                         ImGui.SetNextItemWidth(dropdownWidth);
+                    }
 
                     if (ImGui.Combo(
                             $"##FailureAction{i}",
@@ -153,7 +163,9 @@ public static class CraftingSequenceMenu
                             Enum.GetNames(typeof(FailureAction)),
                             GetEnumLength<FailureAction>()
                         ))
+                    {
                         stepInput.FailureAction = (FailureAction)failureActionIndex;
+                    }
 
                     #region FailureStepSelectorIndex
 
@@ -168,22 +180,20 @@ public static class CraftingSequenceMenu
 
                         for (var step = 0; step < currentSteps.Count; step++)
                             if (step != i) // Exclude the current step
+                            {
                                 stepNames.Add($"STEP [{step + 1}]");
+                            }
 
                         // Initialize dropdownIndex based on the failureActionStepIndex
                         var dropdownIndex = failureActionStepIndex >= i && failureActionStepIndex < currentSteps.Count
-                            ? failureActionStepIndex - 1
-                            : failureActionStepIndex;
+                            ? failureActionStepIndex - 1 : failureActionStepIndex;
 
                         var comboItems = string.Join('\0', stepNames) + '\0';
 
                         if (ImGui.Combo($"##FailureStepIndex{i}", ref dropdownIndex, comboItems, stepNames.Count))
                         {
                             // Adjust the selectedStepIndex based on the current step's position
-                            var selectedStepIndex = dropdownIndex >= i
-                                ? dropdownIndex + 1
-                                : dropdownIndex;
-
+                            var selectedStepIndex = dropdownIndex >= i ? dropdownIndex + 1 : dropdownIndex;
                             stepInput.FailureActionStepIndex = selectedStepIndex;
                         }
                     }
@@ -195,7 +205,10 @@ public static class CraftingSequenceMenu
 
                     // Manage Conditional Checks
                     if (ImGui.Button($"Add Conditional Check##{i}"))
-                        stepInput.Conditionals.Add(new ConditionalKeys()); // Add a new empty string to be filled out
+                    {
+                        stepInput.Conditionals.Add(new ConditionalKeys());
+                    }
+                    // Add a new empty string to be filled out
 
                     ImGui.SameLine();
                     ImGui.SetNextItemWidth(200);
@@ -219,7 +232,9 @@ public static class CraftingSequenceMenu
 
                     for (var step = 0; step < currentSteps.Count; step++)
                         if (step != i) // Exclude the current step
+                        {
                             stepNamesForDropdown.Add($"STEP [{step + 1}]");
+                        }
 
                     // Concatenate step names into a single string for the dropdown items
                     var dropdownItemsForCopy = string.Join('\0', stepNamesForDropdown) + '\0';
@@ -233,6 +248,7 @@ public static class CraftingSequenceMenu
                             stepNamesForDropdown.Count
                         ))
                         // Dropdown selection made, parse the selected step index
+                    {
                         if (currentStepIndex >= 0 && currentStepIndex < stepNamesForDropdown.Count)
                         {
                             var selectedStepName = stepNamesForDropdown[currentStepIndex];
@@ -250,8 +266,11 @@ public static class CraftingSequenceMenu
 
                             // Assign conditionals from the selected step to the current step's conditionals
                             if (selectedStepIndex >= 0 && selectedStepIndex < currentSteps.Count)
+                            {
                                 stepInput.Conditionals = currentSteps[selectedStepIndex].Conditionals;
+                            }
                         }
+                    }
 
                     var checksToRemove = new List<int>(); // Track checks to remove
 
@@ -267,7 +286,10 @@ public static class CraftingSequenceMenu
                         var checkKey = stepInput.Conditionals[j].Name;
 
                         if (ImGui.InputTextWithHint($"##{i}_{j}", "Name of condition...", ref checkKey, 1000))
-                            stepInput.Conditionals[j].Name = checkKey; // Update the check key
+                        {
+                            stepInput.Conditionals[j].Name = checkKey;
+                        }
+                        // Update the check key
 
                         ImGui.SameLine();
                         var showPopup = true;
@@ -289,7 +311,10 @@ public static class CraftingSequenceMenu
                     {
                         if (stepInput.Conditionals.Count >= stepInput.ConditionalsToBePassForSuccess &&
                             stepInput.ConditionalsToBePassForSuccess > 1)
-                            stepInput.ConditionalsToBePassForSuccess--; // Decrement the required checks to pass
+                        {
+                            stepInput.ConditionalsToBePassForSuccess--;
+                        }
+                        // Decrement the required checks to pass
 
                         stepInput.Conditionals.RemoveAt(index); // Remove marked checks
                     }
@@ -327,7 +352,9 @@ public static class CraftingSequenceMenu
         Main.Settings.SelectedCraftingStepInputs = currentSteps;
 
         if (ImGui.Button("[=] Add New Step"))
+        {
             Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
+        }
 
         Main.Settings.CraftingSequenceLastSaved = _fileSaveName;
         Main.Settings.CraftingSequenceLastSelected = _selectedFileName;
@@ -340,7 +367,9 @@ public static class CraftingSequenceMenu
                 ref showPopup,
                 ImGuiWindowFlags.AlwaysAutoResize
             ))
+        {
             return;
+        }
 
         ImGui.InputTextMultiline(
             $"##text{i}_{j}",
@@ -359,28 +388,35 @@ public static class CraftingSequenceMenu
         ImGui.SameLine();
 
         if (ImGui.Button("Revert"))
+        {
             tempCondValue = condEditValue;
+        }
 
         ImGui.SameLine();
 
         if (ImGui.Button("Close"))
+        {
             ImGui.CloseCurrentPopup();
+        }
 
         var conditionals = Main.Settings.SelectedCraftingStepInputs[i].Conditionals;
 
-        var conditionalNames = conditionals.Select(
-                                               (c, index) => string.IsNullOrEmpty(c.Name)
-                                                   ? $"Unnamed Conditional {index + 1}"
-                                                   : c.Name
-                                           )
-                                           .ToArray();
+        var conditionalNames = conditionals
+                               .Select(
+                                   (c, index) => string.IsNullOrEmpty(c.Name)
+                                       ? $"Unnamed Conditional {index + 1}" : c.Name
+                               ).ToArray();
 
         var selectedIndex = -1;
         ImGui.SameLine();
 
         if (ImGui.Combo("Copy Conditional From", ref selectedIndex, conditionalNames, conditionalNames.Length))
+        {
             if (selectedIndex >= 0 && selectedIndex < conditionals.Count)
+            {
                 tempCondValue = conditionals[selectedIndex].Value;
+            }
+        }
 
         ImGui.EndPopup();
     }
@@ -393,7 +429,9 @@ public static class CraftingSequenceMenu
                 $"Confirm / Clear Steps##{Main.Name}Confirm / Clear Steps",
                 ImGuiTreeNodeFlags.DefaultOpen
             ))
+        {
             return;
+        }
 
         ImGui.Indent();
 
@@ -423,7 +461,9 @@ public static class CraftingSequenceMenu
                 foreach (var checkKey in input.Conditionals)
                 {
                     if (input.AutomaticSuccess)
+                    {
                         continue;
+                    }
 
                     var filter = ItemFilter.LoadFromString(checkKey.Value);
 
@@ -447,14 +487,18 @@ public static class CraftingSequenceMenu
         ImGui.SameLine();
 
         if (ImGui.Button("[x] Clear All"))
+        {
             ImGui.OpenPopup(DeletePopup);
+        }
 
         if (ShowButtonPopup(DeletePopup, ["Are you sure?", "STOP"], out var clearSelectedIndex))
+        {
             if (clearSelectedIndex == 0)
             {
                 Main.Settings.SelectedCraftingStepInputs.Clear();
                 Main.SelectedCraftingSteps.Clear();
             }
+        }
 
         ImGui.Separator();
         ImGui.Unindent();
@@ -465,7 +509,9 @@ public static class CraftingSequenceMenu
         ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
 
         if (!ImGui.CollapsingHeader($"Load / Save##{Main.Name}Load / Save", ImGuiTreeNodeFlags.DefaultOpen))
+        {
             return;
+        }
 
         ImGui.Indent();
         ImGui.InputTextWithHint("##SaveAs", "File Path...", ref _fileSaveName, 100);
@@ -522,7 +568,9 @@ public static class CraftingSequenceMenu
                 }
 
                 if (isSelected)
+                {
                     ImGui.SetItemDefaultFocus();
+                }
             }
 
             ImGui.EndCombo();
@@ -537,7 +585,9 @@ public static class CraftingSequenceMenu
 
             if (!directoryToOpen)
                 // Log error when the config directory doesn't exist
+            {
                 Logging.Logging.Add("Unable to open config directory because it does not exist.", LogMessageType.Error);
+            }
 
             if (configDir != null)
             {
@@ -548,6 +598,7 @@ public static class CraftingSequenceMenu
         }
 
         if (ShowButtonPopup(OverwritePopup, ["Are you sure?", "STOP"], out var saveSelectedIndex))
+        {
             if (saveSelectedIndex == 0)
             {
                 SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
@@ -558,6 +609,7 @@ public static class CraftingSequenceMenu
                     LogMessageType.Info
                 );
             }
+        }
 
         ImGui.Unindent();
     }
@@ -573,7 +625,9 @@ public static class CraftingSequenceMenu
                 ref showPopup,
                 ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize
             ))
+        {
             return false;
+        }
 
         for (var i = 0; i < items.Count; i++)
         {

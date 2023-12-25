@@ -63,11 +63,7 @@ public static class MouseHandler
 
     public static void SetCursorPositionAction(Vector2N position, bool applyOffset)
     {
-        Input.SetCursorPos(
-            applyOffset
-                ? GetRelativeWinPos(position)
-                : position
-        );
+        Input.SetCursorPos(applyOffset ? GetRelativeWinPos(position) : position);
     }
 
     private static Vector2N NormalizePosition(Vector2N position)

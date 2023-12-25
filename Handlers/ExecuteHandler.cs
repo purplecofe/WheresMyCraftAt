@@ -19,7 +19,9 @@ public static class ExecuteHandler
                 await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
 
                 if (condition())
+                {
                     return true;
+                }
             }
 
             return false;
@@ -43,7 +45,9 @@ public static class ExecuteHandler
                 await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
 
                 if (condition())
+                {
                     return true;
+                }
             }
 
             return false;
@@ -68,7 +72,9 @@ public static class ExecuteHandler
                 await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
 
                 if (condition())
+                {
                     return true;
+                }
             }
 
             return false;

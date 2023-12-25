@@ -20,17 +20,18 @@ public static class ItemExtensions
         {
             ElementHandler.TryGetCursorStateCondition(out var cursorStateCondition);
             var clickPosition = item.GetClientRectCache.GetRandomPointWithinWithPerlin(15, 80);
-
-            var button = !rightClick
-                ? Keys.LButton
-                : Keys.RButton;
+            var button = !rightClick ? Keys.LButton : Keys.RButton;
 
             // Log info about the click action
             Logging.Logging.Add($"AsyncTryClick: Clicking with {button} on item.", LogMessageType.Info);
 
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
+            {
                 if (!ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()))
+                {
                     return false;
+                }
+            }
 
             if (!await KeyHandler.AsyncButtonPress(button, token))
             {

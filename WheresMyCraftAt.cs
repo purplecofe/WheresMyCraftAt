@@ -20,8 +20,12 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
     public readonly Dictionary<Enums.WheresMyCraftAt.SpecialSlot, Vector2N> SpecialSlotDimensionMap = new()
     {
-        { Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab, new Vector2N(126f, 252f) },
-        { Enums.WheresMyCraftAt.SpecialSlot.EssenceTab, new Vector2N(127.2f, 254.4f) }
+        {
+            Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab, new Vector2N(126f, 252f)
+        },
+        {
+            Enums.WheresMyCraftAt.SpecialSlot.EssenceTab, new Vector2N(127.2f, 254.4f)
+        }
     };
 
     public Vector2 ClickWindowOffset;
@@ -56,7 +60,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         ServerLatency = GameController.IngameState.ServerData.Latency;
 
         if (Settings.ToggleDebugWindow.PressedOnce())
+        {
             Settings.ShowLogWindow.Value = !Settings.ShowLogWindow.Value;
+        }
 
         if (!GameHandler.IsInGameCondition())
         {
@@ -82,7 +88,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         }
 
         if (CurrentOperation is not null)
+        {
             TaskUtils.RunOrRestart(ref CurrentOperation, () => null);
+        }
 
         return null;
     }
@@ -90,7 +98,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public void Stop()
     {
         if (CurrentOperation is null)
+        {
             return;
+        }
 
         CurrentOperation = null;
 
@@ -106,7 +116,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             Input.KeyUp(key);
 
         if (ItemHandler.IsItemRightClickedCondition())
+        {
             Input.KeyPressRelease(Keys.Escape);
+        }
 
         Logging.Logging.Add("Stop() has been ran.", Enums.WheresMyCraftAt.LogMessageType.Warning);
     }
@@ -116,7 +128,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         if (OperationCts != null)
         {
             if (!OperationCts.IsCancellationRequested)
+            {
                 OperationCts.Cancel();
+            }
 
             OperationCts.Dispose();
         }

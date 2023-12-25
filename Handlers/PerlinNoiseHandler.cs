@@ -71,17 +71,8 @@ public static class PerlinNoiseHandler
     {
         // CONVERT LO 4 BITS OF HASH CODE INTO 12 GRADIENT DIRECTIONS
         var h = hash & 15;
-
-        var u = h < 8
-            ? x
-            : y;
-
+        var u = h < 8 ? x : y;
         var v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
-
-        return ((h & 1) == 0
-            ? u
-            : -u) + ((h & 2) == 0
-            ? v
-            : -v);
+        return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 }

@@ -41,7 +41,9 @@ public static class HelperHandler
         perlinTime += GetRandomValue(1, 10);
 
         if (perlinTime > PerlinTimeResetThreshold)
+        {
             perlinTime = 0.0f;
+        }
 
         // Generate a Perlin noise value for shrink percentage
         var noiseValue = PerlinNoiseHandler.Generate(perlinTime / 100.0f, 0);

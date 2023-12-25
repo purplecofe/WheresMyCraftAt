@@ -79,9 +79,7 @@ public static class ItemHandler
     }
 
     public static List<string> GetHumanModListFromItem(Entity item) =>
-        item.TryGetComponent<Mods>(out var modsComp) && modsComp.HumanStats.Count != 0
-            ? modsComp.HumanStats
-            : [];
+        item.TryGetComponent<Mods>(out var modsComp) && modsComp.HumanStats.Count != 0 ? modsComp.HumanStats : [];
 
     public static void PrintHumanModListFromItem(Entity item)
     {
@@ -89,10 +87,14 @@ public static class ItemHandler
         var modsList = GetHumanModListFromItem(item);
 
         if (modsList.Count != 0)
+        {
             foreach (var itemMod in modsList)
                 Logging.Logging.Add($"ItemMod: {itemMod}", Enums.WheresMyCraftAt.LogMessageType.Info);
+        }
         else
+        {
             Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        }
     }
 
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);

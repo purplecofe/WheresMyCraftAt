@@ -39,14 +39,17 @@ public static class InventoryHandler
 
     public static bool TryGetPickedUpItem(out Entity pickedUpItem)
     {
-        pickedUpItem = IsAnItemPickedUpCondition()
-            ? GetItemsFromAnInventory(InventorySlotE.Cursor1).FirstOrDefault()
+        pickedUpItem = IsAnItemPickedUpCondition() ? GetItemsFromAnInventory(InventorySlotE.Cursor1).FirstOrDefault()
             : null;
 
         if (pickedUpItem != null)
+        {
             Logging.Logging.Add("An item is picked up.", LogMessageType.Info);
+        }
         else
+        {
             Logging.Logging.Add("No item is picked up.", LogMessageType.Warning);
+        }
 
         return pickedUpItem != null;
     }
