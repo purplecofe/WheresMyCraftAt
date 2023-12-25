@@ -12,18 +12,13 @@ public static class MouseHandler
 {
     private static IInputController _inputController;
 
-    // Extremely slow, but works. May require a bit of understanding to figure out why it doesnt land in the place you want it to.
-    public static async SyncTask<bool> AsyncIHIsMouseInPlace(Vector2N position, bool applyOffset,
+    // Testing seems fine, need to keep using this to feel confident
+    public static async SyncTask<bool> AsyncInputHumanizerMoveMouse(Vector2N position, bool applyOffset,
         CancellationToken token)
     {
-        Logging.Logging.Add(
-            $"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).",
-            Enums.WheresMyCraftAt.LogMessageType.Info
-        );
-
         var newPos = applyOffset ? GetRelativeWinPos(position) : position;
         using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.ActionTimeoutInSeconds));
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.ActionTimeoutInSeconds * 2));
 
         try
         {
@@ -52,26 +47,31 @@ public static class MouseHandler
 
                 using (_inputController)
                 {
-
-                    if (await _inputController.MoveMouse(newPos, token))
+                    if (!await _inputController.MoveMouse(newPos, token))
                     {
                         Logging.Logging.Add(
-                            $"Mouse position check result: {true} (Desired position: {newPos})",
-                            Enums.WheresMyCraftAt.LogMessageType.Info
+                            $"InputHumanizerMoveMouse: Failed to move mouse to desired position: {newPos}",
+                            Enums.WheresMyCraftAt.LogMessageType.Warning
                         );
-
-                        return true;
                     }
-
-                    Logging.Logging.Add(
-                        $"Mouse position check result: {false} (Desired position: {newPos})",
-                        Enums.WheresMyCraftAt.LogMessageType.Warning
-                    );
                 }
 
                 await GameHandler.AsyncWait(
-                    HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay), ctsTimeout.Token
+                    HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+                    ctsTimeout.Token
                 );
+
+                if (!IsMouseInPositionCondition(position))
+                {
+                    continue;
+                }
+
+                Logging.Logging.Add(
+                    $"InputHumanizerMoveMouse: Mouse ended up in position: {GetCurrentMousePosition()}",
+                    Enums.WheresMyCraftAt.LogMessageType.Info
+                );
+
+                return true;
             }
 
             return false;
@@ -82,7 +82,8 @@ public static class MouseHandler
         }
     }
 
-    public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
+    public static async SyncTask<bool> AsyncSetMouseInPlace(Vector2N position, bool applyOffset,
+        CancellationToken token)
     {
         Logging.Logging.Add(
             $"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).",
@@ -116,7 +117,9 @@ public static class MouseHandler
         );
 
         var normalizedPosition = NormalizePosition(position);
-        var result = await AsyncIsMouseInPlace(normalizedPosition, applyOffset, token);
+        // uncomment to enable InputHumanizer and comment line under.
+        //var result = await AsyncInputHumanizerMoveMouse(normalizedPosition, applyOffset, token);
+        var result = await AsyncSetMouseInPlace(normalizedPosition, applyOffset, token);
 
         Logging.Logging.Add(
             $"Mouse move result: {result} (Target position: {normalizedPosition})",

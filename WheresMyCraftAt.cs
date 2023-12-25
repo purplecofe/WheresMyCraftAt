@@ -30,10 +30,10 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
     public Vector2 ClickWindowOffset;
     public SyncTask<bool> CurrentOperation;
+    private List<Keys> keysToRelease = [];
     public CancellationTokenSource OperationCts;
     public List<CraftingStep> SelectedCraftingSteps = [];
     public int ServerLatency;
-    private List<Keys> keysToRelease = [];
 
     public WheresMyCraftAt()
     {
@@ -46,7 +46,6 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         Main = this;
         RegisterHotkey(Settings.RunButton);
         RegisterHotkey(Settings.ToggleDebugWindow);
-
         keysToRelease = [Keys.LButton, Keys.RButton];
 
         foreach (var key in keysToRelease)
@@ -94,12 +93,19 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             }
         }
 
+        return null;
+    }
+
+    public override void Render()
+    {
+        base.Render();
+
         if (CurrentOperation is not null)
         {
             TaskUtils.RunOrRestart(ref CurrentOperation, () => null);
         }
 
-        return null;
+        Logging.Logging.Render();
     }
 
     public void Stop()
@@ -203,11 +209,5 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         base.DrawSettings();
         CraftingSequenceMenu.Draw();
-    }
-
-    public override void Render()
-    {
-        base.Render();
-        Logging.Logging.Render();
     }
 }
