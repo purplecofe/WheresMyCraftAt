@@ -1,5 +1,6 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
+using InputHumanizer.Input;
 using System;
 using System.Threading;
 using Vector2N = System.Numerics.Vector2;
@@ -9,6 +10,78 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class MouseHandler
 {
+    private static IInputController _inputController;
+
+    // Extremely slow, but works. May require a bit of understanding to figure out why it doesnt land in the place you want it to.
+    public static async SyncTask<bool> AsyncIHIsMouseInPlace(Vector2N position, bool applyOffset,
+        CancellationToken token)
+    {
+        Logging.Logging.Add(
+            $"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).",
+            Enums.WheresMyCraftAt.LogMessageType.Info
+        );
+
+        var newPos = applyOffset ? GetRelativeWinPos(position) : position;
+        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.ActionTimeoutInSeconds));
+
+        try
+        {
+            while (!ctsTimeout.Token.IsCancellationRequested)
+            {
+                var tryGetInputController
+                    = Main.GameController.PluginBridge.GetMethod<Func<string, IInputController>>(
+                        "InputHumanizer.TryGetInputController"
+                    );
+
+                if (tryGetInputController is null)
+                {
+                    Logging.Logging.Add(
+                        $"{Main.Name}: Failed to get Input Controller. Have you installed InputHumanizer?",
+                        Enums.WheresMyCraftAt.LogMessageType.Error
+                    );
+
+                    Main.Stop();
+                    return false;
+                }
+
+                if ((_inputController = tryGetInputController(Main.Name)) is null)
+                {
+                    return false;
+                }
+
+                using (_inputController)
+                {
+
+                    if (await _inputController.MoveMouse(newPos, token))
+                    {
+                        Logging.Logging.Add(
+                            $"Mouse position check result: {true} (Desired position: {newPos})",
+                            Enums.WheresMyCraftAt.LogMessageType.Info
+                        );
+
+                        return true;
+                    }
+
+                    Logging.Logging.Add(
+                        $"Mouse position check result: {false} (Desired position: {newPos})",
+                        Enums.WheresMyCraftAt.LogMessageType.Warning
+                    );
+                }
+
+                await GameHandler.AsyncWait(
+                    HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay), ctsTimeout.Token
+                );
+            }
+
+            return false;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
     public static async SyncTask<bool> AsyncIsMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
     {
         Logging.Logging.Add(
