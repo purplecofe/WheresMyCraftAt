@@ -31,6 +31,7 @@ public static class CraftingSequenceMenu
     {
         DrawFileOptions();
         DrawConfirmAndClear();
+        DrawInstructions();
         DrawCraftingStepInputs();
     }
 
@@ -502,6 +503,104 @@ public static class CraftingSequenceMenu
 
         ImGui.Separator();
         ImGui.Unindent();
+    }
+
+    private static void DrawInstructions()
+    {
+        ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
+
+        if (!ImGui.CollapsingHeader($"Selected Step Instructions##{Main.Name}Instructions"))
+        {
+            return;
+        }
+
+        ImGui.Indent();
+        // Start of indented Section
+        var steps = Main.Settings.SelectedCraftingStepInputs.ToList();
+
+        void CreateStepChildWindow(int index, string title)
+        {
+            ImGui.BeginChild(
+                $"[{index + 1}] {title}##stepinstruction{index}",
+                Vector2.Zero,
+                ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.Border
+            );
+
+            ImGui.Text($"[{index + 1}] {title}");
+            ImGui.Indent();
+        }
+
+        for (var index = 0; index < steps.Count; index++)
+        {
+            var currentStep = Main.Settings.SelectedCraftingStepInputs[index];
+
+            var childWindowTitle = currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly
+                ? "Check that the item" : $"Use '{steps[index].CurrencyItem}'";
+
+            CreateStepChildWindow(index, childWindowTitle);
+
+            if (currentStep.AutomaticSuccess)
+            {
+                HandleAutomaticSuccess(currentStep);
+            }
+            else
+            {
+                HandleManualSuccess(currentStep);
+            }
+
+            ImGui.Unindent();
+            ImGui.EndChild();
+            ImGui.NewLine();
+        }
+
+        // End of indented Section
+        ImGui.Separator();
+        ImGui.Unindent();
+        return;
+
+        // Function to handle the display for steps with automatic success
+        void HandleAutomaticSuccess(CraftingStepInput currentStep)
+        {
+            if (currentStep.SuccessAction == SuccessAction.GoToStep)
+            {
+                ImGui.Text($"Then, go to step {currentStep.SuccessActionStepIndex + 1}");
+            }
+        }
+
+        // Function to handle the display for steps requiring manual success evaluation
+        void HandleManualSuccess(CraftingStepInput currentStep)
+        {
+            ImGui.Text("This step will succeed if:");
+            ImGui.Indent();
+            ImGui.Text($"- {currentStep.ConditionalsToBePassForSuccess} or more of the following conditions are met:");
+            ImGui.Indent();
+
+            foreach (var conditional in currentStep.Conditionals)
+                ImGui.Text($"- {conditional.Name}");
+
+            ImGui.Unindent();
+            ImGui.Unindent();
+
+            if (currentStep.SuccessAction == SuccessAction.GoToStep)
+            {
+                ImGui.Text($"If so, go to step {currentStep.SuccessActionStepIndex + 1}");
+            }
+
+            if (currentStep.FailureAction == FailureAction.GoToStep)
+            {
+                ImGui.Text($"If not, go to step {currentStep.FailureActionStepIndex + 1}");
+            }
+
+            if (currentStep.FailureAction == FailureAction.Restart)
+            {
+                ImGui.Text($"If not, restart from first step");
+            }
+
+            if (currentStep.FailureAction == FailureAction.RepeatStep)
+            {
+                ImGui.Text($"If not, repeat this step");
+            }
+        }
     }
 
     private static void DrawFileOptions()
