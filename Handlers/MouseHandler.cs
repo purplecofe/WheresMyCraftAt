@@ -137,10 +137,8 @@ public static class MouseHandler
 
     public static bool IsMouseInPositionCondition(Vector2N position) => GetCurrentMousePosition() == position;
 
-    public static void SetCursorPositionAction(Vector2N position, bool applyOffset)
-    {
+    public static void SetCursorPositionAction(Vector2N position, bool applyOffset) =>
         Input.SetCursorPos(applyOffset ? GetRelativeWinPos(position) : position);
-    }
 
     private static Vector2N NormalizePosition(Vector2N position)
     {

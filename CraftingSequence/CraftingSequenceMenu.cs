@@ -518,24 +518,12 @@ public static class CraftingSequenceMenu
         // Start of indented Section
         var steps = Main.Settings.SelectedCraftingStepInputs.ToList();
 
-        void CreateStepChildWindow(int index, string title)
-        {
-            ImGui.BeginChild(
-                $"[{index + 1}] {title}##stepinstruction{index}",
-                Vector2.Zero,
-                ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.Border
-            );
-
-            ImGui.Text($"[{index + 1}] {title}");
-            ImGui.Indent();
-        }
-
         for (var index = 0; index < steps.Count; index++)
         {
             var currentStep = Main.Settings.SelectedCraftingStepInputs[index];
 
-            var childWindowTitle = currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly
-                ? "Check that the item" : $"Use '{steps[index].CurrencyItem}'";
+            var childWindowTitle = currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
+                : $"Use '{steps[index].CurrencyItem}'";
 
             CreateStepChildWindow(index, childWindowTitle);
 
@@ -558,6 +546,24 @@ public static class CraftingSequenceMenu
         ImGui.Unindent();
         return;
 
+        void CreateStepChildWindow(int index, string title)
+        {
+            ImGui.BeginChild(
+                $"[{index + 1}] {title}##stepinstruction{index}",
+                Vector2.Zero,
+                ImGuiChildFlags.AutoResizeY | ImGuiChildFlags.Border
+            );
+
+            ImGui.Text($"[{index + 1}] {title}");
+            ImGui.Indent();
+
+            // Add "Check the item" text if the title starts with "Use"
+            if (title.StartsWith("Use"))
+            {
+                ImGui.Text("Check the item");
+            }
+        }
+
         // Function to handle the display for steps with automatic success
         void HandleAutomaticSuccess(CraftingStepInput currentStep)
         {
@@ -570,15 +576,21 @@ public static class CraftingSequenceMenu
         // Function to handle the display for steps requiring manual success evaluation
         void HandleManualSuccess(CraftingStepInput currentStep)
         {
-            ImGui.Text("This step will succeed if:");
-            ImGui.Indent();
-            ImGui.Text($"- {currentStep.ConditionalsToBePassForSuccess} or more of the following conditions are met:");
+            // Use a different symbol or format for the header line
+            ImGui.Text(
+                $"HAS {currentStep.ConditionalsToBePassForSuccess} or more of the following conditions are met:"
+            );
+
             ImGui.Indent();
 
+            // Use a uniform symbol for each condition
             foreach (var conditional in currentStep.Conditionals)
-                ImGui.Text($"- {conditional.Name}");
+            {
+                ImGui.Bullet();
+                ImGui.SameLine();
+                ImGui.Text(conditional.Name);
+            }
 
-            ImGui.Unindent();
             ImGui.Unindent();
 
             if (currentStep.SuccessAction == SuccessAction.GoToStep)
@@ -586,19 +598,17 @@ public static class CraftingSequenceMenu
                 ImGui.Text($"If so, go to step {currentStep.SuccessActionStepIndex + 1}");
             }
 
-            if (currentStep.FailureAction == FailureAction.GoToStep)
+            switch (currentStep.FailureAction)
             {
-                ImGui.Text($"If not, go to step {currentStep.FailureActionStepIndex + 1}");
-            }
-
-            if (currentStep.FailureAction == FailureAction.Restart)
-            {
-                ImGui.Text($"If not, restart from first step");
-            }
-
-            if (currentStep.FailureAction == FailureAction.RepeatStep)
-            {
-                ImGui.Text($"If not, repeat this step");
+                case FailureAction.GoToStep:
+                    ImGui.Text($"If not, go to step {currentStep.FailureActionStepIndex + 1}");
+                    break;
+                case FailureAction.Restart:
+                    ImGui.Text("If not, restart from first step");
+                    break;
+                case FailureAction.RepeatStep:
+                    ImGui.Text("If not, repeat this step");
+                    break;
             }
         }
     }
