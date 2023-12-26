@@ -788,7 +788,7 @@ public static class CraftingSequenceMenu
             var childWindowTitle = currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
                 : $"Use '{steps[index].CurrencyItem}'";
 
-            CreateStepChildWindow(index, childWindowTitle);
+            CreateStepChildWindow(currentStep, index, childWindowTitle);
 
             if (currentStep.AutomaticSuccess)
             {
@@ -809,7 +809,7 @@ public static class CraftingSequenceMenu
         ImGui.Unindent();
         return;
 
-        void CreateStepChildWindow(int index, string title)
+        void CreateStepChildWindow(CraftingStepInput currentStep, int index, string title)
         {
             ImGui.BeginChild(
                 $"[{index + 1}] {title}##stepinstruction{index}",
@@ -821,7 +821,7 @@ public static class CraftingSequenceMenu
             ImGui.Indent();
 
             // Add "Check the item" text if the title starts with "Use"
-            if (title.StartsWith("Use"))
+            if (title.StartsWith("Use") && !currentStep.AutomaticSuccess)
             {
                 ImGui.Text("Check the item");
             }
@@ -830,9 +830,17 @@ public static class CraftingSequenceMenu
         // Function to handle the display for steps with automatic success
         void HandleAutomaticSuccess(CraftingStepInput currentStep)
         {
-            if (currentStep.SuccessAction == SuccessAction.GoToStep)
+            switch (currentStep.SuccessAction)
             {
-                ImGui.Text($"Then, go to step {currentStep.SuccessActionStepIndex + 1}");
+                case SuccessAction.GoToStep:
+                    ImGui.Text($"Then, go to step {currentStep.SuccessActionStepIndex + 1}");
+                    break;
+                case SuccessAction.Continue:
+                    ImGui.Text("Then continue");
+                    break;
+                case SuccessAction.End:
+                    ImGui.Text("Then End");
+                    break;
             }
         }
 

@@ -1,9 +1,6 @@
-﻿using ExileCore.PoEMemory.Elements.InventoryElements;
-using ExileCore.PoEMemory.MemoryObjects;
+﻿using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ItemFilterLibrary;
-using SharpDX;
-using System;
 using System.Threading;
 using WheresMyCraftAt.ItemFilterLibrary;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
@@ -28,8 +25,8 @@ public static class FilterHandler
         return false;
     }
 
-    public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery, SpecialSlot slot,
-        CancellationToken token)
+    public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery,
+        SpecialSlot slot, CancellationToken token)
     {
         Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
