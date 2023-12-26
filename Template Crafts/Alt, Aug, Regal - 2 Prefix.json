@@ -6,15 +6,20 @@
     "SuccessActionStepIndex": 5,
     "FailureAction": 2,
     "FailureActionStepIndex": 1,
-    "ConditionalsToBePassForSuccess": 1,
-    "Conditionals": [
+    "ConditionalGroups": [
       {
-        "Name": "1 or more life",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
-      },
-      {
-        "Name": "1 or more mana",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "1 or more life",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+          },
+          {
+            "Name": "1 or more mana",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+          }
+        ]
       }
     ],
     "CheckType": 0
@@ -26,11 +31,20 @@
     "SuccessActionStepIndex": 1,
     "FailureAction": 1,
     "FailureActionStepIndex": 1,
-    "ConditionalsToBePassForSuccess": 1,
-    "Conditionals": [
+    "ConditionalGroups": [
       {
-        "Name": "Open Prefix",
-        "Value": "ModsInfo.Prefixes.Count == 0"
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "1 or more life",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+          },
+          {
+            "Name": "1 or more mana",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+          }
+        ]
       }
     ],
     "CheckType": 1
@@ -42,15 +56,16 @@
     "SuccessActionStepIndex": 5,
     "FailureAction": 2,
     "FailureActionStepIndex": 0,
-    "ConditionalsToBePassForSuccess": 1,
-    "Conditionals": [
+    "ConditionalGroups": [
       {
-        "Name": "1 or more life",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
-      },
-      {
-        "Name": "1 or more mana",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Open Prefix",
+            "Value": "ModsInfo.Prefixes.Count == 0"
+          }
+        ]
       }
     ],
     "CheckType": 0
@@ -62,8 +77,7 @@
     "SuccessActionStepIndex": 1,
     "FailureAction": 1,
     "FailureActionStepIndex": 1,
-    "ConditionalsToBePassForSuccess": 1,
-    "Conditionals": [],
+    "ConditionalGroups": [],
     "CheckType": 0
   },
   {
@@ -73,26 +87,30 @@
     "SuccessActionStepIndex": 0,
     "FailureAction": 1,
     "FailureActionStepIndex": 1,
-    "ConditionalsToBePassForSuccess": 1,
-    "Conditionals": [],
+    "ConditionalGroups": [],
     "CheckType": 0
   },
   {
     "CurrencyItem": "Regal Orb",
     "AutomaticSuccess": false,
-    "SuccessAction": 0,
+    "SuccessAction": 1,
     "SuccessActionStepIndex": 1,
     "FailureAction": 2,
     "FailureActionStepIndex": 3,
-    "ConditionalsToBePassForSuccess": 2,
-    "Conditionals": [
+    "ConditionalGroups": [
       {
-        "Name": "1 or more life",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
-      },
-      {
-        "Name": "1 or more mana",
-        "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "1 or more life",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumLife] >= 1"
+          },
+          {
+            "Name": "1 or more mana",
+            "Value": "GetItemStats(ModsInfo.ExplicitMods)[GameStat.BaseMaximumMana] >= 1"
+          }
+        ]
       }
     ],
     "CheckType": 0

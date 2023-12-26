@@ -17,6 +17,13 @@ public class CraftingSequence
         ConditionalCheckOnly
     }
 
+    public enum ConditionGroup
+    {
+        AND,
+        OR,
+        NOT
+    }
+
     public enum FailureAction
     {
         RepeatStep,
@@ -105,14 +112,20 @@ public class CraftingSequence
     public class CraftingStep
     {
         public Func<CancellationToken, SyncTask<bool>> Method { get; set; }
-        public int ConditionalsToBePassForSuccess { get; set; } = 1;
-        public List<Func<bool>> ConditionalChecks { get; set; } = [];
+        public List<ConditionalChecksGroup> ConditionalCheckGroups { get; set; } = [];
         public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
         public bool AutomaticSuccess { get; set; } = false;
         public SuccessAction SuccessAction { get; set; }
         public int SuccessActionStepIndex { get; set; }
         public FailureAction FailureAction { get; set; }
         public int FailureActionStepIndex { get; set; }
+    }
+
+    public class ConditionalChecksGroup
+    {
+        public ConditionGroup GroupType { get; set; } = ConditionGroup.AND;
+        public int ConditionalsToBePassForSuccess { get; set; } = 1;
+        public List<Func<bool>> ConditionalChecks { get; set; } = [];
     }
 
     public class CraftingStepInput
@@ -123,9 +136,15 @@ public class CraftingSequence
         public int SuccessActionStepIndex { get; set; } = 1;
         public FailureAction FailureAction { get; set; } = FailureAction.Restart;
         public int FailureActionStepIndex { get; set; } = 1;
+        public List<ConditionalGroup> ConditionalGroups { get; set; } = [];
+        public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
+    }
+
+    public class ConditionalGroup
+    {
+        public ConditionGroup GroupType { get; set; } = ConditionGroup.AND;
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
         public List<ConditionalKeys> Conditionals { get; set; } = [];
-        public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
     }
 
     public class ConditionalKeys

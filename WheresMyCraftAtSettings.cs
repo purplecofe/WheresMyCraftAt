@@ -35,6 +35,7 @@ public class WheresMyCraftAtSettings : ISettings
         { Enums.WheresMyCraftAt.LogMessageType.Trace, true },
         { Enums.WheresMyCraftAt.LogMessageType.Debug, true },
         { Enums.WheresMyCraftAt.LogMessageType.Profiler, true },
+        { Enums.WheresMyCraftAt.LogMessageType.Evaluation, true },
         { Enums.WheresMyCraftAt.LogMessageType.Special, true }
     };
 }

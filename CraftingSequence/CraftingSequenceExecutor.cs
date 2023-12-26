@@ -31,12 +31,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                 stopwatch.Restart(); // Start timing
 
-                if (currentStep.ConditionalChecks.Count != 0 &&
+                if (currentStep.ConditionalCheckGroups.Count != 0 &&
                     currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = currentStep.ConditionalChecks.Count(condition => condition()) >=
-                              currentStep.ConditionalsToBePassForSuccess;
+                    success = EvaluateConditions(currentStep);
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
@@ -54,12 +53,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                     );
                 }
 
-                if (currentStep.ConditionalChecks.Count != 0 &&
+                if (currentStep.ConditionalCheckGroups.Count != 0 &&
                     currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = currentStep.ConditionalChecks.Count(condition => condition()) >=
-                              currentStep.ConditionalsToBePassForSuccess;
+                    success = EvaluateConditions(currentStep);
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
@@ -99,7 +97,10 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             // Determine the next step based on success or failure
             if (success)
             {
-                Logging.Logging.Add("CraftingSequenceStep: True", LogMessageType.Special);
+                Logging.Logging.Add(
+                    $"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}",
+                    LogMessageType.Special
+                );
 
                 switch (currentStep.SuccessAction)
                 {
@@ -115,7 +116,10 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
             else
             {
-                Logging.Logging.Add("CraftingSequenceStep: False", LogMessageType.Special);
+                Logging.Logging.Add(
+                    $"CraftingSequenceStep: Sequence result {currentStep.FailureAction}",
+                    LogMessageType.Special
+                );
 
                 switch (currentStep.FailureAction)
                 {
@@ -148,5 +152,56 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
         );
 
         return true;
+
+        static bool EvaluateConditions(CraftingStep currentStep)
+        {
+            var andResult = true; // Start true for AND logic. This remains true if all AND groups are true.
+            var orResult = false; // Start false for OR logic. This becomes true if any OR group is true.
+
+            foreach (var group in currentStep.ConditionalCheckGroups)
+            {
+                var trueCount = group.ConditionalChecks.Count(condition => condition());
+
+                switch (group.GroupType)
+                {
+                    case ConditionGroup.AND:
+                        andResult &= trueCount >= group.ConditionalsToBePassForSuccess;
+
+                        Logging.Logging.Add(
+                            $"AND Group Result: {andResult} (True Count: {trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
+                            LogMessageType.Evaluation
+                        );
+
+                        break;
+                    case ConditionGroup.OR:
+                        orResult |= trueCount >= group.ConditionalsToBePassForSuccess;
+
+                        Logging.Logging.Add(
+                            $"OR Group Result: {orResult} (True Count: {trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
+                            LogMessageType.Evaluation
+                        );
+
+                        break;
+                    case ConditionGroup.NOT:
+                        if (group.ConditionalChecks.Any(condition => condition()))
+                        {
+                            Logging.Logging.Add(
+                                "NOT Group Result: False (At least one condition is true)",
+                                LogMessageType.Evaluation
+                            );
+
+                            return false;
+                        }
+
+                        Logging.Logging.Add("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
+                        break;
+                }
+            }
+
+            // Final result: true if either all AND groups are true or any OR group is true
+            var combinedResult = andResult || orResult;
+            Logging.Logging.Add($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
+            return combinedResult;
+        }
     }
 }

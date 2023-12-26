@@ -50,6 +50,11 @@ public static class Logging
             Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue
         },
 
+        // Magenta for Evaluation messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Evaluation, Color.Orange
+        },
+
         // Magenta for special messages
         {
             Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta
