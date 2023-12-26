@@ -125,7 +125,7 @@ public class CraftingSequence
     {
         public ConditionGroup GroupType { get; set; } = ConditionGroup.AND;
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
-        public List<Func<bool>> ConditionalChecks { get; set; } = [];
+        public List<Func<CancellationToken, SyncTask<bool>>> ConditionalChecks { get; set; } = [];
     }
 
     public class CraftingStepInput

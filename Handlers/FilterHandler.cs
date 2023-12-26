@@ -1,5 +1,7 @@
 ﻿using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared;
 using ItemFilterLibrary;
+using System.Threading;
 using WheresMyCraftAt.ItemFilterLibrary;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -15,6 +17,21 @@ public static class FilterHandler
         if (StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var item))
         {
             var isMatch = IsItemMatchingCondition(item.Item, filterQuery);
+            Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
+            return isMatch;
+        }
+
+        Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
+        return false;
+    }
+    public static async SyncTask<bool> AsyncIsMatchingCondition(ItemFilter filterQuery, Enums.WheresMyCraftAt.SpecialSlot slot, CancellationToken token)
+    {
+        Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
+        var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
+
+        if (asyncResult.Item1)
+        {
+            var isMatch = IsItemMatchingCondition(asyncResult.Item2.Item, filterQuery);
             Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
             return isMatch;
         }

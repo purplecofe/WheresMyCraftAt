@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
@@ -35,7 +34,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                     currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = EvaluateConditions(currentStep);
+                    success = await EvaluateConditionsAsync(currentStep, token);
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
@@ -57,7 +56,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                     currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = EvaluateConditions(currentStep);
+                    success = await EvaluateConditionsAsync(currentStep, token);
 
                     Logging.Logging.Add(
                         $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
@@ -153,14 +152,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
         return true;
 
-        static bool EvaluateConditions(CraftingStep currentStep)
+        static async SyncTask<bool> EvaluateConditionsAsync(CraftingStep currentStep, CancellationToken token)
         {
-            var andResult = true; // Start true for AND logic. This remains true if all AND groups are true.
-            var orResult = false; // Start false for OR logic. This becomes true if any OR group is true.
+            var andResult = true; // Start true for AND logic
+            var orResult = false; // Start false for OR logic
 
             foreach (var group in currentStep.ConditionalCheckGroups)
             {
-                var trueCount = group.ConditionalChecks.Count(condition => condition());
+                var trueCount = await CountTrueAsync(group.ConditionalChecks, token);
 
                 switch (group.GroupType)
                 {
@@ -183,7 +182,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                         break;
                     case ConditionGroup.NOT:
-                        if (group.ConditionalChecks.Any(condition => condition()))
+                        if (trueCount > 0)
                         {
                             Logging.Logging.Add(
                                 "NOT Group Result: False (At least one condition is true)",
@@ -193,15 +192,40 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                             return false;
                         }
 
-                        Logging.Logging.Add("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
+                        Logging.Logging.Add(
+                            "NOT Group Result: True (No conditions are true)",
+                            LogMessageType.Evaluation
+                        );
+
                         break;
                 }
+
+                if (andResult)
+                {
+                    continue;
+                }
+
+                Logging.Logging.Add("Exiting early due to AND group result being false", LogMessageType.Evaluation);
+                return false;
             }
 
-            // Final result: true if either all AND groups are true or any OR group is true
             var combinedResult = andResult || orResult;
             Logging.Logging.Add($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
             return combinedResult;
+        }
+
+        static async SyncTask<int> CountTrueAsync(
+            IEnumerable<Func<CancellationToken, SyncTask<bool>>> conditionalChecks, CancellationToken token)
+        {
+            var trueCount = 0;
+
+            foreach (var condition in conditionalChecks)
+                if (await condition(token))
+                {
+                    trueCount++;
+                }
+
+            return trueCount;
         }
     }
 }
