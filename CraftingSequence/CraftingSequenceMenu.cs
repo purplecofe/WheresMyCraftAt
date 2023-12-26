@@ -246,6 +246,58 @@ public static class CraftingSequenceMenu
 
                 #endregion
 
+
+                #region Copy Conditions From Step X
+
+                // Generate a list of step names, excluding the current step for dropdown selection
+                var stepNamesForDropdown = new List<string>();
+
+                for (var step = 0; step < currentSteps.Count; step++)
+                    if (step != i) // Exclude the current step
+                    {
+                        stepNamesForDropdown.Add($"STEP [{step + 1}]");
+                    }
+
+                // Concatenate step names into a single string for the dropdown items
+                var dropdownItemsForCopy = string.Join('\0', stepNamesForDropdown) + '\0';
+                var currentStepIndex = -1; // Initialize to -1 to indicate no selection
+
+
+                ImGui.SetNextItemWidth(340);
+                // Create a dropdown for selecting a step to copy conditionals from
+                if (ImGui.Combo(
+                        $"Copy Conditionals From##CopyConditionsFrom{i}",
+                        ref currentStepIndex,
+                        dropdownItemsForCopy,
+                        stepNamesForDropdown.Count
+                    ))
+                // Dropdown selection made, parse the selected step index
+                {
+                    if (currentStepIndex >= 0 && currentStepIndex < stepNamesForDropdown.Count)
+                    {
+                        var selectedStepName = stepNamesForDropdown[currentStepIndex];
+
+                        var parsedIndex = int.Parse(
+                            selectedStepName.Substring(
+                                selectedStepName.IndexOf('[') + 1,
+                                selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
+                            )
+                        );
+
+                        // Since step labels are 1-indexed (STEP [1], STEP [2], etc.), 
+                        // subtract 1 to get the actual 0-indexed step
+                        var selectedStepIndex = parsedIndex - 1;
+
+                        // Assign conditionals from the selected step to the current step's conditionals
+                        if (selectedStepIndex >= 0 && selectedStepIndex < currentSteps.Count)
+                        {
+                            stepInput.Conditionals = currentSteps[selectedStepIndex].Conditionals;
+                        }
+                    }
+                }
+
+                #endregion
+
                 #region Condition Header
 
                 SetButtonColor(
@@ -279,51 +331,6 @@ public static class CraftingSequenceMenu
 
                 ImGui.Indent();
 
-                // Generate a list of step names, excluding the current step for dropdown selection
-                var stepNamesForDropdown = new List<string>();
-
-                for (var step = 0; step < currentSteps.Count; step++)
-                    if (step != i) // Exclude the current step
-                    {
-                        stepNamesForDropdown.Add($"STEP [{step + 1}]");
-                    }
-
-                // Concatenate step names into a single string for the dropdown items
-                var dropdownItemsForCopy = string.Join('\0', stepNamesForDropdown) + '\0';
-                var currentStepIndex = -1; // Initialize to -1 to indicate no selection
-
-                // Create a dropdown for selecting a step to copy conditionals from
-                if (ImGui.Combo(
-                        $"Copy Conditionals From##CopyConditionsFrom{i}",
-                        ref currentStepIndex,
-                        dropdownItemsForCopy,
-                        stepNamesForDropdown.Count
-                    ))
-                    // Dropdown selection made, parse the selected step index
-                {
-                    if (currentStepIndex >= 0 && currentStepIndex < stepNamesForDropdown.Count)
-                    {
-                        var selectedStepName = stepNamesForDropdown[currentStepIndex];
-
-                        var parsedIndex = int.Parse(
-                            selectedStepName.Substring(
-                                selectedStepName.IndexOf('[') + 1,
-                                selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
-                            )
-                        );
-
-                        // Since step labels are 1-indexed (STEP [1], STEP [2], etc.), 
-                        // subtract 1 to get the actual 0-indexed step
-                        var selectedStepIndex = parsedIndex - 1;
-
-                        // Assign conditionals from the selected step to the current step's conditionals
-                        if (selectedStepIndex >= 0 && selectedStepIndex < currentSteps.Count)
-                        {
-                            stepInput.Conditionals = currentSteps[selectedStepIndex].Conditionals;
-                        }
-                    }
-                }
-
                 var checksToRemove = new List<int>(); // Track checks to remove
 
                 for (var j = 0; j < stepInput.Conditionals.Count; j++)
@@ -333,6 +340,8 @@ public static class CraftingSequenceMenu
                     if (ImGui.Button($"Remove##{i}_{j}"))
                     {
                         checksToRemove.Add(j); // Mark this check for removal
+
+                        PopStyleColors(3);
                         continue;              // Skip the rest of the loop to avoid accessing a removed item
                     }
 
