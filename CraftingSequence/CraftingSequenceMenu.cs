@@ -628,23 +628,27 @@ public static class CraftingSequenceMenu
         }
 
         // Aggregate all conditionals from all steps and groups, keeping track of the step index
-        var allConditionalsWithStepInfo = Main.Settings.SelectedCraftingStepInputs
-                                              .SelectMany((step, stepIndex) =>
-                                                              step.ConditionalGroups.SelectMany(group => group.Conditionals,
-                                                                  (group, conditional) => new { stepIndex, conditional }))
-                                              .ToList();
+        var allConditionalsWithStepInfo = Main.Settings.SelectedCraftingStepInputs.SelectMany(
+            (step, stepIndex) => step.ConditionalGroups.SelectMany(
+                group => group.Conditionals,
+                (group, conditional) => new
+                {
+                    stepIndex,
+                    conditional
+                }
+            )
+        ).ToList();
 
         // Generate display names for each conditional with step information
-        var conditionalNames = allConditionalsWithStepInfo
-                               .Select((c, index) =>
-                                           $"Step {c.stepIndex + 1}: " +
-                                           (string.IsNullOrEmpty(c.conditional.Name) ? $"Unnamed Conditional {index + 1}" : c.conditional.Name))
-                               .ToArray();
+        var conditionalNames = allConditionalsWithStepInfo.Select(
+            (c, index) => $"Step {c.stepIndex + 1}: " + (string.IsNullOrEmpty(c.conditional.Name)
+                ? $"Unnamed Conditional {index + 1}" : c.conditional.Name)
+        ).ToArray();
 
         var selectedIndex = -1;
         ImGui.SameLine();
-
         ImGui.SetNextItemWidth(300);
+
         if (ImGui.Combo("Copy Conditional From", ref selectedIndex, conditionalNames, conditionalNames.Length))
         {
             if (selectedIndex >= 0 && selectedIndex < allConditionalsWithStepInfo.Count)
@@ -722,7 +726,18 @@ public static class CraftingSequenceMenu
                         }
 
                         //newGroup.ConditionalChecks.Add(() => FilterHandler.IsMatchingCondition(filter));
-                        newGroup.ConditionalChecks.Add(async token => await FilterHandler.AsyncIsMatchingCondition(filter, SpecialSlot.CurrencyTab, token));
+                        newGroup.ConditionalChecks.Add(
+                            async token =>
+                            {
+                                var resultTuple = await FilterHandler.AsyncIsMatchingCondition(
+                                    filter,
+                                    SpecialSlot.CurrencyTab,
+                                    token
+                                );
+
+                                return resultTuple; // Assuming Item2 is the boolean result of the condition
+                            }
+                        );
                     }
 
                     newStep.ConditionalCheckGroups.Add(newGroup);

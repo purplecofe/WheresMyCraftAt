@@ -1,6 +1,9 @@
-﻿using ExileCore.PoEMemory.MemoryObjects;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
+using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ItemFilterLibrary;
+using SharpDX;
+using System;
 using System.Threading;
 using WheresMyCraftAt.ItemFilterLibrary;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
@@ -24,7 +27,9 @@ public static class FilterHandler
         Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
         return false;
     }
-    public static async SyncTask<bool> AsyncIsMatchingCondition(ItemFilter filterQuery, Enums.WheresMyCraftAt.SpecialSlot slot, CancellationToken token)
+
+    public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery, SpecialSlot slot,
+        CancellationToken token)
     {
         Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
@@ -33,11 +38,11 @@ public static class FilterHandler
         {
             var isMatch = IsItemMatchingCondition(asyncResult.Item2.Item, filterQuery);
             Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
-            return isMatch;
+            return (asyncResult.Item1, isMatch);
         }
 
         Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
-        return false;
+        return (asyncResult.Item1, false);
     }
 
     public static bool IsItemMatchingCondition(Entity item, ItemFilter filterQuery)

@@ -161,28 +161,38 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 var trueCount = await CountTrueAsync(group.ConditionalChecks, token);
 
+                if (!trueCount.result)
+                {
+                    Logging.Logging.Add(
+                        "EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping",
+                        LogMessageType.Error
+                    );
+
+                    WheresMyCraftAt.Main.Stop();
+                }
+
                 switch (group.GroupType)
                 {
                     case ConditionGroup.AND:
-                        andResult &= trueCount >= group.ConditionalsToBePassForSuccess;
+                        andResult &= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
                         Logging.Logging.Add(
-                            $"AND Group Result: {andResult} (True Count: {trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
+                            $"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
                             LogMessageType.Evaluation
                         );
 
                         break;
                     case ConditionGroup.OR:
-                        orResult |= trueCount >= group.ConditionalsToBePassForSuccess;
+                        orResult |= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
                         Logging.Logging.Add(
-                            $"OR Group Result: {orResult} (True Count: {trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
+                            $"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
                             LogMessageType.Evaluation
                         );
 
                         break;
                     case ConditionGroup.NOT:
-                        if (trueCount > 0)
+                        if (trueCount.trueCount > 0)
                         {
                             Logging.Logging.Add(
                                 "NOT Group Result: False (At least one condition is true)",
@@ -214,18 +224,30 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             return combinedResult;
         }
 
-        static async SyncTask<int> CountTrueAsync(
-            IEnumerable<Func<CancellationToken, SyncTask<bool>>> conditionalChecks, CancellationToken token)
+        static async SyncTask<(bool result, int trueCount)> CountTrueAsync(
+            IEnumerable<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> conditionalChecks,
+            CancellationToken token)
         {
             var trueCount = 0;
+            var allSuccessful = true;
 
             foreach (var condition in conditionalChecks)
-                if (await condition(token))
+            {
+                var (result, isMatch) = await condition(token);
+
+                if (!result)
+                {
+                    allSuccessful = false;
+                    break;
+                }
+
+                if (isMatch)
                 {
                     trueCount++;
                 }
+            }
 
-            return trueCount;
+            return (allSuccessful, trueCount);
         }
     }
 }
