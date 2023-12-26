@@ -36,6 +36,18 @@ public static class CraftingSequenceMenu
     private static string tempCondValue = string.Empty;
     private static string condEditValue = string.Empty;
 
+    private static readonly ButtonStyle redButtonStyle = new(
+        new Color(250, 66, 66, 102), // Normal
+        new Color(250, 66, 66, 255), // Hovered
+        new Color(250, 15, 15, 255)  // Active
+    );
+
+    private static readonly ButtonStyle greenButtonStyle = new(
+        new Color(66, 250, 66, 102), // Normal
+        new Color(66, 250, 66, 150), // Hovered
+        new Color(15, 250, 15, 200)  // Active
+    );
+
     public static void Draw()
     {
         DrawFileOptions();
@@ -46,18 +58,6 @@ public static class CraftingSequenceMenu
 
     private static void DrawCraftingStepInputs()
     {
-        var redButtonStyle = new ButtonStyle(
-            new Color(250, 66, 66, 102), // Normal
-            new Color(250, 66, 66, 255), // Hovered
-            new Color(250, 15, 15, 255)  // Active
-        );
-
-        var greenButtonStyle = new ButtonStyle(
-            new Color(66, 250, 66, 102), // Normal
-            new Color(66, 250, 66, 150), // Hovered
-            new Color(15, 250, 15, 200)  // Active
-        );
-
         var currentSteps = new List<CraftingStepInput>(Main.Settings.SelectedCraftingStepInputs);
 
         for (var i = 0; i < currentSteps.Count; i++)
@@ -71,10 +71,16 @@ public static class CraftingSequenceMenu
 
             #region Step Settings
 
+            #region Regions Spacing Calculations
+
             var availableWidth = ImGui.GetContentRegionAvail().X * 0.65f;
             ImGui.Indent();
             var dropdownWidth = availableWidth * 0.6f;
             var inputWidth = availableWidth * 0.4f;
+
+            #endregion
+
+            #region Method Type
 
             // Check Timing Combo Box
             var checkTimingIndex = (int)stepInput.CheckType;
@@ -88,6 +94,10 @@ public static class CraftingSequenceMenu
             {
                 stepInput.CheckType = (ConditionalCheckType)checkTimingIndex;
             }
+
+            #endregion
+
+            #region Not Check Only Settings
 
             if (stepInput.CheckType != ConditionalCheckType.ConditionalCheckOnly)
             {
@@ -113,6 +123,10 @@ public static class CraftingSequenceMenu
                 }
             }
 
+            #endregion
+
+            #region Success Action
+
             // Success Action
             var successActionIndex = (int)stepInput.SuccessAction;
 
@@ -130,6 +144,8 @@ public static class CraftingSequenceMenu
             {
                 stepInput.SuccessAction = (SuccessAction)successActionIndex;
             }
+
+            #endregion
 
             #region SuccessStepSelectorIndex
 
@@ -162,14 +178,18 @@ public static class CraftingSequenceMenu
                 }
             }
 
-            #endregion
-
             ImGui.SameLine();
             ImGui.Text("On Success");
+
+            #endregion
+
+            #region Not Automatic Success Items
 
             // Hide additional settings if AutomaticSuccess is true
             if (!stepInput.AutomaticSuccess)
             {
+                #region Failure Action
+
                 // Failure Action
                 var failureActionIndex = (int)stepInput.FailureAction;
 
@@ -187,6 +207,8 @@ public static class CraftingSequenceMenu
                 {
                     stepInput.FailureAction = (FailureAction)failureActionIndex;
                 }
+
+                #endregion
 
                 #region FailureStepSelectorIndex
 
@@ -219,10 +241,12 @@ public static class CraftingSequenceMenu
                     }
                 }
 
-                #endregion
-
                 ImGui.SameLine();
                 ImGui.Text("On Failure");
+
+                #endregion
+
+                #region Condition Header
 
                 SetButtonColor(
                     greenButtonStyle.NormalColor,
@@ -248,6 +272,10 @@ public static class CraftingSequenceMenu
                     conditionalChecksTrue = Math.Max(1, Math.Min(conditionalChecksTrue, stepInput.Conditionals.Count));
                     stepInput.ConditionalsToBePassForSuccess = conditionalChecksTrue;
                 }
+
+                #endregion
+
+                #region Condition modification
 
                 ImGui.Indent();
 
@@ -346,9 +374,16 @@ public static class CraftingSequenceMenu
 
                     stepInput.Conditionals.RemoveAt(index); // Remove marked checks
                 }
+
+                #endregion
             }
 
+            #endregion
+
             ImGui.Separator();
+
+            #region Insert Step Above
+
             SetButtonColor(greenButtonStyle.NormalColor, greenButtonStyle.HoveredColor, greenButtonStyle.ActiveColor);
 
             if (ImGui.Button($"[^] Insert Step Above##{i}"))
@@ -360,6 +395,11 @@ public static class CraftingSequenceMenu
             }
 
             PopStyleColors(3); // Always pop style color to avoid styling issues
+
+            #endregion
+
+            #region Remove Current Step
+
             ImGui.SameLine();
             SetButtonColor(redButtonStyle.NormalColor, redButtonStyle.HoveredColor, redButtonStyle.ActiveColor);
 
@@ -372,6 +412,11 @@ public static class CraftingSequenceMenu
             }
 
             PopStyleColors(3); // Always pop style color to avoid styling issues
+
+            #endregion
+
+            #region Insert Step Below
+
             ImGui.SameLine();
 
             if (i < currentSteps.Count - 1)
@@ -393,6 +438,8 @@ public static class CraftingSequenceMenu
                 PopStyleColors(3); // Always pop style color to avoid styling issues
             }
 
+            #endregion
+
             ImGui.Separator();
             ImGui.Unindent();
 
@@ -400,6 +447,9 @@ public static class CraftingSequenceMenu
         }
 
         Main.Settings.SelectedCraftingStepInputs = currentSteps;
+
+        #region Add New Step
+
         SetButtonColor(greenButtonStyle.NormalColor, greenButtonStyle.HoveredColor, greenButtonStyle.ActiveColor);
 
         if (ImGui.Button("[=] Add New Step"))
@@ -408,6 +458,9 @@ public static class CraftingSequenceMenu
         }
 
         PopStyleColors(3); // Always pop style color to avoid styling issues
+
+        #endregion
+
         Main.Settings.CraftingSequenceLastSaved = _fileSaveName;
         Main.Settings.CraftingSequenceLastSelected = _selectedFileName;
     }
