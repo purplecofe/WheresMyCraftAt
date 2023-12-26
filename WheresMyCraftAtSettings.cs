@@ -12,6 +12,7 @@ public class WheresMyCraftAtSettings : ISettings
 
     public ToggleNode DebugPrint { get; set; } = new(true);
     public ToggleNode ShowLogWindow { get; set; } = new(false);
+    public ToggleNode MenuStyling { get; set; } = new(true);
     public HotkeyNode ToggleDebugWindow { get; set; } = new(Keys.NumPad3);
     public RangeNode<int> DebugPrintLingerTime { get; set; } = new(5, 0, 20);
     public HotkeyNode RunButton { get; set; } = Keys.NumPad6;
