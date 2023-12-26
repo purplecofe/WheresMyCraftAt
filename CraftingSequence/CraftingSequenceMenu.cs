@@ -662,8 +662,6 @@ public static class CraftingSequenceMenu
 
     private static void DrawConfirmAndClear()
     {
-        ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-
         if (!ImGui.CollapsingHeader(
                 $"Confirm / Clear Steps##{Main.Name}Confirm / Clear Steps",
                 ImGuiTreeNodeFlags.DefaultOpen
@@ -774,8 +772,6 @@ public static class CraftingSequenceMenu
 
     private static void DrawInstructions()
     {
-        ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-
         if (!ImGui.CollapsingHeader($"Selected Step Instructions##{Main.Name}Instructions"))
         {
             return;
@@ -885,8 +881,6 @@ public static class CraftingSequenceMenu
 
     private static void DrawFileOptions()
     {
-        ImGui.PushStyleColor(ImGuiCol.Header, ImGui.GetColorU32(ImGuiCol.ButtonActive)); // Set the header color
-
         if (!ImGui.CollapsingHeader($"Load / Save##{Main.Name}Load / Save", ImGuiTreeNodeFlags.DefaultOpen))
         {
             return;
