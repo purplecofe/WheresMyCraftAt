@@ -36,22 +36,6 @@ public static class CraftingSequenceMenu
     private static string tempCondValue = string.Empty;
     private static string condEditValue = string.Empty;
 
-    private static readonly ButtonStyle redButtonStyle = new(
-        new Color(250, 66, 66, 102), // Normal
-        new Color(250, 66, 66, 255), // Hovered
-        new Color(250, 15, 15, 255)  // Active
-    );
-
-    private static readonly ButtonStyle greenButtonStyle = new(
-        new Color(66, 250, 66, 102), // Normal
-        new Color(66, 250, 66, 150), // Hovered
-        new Color(15, 250, 15, 200)  // Active
-    );
-
-    public static readonly Color AND_GroupStyle = new(76, 209, 65, 18);
-    public static readonly Color OR_GroupStyle = new(76, 100, 209, 30);
-    public static readonly Color NOT_GroupStyle = new(209, 76, 65, 18);
-
     public static void Draw()
     {
         DrawFileOptions();
@@ -292,9 +276,9 @@ public static class CraftingSequenceMenu
                 #region Add Conditional Group
 
                 SetButtonColor(
-                    greenButtonStyle.NormalColor,
-                    greenButtonStyle.HoveredColor,
-                    greenButtonStyle.ActiveColor
+                    Main.Settings.Styling.AdditionButtons.Normal,
+                    Main.Settings.Styling.AdditionButtons.Hovered,
+                    Main.Settings.Styling.AdditionButtons.Active
                 );
 
                 if (ImGui.Button($"Add Conditional Group##{stepIndex}"))
@@ -315,15 +299,15 @@ public static class CraftingSequenceMenu
                     switch (currentStep.ConditionalGroups[groupIndex].GroupType)
                     {
                         case ConditionGroup.AND:
-                            SetChildBackgroundColor(AND_GroupStyle);
+                            SetChildBackgroundColor(Main.Settings.Styling.ConditionGroupBackgrounds.And);
                             styledChildBg = true;
                             break;
                         case ConditionGroup.OR:
-                            SetChildBackgroundColor(OR_GroupStyle);
+                            SetChildBackgroundColor(Main.Settings.Styling.ConditionGroupBackgrounds.Or);
                             styledChildBg = true;
                             break;
                         case ConditionGroup.NOT:
-                            SetChildBackgroundColor(NOT_GroupStyle);
+                            SetChildBackgroundColor(Main.Settings.Styling.ConditionGroupBackgrounds.Not);
                             styledChildBg = true;
                             break;
                     }
@@ -338,7 +322,11 @@ public static class CraftingSequenceMenu
 
                     #region Group Delete
 
-                    SetButtonColor(redButtonStyle.NormalColor, redButtonStyle.HoveredColor, redButtonStyle.ActiveColor);
+                    SetButtonColor(
+                        Main.Settings.Styling.RemovalButtons.Normal,
+                        Main.Settings.Styling.RemovalButtons.Hovered,
+                        Main.Settings.Styling.RemovalButtons.Active
+                    );
 
                     if (ImGui.Button($"Remove Group##{stepIndex}_{groupIndex}"))
                     {
@@ -377,9 +365,9 @@ public static class CraftingSequenceMenu
                     #region Add Conditional Check
 
                     SetButtonColor(
-                        greenButtonStyle.NormalColor,
-                        greenButtonStyle.HoveredColor,
-                        greenButtonStyle.ActiveColor
+                        Main.Settings.Styling.AdditionButtons.Normal,
+                        Main.Settings.Styling.AdditionButtons.Hovered,
+                        Main.Settings.Styling.AdditionButtons.Active
                     );
 
                     // Manage Conditional Checks
@@ -434,9 +422,9 @@ public static class CraftingSequenceMenu
                          conditionalIndex++)
                     {
                         SetButtonColor(
-                            redButtonStyle.NormalColor,
-                            redButtonStyle.HoveredColor,
-                            redButtonStyle.ActiveColor
+                            Main.Settings.Styling.RemovalButtons.Normal,
+                            Main.Settings.Styling.RemovalButtons.Hovered,
+                            Main.Settings.Styling.RemovalButtons.Active
                         );
 
                         if (ImGui.Button($"Remove##{stepIndex}_{groupIndex}_{conditionalIndex}"))
@@ -511,7 +499,11 @@ public static class CraftingSequenceMenu
 
             #region Insert Step Above
 
-            SetButtonColor(greenButtonStyle.NormalColor, greenButtonStyle.HoveredColor, greenButtonStyle.ActiveColor);
+            SetButtonColor(
+                Main.Settings.Styling.AdditionButtons.Normal,
+                Main.Settings.Styling.AdditionButtons.Hovered,
+                Main.Settings.Styling.AdditionButtons.Active
+            );
 
             if (ImGui.Button($"[^] Insert Step Above##{stepIndex}"))
             {
@@ -528,7 +520,12 @@ public static class CraftingSequenceMenu
             #region Remove Current Step
 
             ImGui.SameLine();
-            SetButtonColor(redButtonStyle.NormalColor, redButtonStyle.HoveredColor, redButtonStyle.ActiveColor);
+
+            SetButtonColor(
+                Main.Settings.Styling.RemovalButtons.Normal,
+                Main.Settings.Styling.RemovalButtons.Hovered,
+                Main.Settings.Styling.RemovalButtons.Active
+            );
 
             if (ImGui.Button($"[-] Remove This Step##{stepIndex}"))
             {
@@ -549,9 +546,9 @@ public static class CraftingSequenceMenu
                 ImGui.SameLine();
 
                 SetButtonColor(
-                    greenButtonStyle.NormalColor,
-                    greenButtonStyle.HoveredColor,
-                    greenButtonStyle.ActiveColor
+                    Main.Settings.Styling.AdditionButtons.Normal,
+                    Main.Settings.Styling.AdditionButtons.Hovered,
+                    Main.Settings.Styling.AdditionButtons.Active
                 );
 
                 if (ImGui.Button($"[v] Insert Step Below##{stepIndex}"))
@@ -578,7 +575,11 @@ public static class CraftingSequenceMenu
 
         #region Add New Step
 
-        SetButtonColor(greenButtonStyle.NormalColor, greenButtonStyle.HoveredColor, greenButtonStyle.ActiveColor);
+        SetButtonColor(
+            Main.Settings.Styling.AdditionButtons.Normal,
+            Main.Settings.Styling.AdditionButtons.Hovered,
+            Main.Settings.Styling.AdditionButtons.Active
+        );
 
         if (ImGui.Button("[=] Add New Step"))
         {
@@ -595,7 +596,7 @@ public static class CraftingSequenceMenu
 
     private static void SetButtonColor(Color button, Color hovered, Color active)
     {
-        if (!Main.Settings.MenuStyling)
+        if (!Main.Settings.Styling.CustomMenuStyling)
         {
             return;
         }
@@ -607,7 +608,7 @@ public static class CraftingSequenceMenu
 
     private static void SetChildBackgroundColor(Color color)
     {
-        if (!Main.Settings.MenuStyling)
+        if (!Main.Settings.Styling.CustomMenuStyling)
         {
             return;
         }
@@ -617,7 +618,7 @@ public static class CraftingSequenceMenu
 
     private static void PopStyleColors(int count)
     {
-        if (Main.Settings.MenuStyling)
+        if (Main.Settings.Styling.CustomMenuStyling)
         {
             ImGui.PopStyleColor(count);
         }

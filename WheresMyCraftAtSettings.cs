@@ -1,41 +1,95 @@
-﻿using ExileCore.Shared.Interfaces;
+﻿using ExileCore.Shared.Attributes;
+using ExileCore.Shared.Interfaces;
 using ExileCore.Shared.Nodes;
+using SharpDX;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Windows.Forms;
+using Vector2 = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt;
 
 public class WheresMyCraftAtSettings : ISettings
 {
-    public ToggleNode Enable { get; set; } = new(false);
+    public Dictionary<Enums.WheresMyCraftAt.LogMessageType, bool> LogMessageFilters = new()
+    {
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Info, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Warning, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Error, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Critical, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Trace, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Debug, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Profiler, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Evaluation, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.Special, true
+        }
+    };
 
     public ToggleNode DebugPrint { get; set; } = new(true);
     public ToggleNode ShowLogWindow { get; set; } = new(false);
-    public ToggleNode MenuStyling { get; set; } = new(true);
     public HotkeyNode ToggleDebugWindow { get; set; } = new(Keys.NumPad3);
     public RangeNode<int> DebugPrintLingerTime { get; set; } = new(5, 0, 20);
     public HotkeyNode RunButton { get; set; } = Keys.NumPad6;
+
     public RangeNode<Vector2> MinMaxRandomDelay { get; set; } = new(
         new Vector2(20, 80),
         Vector2.Zero,
         new Vector2(600, 600)
     );
+
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
     public string CraftingSequenceLastSaved { get; set; } = "";
     public string CraftingSequenceLastSelected { get; set; } = "";
     public List<CraftingSequence.CraftingSequence.CraftingStepInput> SelectedCraftingStepInputs { get; set; } = [];
+    public StylingDooDads Styling { get; set; } = new();
+    public ToggleNode Enable { get; set; } = new(false);
+}
 
-    public Dictionary<Enums.WheresMyCraftAt.LogMessageType, bool> LogMessageFilters = new()
-    {
-        { Enums.WheresMyCraftAt.LogMessageType.Info, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Warning, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Error, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Critical, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Trace, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Debug, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Profiler, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Evaluation, true },
-        { Enums.WheresMyCraftAt.LogMessageType.Special, true }
-    };
+[Submenu(CollapsedByDefault = true)]
+public class StylingDooDads
+{
+    public ToggleNode CustomMenuStyling { get; set; } = new(true);
+    public RemovalButtonStyle RemovalButtons { get; set; } = new();
+    public AdditionButtonStyle AdditionButtons { get; set; } = new();
+    public ConditionalGroupStyle ConditionGroupBackgrounds { get; set; } = new();
+}
+
+[Submenu]
+public class RemovalButtonStyle
+{
+    public ColorNode Normal { get; set; } = new(new Color(250, 66, 66, 102));
+    public ColorNode Hovered { get; set; } = new(new Color(250, 66, 66, 255));
+    public ColorNode Active { get; set; } = new(new Color(250, 15, 15, 255));
+}
+
+[Submenu]
+public class AdditionButtonStyle
+{
+    public ColorNode Normal { get; set; } = new(new Color(66, 250, 66, 102));
+    public ColorNode Hovered { get; set; } = new(new Color(66, 250, 66, 150));
+    public ColorNode Active { get; set; } = new(new Color(15, 250, 15, 200));
+}
+
+[Submenu]
+public class ConditionalGroupStyle
+{
+    public ColorNode And { get; set; } = new(new Color(76, 209, 65, 18));
+    public ColorNode Or { get; set; } = new(new Color(76, 100, 209, 30));
+    public ColorNode Not { get; set; } = new(new Color(209, 76, 65, 18));
 }

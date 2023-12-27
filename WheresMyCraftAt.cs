@@ -1,6 +1,7 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
 using ExileCore.Shared.Nodes;
+using ImGuiNET;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -208,6 +209,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public override void DrawSettings()
     {
         base.DrawSettings();
+        ImGui.Separator();
         CraftingSequenceMenu.Draw();
     }
 }
