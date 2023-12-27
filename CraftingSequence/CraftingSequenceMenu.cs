@@ -293,6 +293,8 @@ public static class CraftingSequenceMenu
 
                 #region Render Conditional Groups
 
+                var groupsToRemove = new List<int>();
+
                 for (var groupIndex = 0; groupIndex < currentStep.ConditionalGroups.Count; groupIndex++)
                 {
                     var styledChildBg = false;
@@ -329,22 +331,16 @@ public static class CraftingSequenceMenu
                         Main.Settings.Styling.RemovalButtons.Active
                     );
 
-                    if (ImGui.Button($"Remove Group##{stepIndex}_{groupIndex}"))
-                    {
-                        currentStep.ConditionalGroups.RemoveAt(groupIndex);
-                        groupIndex--;
-
-                        if (styledChildBg)
-                        {
-                            PopStyleColors(3);
-                        }
-
-                        continue;
-                    }
+                    var removeGroupPressed = ImGui.Button($"Remove Group##{stepIndex}_{groupIndex}");
 
                     if (styledChildBg)
                     {
                         PopStyleColors(3);
+                    }
+
+                    if (removeGroupPressed)
+                    {
+                        groupsToRemove.Add(groupIndex);
                     }
 
                     #endregion
@@ -497,6 +493,10 @@ public static class CraftingSequenceMenu
                     ImGui.EndChild();
                     PopStyleColors(1);
                 }
+
+                // Remove the marked groups after the loop
+                foreach (var indexToRemove in groupsToRemove.OrderByDescending(i => i))
+                    currentStep.ConditionalGroups.RemoveAt(indexToRemove);
 
                 #endregion
             }
