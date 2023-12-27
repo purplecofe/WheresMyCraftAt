@@ -48,6 +48,10 @@ public static class CraftingSequenceMenu
         new Color(15, 250, 15, 200)  // Active
     );
 
+    public static readonly Color AND_GroupStyle = new(76, 209, 65, 18);
+    public static readonly Color OR_GroupStyle = new(76, 100, 209, 30);
+    public static readonly Color NOT_GroupStyle = new(209, 76, 65, 18);
+
     public static void Draw()
     {
         DrawFileOptions();
@@ -306,6 +310,24 @@ public static class CraftingSequenceMenu
 
                 for (var groupIndex = 0; groupIndex < currentStep.ConditionalGroups.Count; groupIndex++)
                 {
+                    var styledChildBg = false;
+
+                    switch (currentStep.ConditionalGroups[groupIndex].GroupType)
+                    {
+                        case ConditionGroup.AND:
+                            SetChildBackgroundColor(AND_GroupStyle);
+                            styledChildBg = true;
+                            break;
+                        case ConditionGroup.OR:
+                            SetChildBackgroundColor(OR_GroupStyle);
+                            styledChildBg = true;
+                            break;
+                        case ConditionGroup.NOT:
+                            SetChildBackgroundColor(NOT_GroupStyle);
+                            styledChildBg = true;
+                            break;
+                    }
+
                     ImGui.BeginChild(
                         $"##conditionalGroup_{stepIndex}_{groupIndex}",
                         Vector2.Zero,
@@ -326,7 +348,10 @@ public static class CraftingSequenceMenu
                         continue;
                     }
 
-                    PopStyleColors(3);
+                    if (styledChildBg)
+                    {
+                        PopStyleColors(3);
+                    }
 
                     #endregion
 
@@ -476,6 +501,7 @@ public static class CraftingSequenceMenu
                     #endregion
 
                     ImGui.EndChild();
+                    PopStyleColors(1);
                 }
 
                 #endregion
@@ -577,6 +603,16 @@ public static class CraftingSequenceMenu
         ImGui.PushStyleColor(ImGuiCol.Button, button.ToImguiVec4());
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, hovered.ToImguiVec4());
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, active.ToImguiVec4());
+    }
+
+    private static void SetChildBackgroundColor(Color color)
+    {
+        if (!Main.Settings.MenuStyling)
+        {
+            return;
+        }
+
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, color.ToImguiVec4());
     }
 
     private static void PopStyleColors(int count)
