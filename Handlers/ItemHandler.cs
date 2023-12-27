@@ -46,7 +46,7 @@ public static class ItemHandler
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             InventoryHandler.IsAnItemPickedUpCondition,
             timeout,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
     }
@@ -58,7 +58,7 @@ public static class ItemHandler
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             IsCursorFree,
             timeout,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
     }
@@ -73,7 +73,7 @@ public static class ItemHandler
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             IsItemRightClickedCondition,
             timeout,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
     }

@@ -29,8 +29,8 @@ public static class CraftingSequenceMenu
     private const string FilterEditPopup = "Filter (Multi-Line)";
 
     // Load last saved for both on initialization as its less confusing
-    private static string _fileSaveName = Main.Settings.CraftingSequenceLastSaved;
-    private static string _selectedFileName = Main.Settings.CraftingSequenceLastSaved;
+    private static string _fileSaveName = Main.Settings.NonUserData.CraftingSequenceLastSaved;
+    private static string _selectedFileName = Main.Settings.NonUserData.CraftingSequenceLastSaved;
 
     private static List<string> _files = [];
     private static string tempCondValue = string.Empty;
@@ -46,7 +46,7 @@ public static class CraftingSequenceMenu
 
     private static void DrawCraftingStepInputs()
     {
-        var currentSteps = new List<CraftingStepInput>(Main.Settings.SelectedCraftingStepInputs);
+        var currentSteps = new List<CraftingStepInput>(Main.Settings.NonUserData.SelectedCraftingStepInputs);
 
         for (var stepIndex = 0; stepIndex < currentSteps.Count; stepIndex++)
         {
@@ -226,48 +226,49 @@ public static class CraftingSequenceMenu
 
                 #region Copy Conditions From Step X
 
-                // Generate a list of step names, excluding the current step for dropdown selection
-                var stepNamesForDropdown = new List<string>();
+                var stepNamesForDropdown = currentSteps.Select(
+                                                           (step, index) => new
+                                                           {
+                                                               Step = step,
+                                                               Index = index
+                                                           }
+                                                       ).Where(stepWithIndex => stepWithIndex.Index != stepIndex)
+                                                       .Select(stepWithIndex => $"STEP [{stepWithIndex.Index + 1}]")
+                                                       .ToArray();
 
-                for (var step = 0; step < currentSteps.Count; step++)
-                    if (step != stepIndex) // Exclude the current step
-                    {
-                        stepNamesForDropdown.Add($"STEP [{step + 1}]");
-                    }
+                var currentStepIndex = -1;
+                var maxItemWidth = stepNamesForDropdown.Max(name => ImGui.CalcTextSize(name).X);
+                ImGui.SetNextItemWidth(maxItemWidth + 60);
 
-                // Concatenate step names into a single string for the dropdown items
-                var dropdownItemsForCopy = string.Join('\0', stepNamesForDropdown) + '\0';
-                var currentStepIndex = -1; // Initialize to -1 to indicate no selection
-
-                // Create a dropdown for selecting a step to copy conditionals from
                 if (ImGui.Combo(
-                        $"Copy ConditionalGroups From##CopyConditionsFrom{stepIndex}",
+                        $"Copy Conditional Groups From##CopyConditionalGroupsFrom{stepIndex}",
                         ref currentStepIndex,
-                        dropdownItemsForCopy,
-                        stepNamesForDropdown.Count
+                        stepNamesForDropdown,
+                        stepNamesForDropdown.Length
                     ))
-                    // Dropdown selection made, parse the selected step index
                 {
-                    if (currentStepIndex >= 0 && currentStepIndex < stepNamesForDropdown.Count)
+                    if (currentStepIndex >= 0 && currentStepIndex < currentSteps.Count)
                     {
-                        var selectedStepName = stepNamesForDropdown[currentStepIndex];
-
-                        var parsedIndex = int.Parse(
-                            selectedStepName.Substring(
-                                selectedStepName.IndexOf('[') + 1,
-                                selectedStepName.IndexOf(']') - selectedStepName.IndexOf('[') - 1
-                            )
-                        );
-
-                        // Since step labels are 1-indexed (STEP [1], STEP [2], etc.), 
-                        // subtract 1 to get the actual 0-indexed step
-                        var selectedStepIndex = parsedIndex - 1;
-
-                        // Assign conditionals from the selected step to the current step's conditionals
-                        if (selectedStepIndex >= 0 && selectedStepIndex < currentSteps.Count)
+                        if (currentStepIndex >= stepIndex)
                         {
-                            currentStep.ConditionalGroups = currentSteps[selectedStepIndex].ConditionalGroups;
+                            currentStepIndex++;
                         }
+
+                        currentSteps[stepIndex].ConditionalGroups = currentSteps[currentStepIndex].ConditionalGroups
+                            .Select(
+                                group => new ConditionalGroup
+                                {
+                                    GroupType = group.GroupType,
+                                    ConditionalsToBePassForSuccess = group.ConditionalsToBePassForSuccess,
+                                    Conditionals = group.Conditionals.Select(
+                                        conditional => new ConditionalKeys
+                                        {
+                                            Name = conditional.Name,
+                                            Value = conditional.Value
+                                        }
+                                    ).ToList()
+                                }
+                            ).ToList();
                     }
                 }
 
@@ -332,7 +333,12 @@ public static class CraftingSequenceMenu
                     {
                         currentStep.ConditionalGroups.RemoveAt(groupIndex);
                         groupIndex--;
-                        PopStyleColors(3);
+
+                        if (styledChildBg)
+                        {
+                            PopStyleColors(3);
+                        }
+
                         continue;
                     }
 
@@ -348,7 +354,7 @@ public static class CraftingSequenceMenu
                     ImGui.SameLine();
                     // Check Timing Combo Box
                     var groupTypeIndex = (int)currentStep.ConditionalGroups[groupIndex].GroupType;
-                    ImGui.SetNextItemWidth(60);
+                    ImGui.SetNextItemWidth(120);
 
                     if (ImGui.Combo(
                             $" Group Type##{stepIndex}_{groupIndex}",
@@ -571,7 +577,7 @@ public static class CraftingSequenceMenu
             ImGui.EndChild();
         }
 
-        Main.Settings.SelectedCraftingStepInputs = currentSteps;
+        Main.Settings.NonUserData.SelectedCraftingStepInputs = currentSteps;
 
         #region Add New Step
 
@@ -583,15 +589,15 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("[=] Add New Step"))
         {
-            Main.Settings.SelectedCraftingStepInputs.Add(new CraftingStepInput());
+            Main.Settings.NonUserData.SelectedCraftingStepInputs.Add(new CraftingStepInput());
         }
 
         PopStyleColors(3); // Always pop style color to avoid styling issues
 
         #endregion
 
-        Main.Settings.CraftingSequenceLastSaved = _fileSaveName;
-        Main.Settings.CraftingSequenceLastSelected = _selectedFileName;
+        Main.Settings.NonUserData.CraftingSequenceLastSaved = _fileSaveName;
+        Main.Settings.NonUserData.CraftingSequenceLastSelected = _selectedFileName;
     }
 
     private static void SetButtonColor(Color button, Color hovered, Color active)
@@ -665,7 +671,7 @@ public static class CraftingSequenceMenu
         }
 
         // Aggregate all conditionals from all steps and groups, keeping track of the step index
-        var allConditionalsWithStepInfo = Main.Settings.SelectedCraftingStepInputs.SelectMany(
+        var allConditionalsWithStepInfo = Main.Settings.NonUserData.SelectedCraftingStepInputs.SelectMany(
             (step, stepIndex) => step.ConditionalGroups.SelectMany(
                 group => group.Conditionals,
                 (group, conditional) => new
@@ -713,7 +719,7 @@ public static class CraftingSequenceMenu
         {
             Main.SelectedCraftingSteps.Clear();
 
-            foreach (var input in Main.Settings.SelectedCraftingStepInputs)
+            foreach (var input in Main.Settings.NonUserData.SelectedCraftingStepInputs)
             {
                 var newStep = new CraftingStep
                 {
@@ -798,7 +804,7 @@ public static class CraftingSequenceMenu
         {
             if (clearSelectedIndex == 0)
             {
-                Main.Settings.SelectedCraftingStepInputs.Clear();
+                Main.Settings.NonUserData.SelectedCraftingStepInputs.Clear();
                 Main.SelectedCraftingSteps.Clear();
             }
         }
@@ -816,11 +822,11 @@ public static class CraftingSequenceMenu
 
         ImGui.Indent();
         // Start of indented Section
-        var steps = Main.Settings.SelectedCraftingStepInputs.ToList();
+        var steps = Main.Settings.NonUserData.SelectedCraftingStepInputs.ToList();
 
         for (var index = 0; index < steps.Count; index++)
         {
-            var currentStep = Main.Settings.SelectedCraftingStepInputs[index];
+            var currentStep = Main.Settings.NonUserData.SelectedCraftingStepInputs[index];
 
             var childWindowTitle = currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
                 : $"Use '{steps[index].CurrencyItem}'";
@@ -960,7 +966,7 @@ public static class CraftingSequenceMenu
             }
             else
             {
-                SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
+                SaveFile(Main.Settings.NonUserData.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
                 // Log success when file is saved
                 Logging.Logging.Add($"File {_fileSaveName}.json saved successfully.", LogMessageType.Info);
             }
@@ -1019,7 +1025,7 @@ public static class CraftingSequenceMenu
         {
             if (saveSelectedIndex == 0)
             {
-                SaveFile(Main.Settings.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
+                SaveFile(Main.Settings.NonUserData.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
 
                 // Log success when file is saved after overwrite confirmation
                 Logging.Logging.Add(

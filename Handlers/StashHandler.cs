@@ -93,7 +93,7 @@ public static class StashHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => TryGetStashSpecialSlot(slotType, out inventoryItem),
             2,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
 

@@ -65,13 +65,8 @@ public class CraftingSequence
             var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
             var fileContent = File.ReadAllText(fullPath);
 
-            Main.Settings.SelectedCraftingStepInputs
+            Main.Settings.NonUserData.SelectedCraftingStepInputs
                 = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
-
-            Logging.Logging.Add(
-                $"Successfully loaded file from {fullPath}.",
-                Enums.WheresMyCraftAt.LogMessageType.Info
-            );
         }
         catch (Exception e)
         {
@@ -92,11 +87,6 @@ public class CraftingSequence
         {
             var dir = new DirectoryInfo(Main.ConfigDirectory);
             fileList = dir.GetFiles().Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
-
-            Logging.Logging.Add(
-                $"Retrieved {fileList.Count} files from {Main.ConfigDirectory}.",
-                Enums.WheresMyCraftAt.LogMessageType.Info
-            );
         }
         catch (Exception e)
         {

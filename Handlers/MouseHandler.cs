@@ -18,7 +18,7 @@ public static class MouseHandler
     {
         var newPos = applyOffset ? GetRelativeWinPos(position) : position;
         using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.ActionTimeoutInSeconds * 2));
+        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.DelayOptions.ActionTimeoutInSeconds * 2));
 
         try
         {
@@ -57,7 +57,7 @@ public static class MouseHandler
                 }
 
                 await GameHandler.AsyncWait(
-                    HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+                    HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
                     ctsTimeout.Token
                 );
 
@@ -93,8 +93,8 @@ public static class MouseHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => SetCursorPositionAction(position, applyOffset),
             () => IsMouseInPositionCondition(position),
-            Main.Settings.ActionTimeoutInSeconds,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
 

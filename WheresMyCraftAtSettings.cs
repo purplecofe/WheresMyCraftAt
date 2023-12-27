@@ -10,6 +10,42 @@ namespace WheresMyCraftAt;
 
 public class WheresMyCraftAtSettings : ISettings
 {
+    public ToggleNode Enable { get; set; } = new(false);
+    public RunOptions RunOptions { get; set; } = new();
+    public DelayOptions DelayOptions { get; set; } = new();
+    public DebugOptions Debugging { get; set; } = new();
+    public StylingDooDads Styling { get; set; } = new();
+    public NonUser NonUserData { get; set; } = new();
+}
+
+[Submenu(CollapsedByDefault = false)]
+public class RunOptions
+{
+    public HotkeyNode RunButton { get; set; } = Keys.NumPad6;
+}
+
+public class NonUser
+{
+    public string CraftingSequenceLastSaved { get; set; } = "";
+    public string CraftingSequenceLastSelected { get; set; } = "";
+    public List<CraftingSequence.CraftingSequence.CraftingStepInput> SelectedCraftingStepInputs { get; set; } = [];
+}
+
+[Submenu(CollapsedByDefault = false)]
+public class DelayOptions
+{
+    public RangeNode<Vector2> MinMaxRandomDelay { get; set; } = new(
+        new Vector2(20, 80),
+        Vector2.Zero,
+        new Vector2(600, 600)
+    );
+
+    public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
+}
+
+[Submenu(CollapsedByDefault = false)]
+public class DebugOptions
+{
     public Dictionary<Enums.WheresMyCraftAt.LogMessageType, bool> LogMessageFilters = new()
     {
         {
@@ -41,24 +77,10 @@ public class WheresMyCraftAtSettings : ISettings
         }
     };
 
-    public ToggleNode DebugPrint { get; set; } = new(true);
-    public ToggleNode ShowLogWindow { get; set; } = new(false);
-    public HotkeyNode ToggleDebugWindow { get; set; } = new(Keys.NumPad3);
-    public RangeNode<int> DebugPrintLingerTime { get; set; } = new(5, 0, 20);
-    public HotkeyNode RunButton { get; set; } = Keys.NumPad6;
-
-    public RangeNode<Vector2> MinMaxRandomDelay { get; set; } = new(
-        new Vector2(20, 80),
-        Vector2.Zero,
-        new Vector2(600, 600)
-    );
-
-    public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
-    public string CraftingSequenceLastSaved { get; set; } = "";
-    public string CraftingSequenceLastSelected { get; set; } = "";
-    public List<CraftingSequence.CraftingSequence.CraftingStepInput> SelectedCraftingStepInputs { get; set; } = [];
-    public StylingDooDads Styling { get; set; } = new();
-    public ToggleNode Enable { get; set; } = new(false);
+    public ToggleNode LogWindow { get; set; } = new(false);
+    public HotkeyNode ToggleLogWindow { get; set; } = new(Keys.NumPad3);
+    public ToggleNode PrintTopLeft { get; set; } = new(true);
+    public RangeNode<int> PrintLingerTime { get; set; } = new(5, 0, 20);
 }
 
 [Submenu(CollapsedByDefault = true)]

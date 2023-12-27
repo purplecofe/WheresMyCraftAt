@@ -29,8 +29,8 @@ public static class KeyHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => PerformButtonAction(button, true),
             () => Input.IsKeyDown(button),
-            Main.Settings.ActionTimeoutInSeconds,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
 
@@ -49,8 +49,8 @@ public static class KeyHandler
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () => PerformButtonAction(button, false),
             () => !Input.IsKeyDown(button),
-            Main.Settings.ActionTimeoutInSeconds,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.MinMaxRandomDelay),
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
             token
         );
 

@@ -74,19 +74,19 @@ public static class Logging
             flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
         }
 
-        var isOpen = Main.Settings.ShowLogWindow.Value;
+        var isOpen = Main.Settings.Debugging.LogWindow.Value;
 
         if (isOpen)
         {
             ImGui.Begin("Wheres My Craft At Logs", ref isOpen, flags);
-            var logMessageTypes = Main.Settings.LogMessageFilters.Keys.ToList();
+            var logMessageTypes = Main.Settings.Debugging.LogMessageFilters.Keys.ToList();
 
             for (var index = 0; index < logMessageTypes.Count; index++)
             {
                 var logMessageType = logMessageTypes[index];
-                var isEnabled = Main.Settings.LogMessageFilters[logMessageType];
+                var isEnabled = Main.Settings.Debugging.LogMessageFilters[logMessageType];
                 ImGui.Checkbox(logMessageType.ToString(), ref isEnabled);
-                Main.Settings.LogMessageFilters[logMessageType] = isEnabled;
+                Main.Settings.Debugging.LogMessageFilters[logMessageType] = isEnabled;
 
                 if (index != logMessageTypes.Count - 1)
                 {
@@ -100,7 +100,7 @@ public static class Logging
             {
                 foreach (var msg in MessagesList.Where(msg => msg != null))
                 {
-                    if (!Main.Settings.LogMessageFilters[msg.LogType])
+                    if (!Main.Settings.Debugging.LogMessageFilters[msg.LogType])
                     {
                         continue;
                     }
@@ -115,7 +115,7 @@ public static class Logging
             ImGui.End();
         }
 
-        Main.Settings.ShowLogWindow.Value = isOpen;
+        Main.Settings.Debugging.LogWindow.Value = isOpen;
     }
 
     public static void Add(string msg, Enums.WheresMyCraftAt.LogMessageType messageType)
@@ -124,9 +124,9 @@ public static class Logging
         {
             var color = LogMessageColors[messageType];
 
-            if (Main.Settings.DebugPrint)
+            if (Main.Settings.Debugging.PrintTopLeft)
             {
-                DebugWindow.LogMsg(msg, Main.Settings.DebugPrintLingerTime, color);
+                DebugWindow.LogMsg(msg, Main.Settings.Debugging.PrintLingerTime, color);
             }
 
             var debugMsgDescription = new DebugMsgDescription

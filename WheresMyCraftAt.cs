@@ -45,8 +45,8 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public override bool Initialise()
     {
         Main = this;
-        RegisterHotkey(Settings.RunButton);
-        RegisterHotkey(Settings.ToggleDebugWindow);
+        RegisterHotkey(Settings.RunOptions.RunButton);
+        RegisterHotkey(Settings.Debugging.ToggleLogWindow);
         keysToRelease = [Keys.LButton, Keys.RButton];
 
         foreach (var key in keysToRelease)
@@ -66,9 +66,9 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         ClickWindowOffset = GameController.Window.GetWindowRectangle().TopLeft;
         ServerLatency = GameController.IngameState.ServerData.Latency;
 
-        if (Settings.ToggleDebugWindow.PressedOnce())
+        if (Settings.Debugging.ToggleLogWindow.PressedOnce())
         {
-            Settings.ShowLogWindow.Value = !Settings.ShowLogWindow.Value;
+            Settings.Debugging.LogWindow.Value = !Settings.Debugging.LogWindow.Value;
         }
 
         if (!GameHandler.IsInGameCondition())
@@ -77,7 +77,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return null;
         }
 
-        if (Settings.RunButton.PressedOnce())
+        if (Settings.RunOptions.RunButton.PressedOnce())
         {
             if (CurrentOperation is not null)
             {
@@ -156,7 +156,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return false;
         }
 
-        if (Settings.SelectedCraftingStepInputs.Count == 0 || Settings.SelectedCraftingStepInputs.Any(
+        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(
                 x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)
             ))
         {
