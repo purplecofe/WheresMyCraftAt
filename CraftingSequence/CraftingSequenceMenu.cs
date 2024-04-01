@@ -265,11 +265,23 @@ public static class CraftingSequenceMenu
                         }
                     }
                 }
-                else
+
+                #endregion
+
+                #region Add Conditional Group
+
+                SetButtonColor(
+                    Main.Settings.Styling.AdditionButtons.Normal,
+                    Main.Settings.Styling.AdditionButtons.Hovered,
+                    Main.Settings.Styling.AdditionButtons.Active
+                );
+
+                if (ImGui.Button($"Add Conditional Group##{stepIndex}"))
                 {
-                    // Optionally handle the case where no other steps are available
-                    // e.g., ImGui.Text("No other steps available to copy from.");
+                    currentStep.ConditionalGroups.Add(new ConditionalGroup());
                 }
+
+                PopStyleColors(3);
 
                 #endregion
 
@@ -384,7 +396,10 @@ public static class CraftingSequenceMenu
                                 // Clamp the value between 1 and the number of conditional checks
                                 conditionalChecksTrue = Math.Max(
                                     1,
-                                    Math.Min(conditionalChecksTrue, currentStep.ConditionalGroups.Count)
+                                    Math.Min(
+                                        conditionalChecksTrue,
+                                        currentStep.ConditionalGroups[groupIndex].Conditionals.Count
+                                    )
                                 );
 
                                 currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess
