@@ -915,6 +915,10 @@ public static class CraftingSequenceMenu
             {
                 ImGui.Text($"If so, go to step {currentStep.SuccessActionStepIndex + 1}");
             }
+            else if (currentStep.SuccessAction == SuccessAction.End)
+            {
+                ImGui.Text($"If so, the item is done!");
+            }
 
             switch (currentStep.FailureAction)
             {
