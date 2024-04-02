@@ -176,28 +176,49 @@ public static class Logging
         const LogMessageType messageType = LogMessageType.EndSessionStats;
         Add("-----------", messageType);
         Add("Total Items Applied Successfully:", messageType);
+        var maxItemNameLength = Main.CurrentOperationUsedItemsList.Keys.Max(k => k.Length);
 
         foreach (var itemUsed in Main.CurrentOperationUsedItemsList)
-            Add($"{itemUsed.Key}: {itemUsed.Value}", messageType);
+        {
+            var paddedItemName = itemUsed.Key.PadRight(maxItemNameLength);
+            Add($"{paddedItemName}: {itemUsed.Value}", messageType);
+        }
 
         Add("-----------", messageType);
         Add("Total Steps Run:", LogMessageType.EndSessionStats);
-        var sortedStepCountList = Main.CurrentOperationStepCountList.OrderBy(x => x.Key);
 
-        foreach (var step in sortedStepCountList)
+        if (Main.CurrentOperationStepCountList.Count != 0)
         {
-            var stepIndexInputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[step.Key];
+            var sortedStepCountList = Main.CurrentOperationStepCountList.OrderBy(x => x.Key).ToList();
 
-            var stepAction = stepIndexInputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
-                : $"Use '{stepIndexInputs.CurrencyItem}'";
+            var maxTitleLength
+                = sortedStepCountList.Max(s => $"STEP [{s.Key + 1}] ".Length + GetStepActionTitle(s.Key).Length);
 
-            Add(
-                $"STEP [{step.Key + 1}] {stepAction}: (pass:{step.Value.passCount}, fail:{step.Value.failCount}, total:{step.Value.totalCount})",
-                messageType
-            );
+            var maxPassLength = sortedStepCountList.Max(s => s.Value.passCount.ToString().Length);
+            var maxFailLength = sortedStepCountList.Max(s => s.Value.failCount.ToString().Length);
+            var maxTotalLength = sortedStepCountList.Max(s => s.Value.totalCount.ToString().Length);
+
+            foreach (var (key, (passCount, failCount, totalCount)) in sortedStepCountList)
+            {
+                var stepTitleLine = $"STEP [{key + 1}] {GetStepActionTitle(key)}".PadRight(maxTitleLength);
+                var passLine = $": (pass:{passCount.ToString().PadLeft(maxPassLength)}, ";
+                var failLine = $"fail:{failCount.ToString().PadLeft(maxFailLength)}, ";
+                var totalLine = $"total:{totalCount.ToString().PadLeft(maxTotalLength)})";
+                var formattedStepDetails = stepTitleLine + passLine + failLine + totalLine;
+                Add(formattedStepDetails, messageType);
+            }
         }
 
         Add("-----------", LogMessageType.EndSessionStats);
+        return;
+
+        static string GetStepActionTitle(int key)
+        {
+            var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];
+
+            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
+                : $"Use '{inputs.CurrencyItem}'";
+        }
     }
 
     public class DebugMsgDescription
