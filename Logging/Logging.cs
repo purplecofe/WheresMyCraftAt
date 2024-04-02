@@ -64,7 +64,7 @@ public static class Logging
 
         // Magenta for ItemData messages
         {
-            Enums.WheresMyCraftAt.LogMessageType.ItemData, Color.Yellow
+            Enums.WheresMyCraftAt.LogMessageType.ItemData, Color.LimeGreen
         }
     };
 
@@ -92,7 +92,12 @@ public static class Logging
             {
                 var logMessageType = logMessageTypes[index];
                 var isEnabled = Main.Settings.Debugging.LogMessageFilters[logMessageType];
+
+
+                ImGui.PushStyleColor(ImGuiCol.Text, LogMessageColors[logMessageType].ToImguiVec4());
                 ImGui.Checkbox(logMessageType.ToString(), ref isEnabled);
+                ImGui.PopStyleColor();
+
                 Main.Settings.Debugging.LogMessageFilters[logMessageType] = isEnabled;
 
                 if (index != logMessageTypes.Count - 1)
