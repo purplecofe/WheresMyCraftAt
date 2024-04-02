@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 
@@ -22,6 +23,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
             try
             {
+                // Log item mods before each step
+                var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
+
+                if (asyncResult.Item1)
+                {
+                    ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                }
+
                 // Info: Starting a new step
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]",

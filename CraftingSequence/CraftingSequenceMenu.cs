@@ -1010,18 +1010,18 @@ public static class CraftingSequenceMenu
         if (ImGui.Button("Open Crafting Template Folder"))
         {
             var configDir = Main.ConfigDirectory;
-            var directoryToOpen = Directory.Exists(configDir);
 
-            if (!directoryToOpen)
-                // Log error when the config directory doesn't exist
+            if (!Directory.Exists(configDir))
             {
                 Logging.Logging.Add("Unable to open config directory because it does not exist.", LogMessageType.Error);
             }
-
-            if (configDir != null)
+            else
             {
-                Process.Start("explorer.exe", configDir);
-                // Log info when opening the config directory
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = configDir
+                });
                 Logging.Logging.Add("Opened config directory in explorer.", LogMessageType.Info);
             }
         }

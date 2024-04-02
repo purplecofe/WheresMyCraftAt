@@ -83,18 +83,29 @@ public static class ItemHandler
 
     public static void PrintHumanModListFromItem(Entity item)
     {
-        Logging.Logging.Add($"Items Mods for: {item.Path}", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.Add($"-- Items Mods for: [{item.Path}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+
+        item.TryGetComponent<Mods>(out var modsComponent);
+
+        if (modsComponent != null)
+        {
+            Logging.Logging.Add($"Rarity: {modsComponent.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        }
         var modsList = GetHumanModListFromItem(item);
 
         if (modsList.Count != 0)
         {
             foreach (var itemMod in modsList)
-                Logging.Logging.Add($"ItemMod: {itemMod}", Enums.WheresMyCraftAt.LogMessageType.Info);
+                Logging.Logging.Add($"{itemMod}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
         else
         {
-            Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.Info);
+            Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
+        Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.Add($"--", Enums.WheresMyCraftAt.LogMessageType.ItemData);
     }
 
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);

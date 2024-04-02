@@ -3,6 +3,8 @@ using ExileCore.Shared.Helpers;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -58,6 +60,11 @@ public static class Logging
         // Magenta for special messages
         {
             Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta
+        },
+
+        // Magenta for ItemData messages
+        {
+            Enums.WheresMyCraftAt.LogMessageType.ItemData, Color.Yellow
         }
     };
 
@@ -91,6 +98,47 @@ public static class Logging
                 if (index != logMessageTypes.Count - 1)
                 {
                     ImGui.SameLine();
+                }
+            }
+
+            if (ImGui.Button("Save Log"))
+            {
+                List<string> stringList;
+
+                lock (Locker)
+                {
+                    stringList = MessagesList
+                                 .Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters[msg.LogType])
+                                 .Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+                }
+
+                SaveLog(stringList);
+            }
+
+            ImGui.SameLine();
+
+            if (ImGui.Button("Open Log Folder"))
+            {
+                var fullPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
+
+                if (!Directory.Exists(fullPath))
+                {
+                    Add(
+                        "Unable to open log directory because it does not exist.",
+                        Enums.WheresMyCraftAt.LogMessageType.Error
+                    );
+                }
+                else
+                {
+                    Process.Start(
+                        new ProcessStartInfo
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = fullPath
+                        }
+                    );
+
+                    Add("Opened log directory in explorer.", Enums.WheresMyCraftAt.LogMessageType.Info);
                 }
             }
 
@@ -146,6 +194,24 @@ public static class Logging
         catch (Exception e)
         {
             DebugWindow.LogError($"{nameof(DebugWindow)} -> {e}");
+        }
+    }
+
+    public static void SaveLog(List<string> input)
+    {
+        try
+        {
+            var fullPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
+            Directory.CreateDirectory(fullPath);
+            var filename = $"Log_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var fullFilePath = Path.Combine(fullPath, filename);
+            File.WriteAllLines(fullFilePath, input);
+            Add($"Successfully saved file to {fullFilePath}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        }
+        catch (Exception e)
+        {
+            var errorPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
+            Add($"Error saving file to {errorPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
     }
 

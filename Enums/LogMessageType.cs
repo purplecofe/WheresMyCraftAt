@@ -12,6 +12,7 @@ public partial class WheresMyCraftAt
         Critical, // Severe error events that might cause the application to terminate.
         Profiler, // Specific for performance profiling logs.
         Evaluation, // Specific for EvaluateConditions method in the crafting sequence executor.
-        Special // For messages that don't fit into other categories, can be used as per specific needs.
+        Special, // For messages that don't fit into other categories, can be used as per specific needs.
+        ItemData // For full ItemFilterLibrary logs.
     }
 }

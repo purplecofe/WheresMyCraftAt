@@ -74,6 +74,9 @@ public class DebugOptions
         },
         {
             Enums.WheresMyCraftAt.LogMessageType.Special, true
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.ItemData, false
         }
     };
 
