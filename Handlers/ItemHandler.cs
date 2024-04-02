@@ -84,15 +84,15 @@ public static class ItemHandler
     public static void PrintHumanModListFromItem(Entity item)
     {
         Logging.Logging.Add($"-- Items Mods for: [{item.Path}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-        Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-
+        Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         item.TryGetComponent<Mods>(out var modsComponent);
 
         if (modsComponent != null)
         {
             Logging.Logging.Add($"Rarity: {modsComponent.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-            Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
+
         var modsList = GetHumanModListFromItem(item);
 
         if (modsList.Count != 0)
@@ -104,8 +104,23 @@ public static class ItemHandler
         {
             Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
-        Logging.Logging.Add($"", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-        Logging.Logging.Add($"--", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+
+        Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.Add("--", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+    }
+
+    public static void UpdateUsedItemDictionary(string currencyName)
+    {
+        Main.CurrentOperationUsedItemsList ??= [];
+
+        if (Main.CurrentOperationUsedItemsList.TryGetValue(currencyName, out var currentCount))
+        {
+            Main.CurrentOperationUsedItemsList[currencyName] = currentCount + 1;
+        }
+        else
+        {
+            Main.CurrentOperationUsedItemsList[currencyName] = 1;
+        }
     }
 
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);

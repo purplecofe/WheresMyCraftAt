@@ -42,14 +42,15 @@ public static class FilterHandler
         return (asyncResult.Item1, false);
     }
 
-    public static async SyncTask<(bool result, ItemData itemData)> AsyncRetrieveItemData(SpecialSlot slot, CancellationToken token)
+    public static async SyncTask<(bool result, ItemData itemData)> AsyncRetrieveItemData(SpecialSlot slot,
+        CancellationToken token)
     {
         Logging.Logging.Add("Attempting to get ItemData.", LogMessageType.ItemData);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
 
         if (asyncResult.Item1)
         {
-            Logging.Logging.Add($"ItemData found.", LogMessageType.ItemData);
+            Logging.Logging.Add("ItemData found.", LogMessageType.ItemData);
             return (asyncResult.Item1, new ItemData(asyncResult.Item2.Item, Main.GameController));
         }
 

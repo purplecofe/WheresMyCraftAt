@@ -10,12 +10,12 @@ namespace WheresMyCraftAt;
 
 public class WheresMyCraftAtSettings : ISettings
 {
-    public ToggleNode Enable { get; set; } = new(false);
     public RunOptions RunOptions { get; set; } = new();
     public DelayOptions DelayOptions { get; set; } = new();
     public DebugOptions Debugging { get; set; } = new();
     public StylingDooDads Styling { get; set; } = new();
     public NonUser NonUserData { get; set; } = new();
+    public ToggleNode Enable { get; set; } = new(false);
 }
 
 [Submenu(CollapsedByDefault = false)]
@@ -46,37 +46,40 @@ public class DelayOptions
 [Submenu(CollapsedByDefault = false)]
 public class DebugOptions
 {
-    public Dictionary<Enums.WheresMyCraftAt.LogMessageType, bool> LogMessageFilters = new()
+    public Dictionary<Enums.WheresMyCraftAt.LogMessageType, (bool enabled, Color color)> LogMessageFilters = new()
     {
         {
-            Enums.WheresMyCraftAt.LogMessageType.Info, true
+            Enums.WheresMyCraftAt.LogMessageType.Trace, (true, Color.LightGray)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Warning, true
+            Enums.WheresMyCraftAt.LogMessageType.Debug, (true, Color.Cyan)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Error, true
+            Enums.WheresMyCraftAt.LogMessageType.Info, (true, Color.White)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Critical, true
+            Enums.WheresMyCraftAt.LogMessageType.Warning, (true, Color.Yellow)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Trace, true
+            Enums.WheresMyCraftAt.LogMessageType.Error, (true, Color.Red)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Debug, true
+            Enums.WheresMyCraftAt.LogMessageType.Critical, (true, Color.DarkRed)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Profiler, true
+            Enums.WheresMyCraftAt.LogMessageType.Profiler, (true, Color.SkyBlue)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Evaluation, true
+            Enums.WheresMyCraftAt.LogMessageType.Evaluation, (true, Color.Orange)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.Special, true
+            Enums.WheresMyCraftAt.LogMessageType.Special, (true, Color.Magenta)
         },
         {
-            Enums.WheresMyCraftAt.LogMessageType.ItemData, false
+            Enums.WheresMyCraftAt.LogMessageType.ItemData, (true, Color.LimeGreen)
+        },
+        {
+            Enums.WheresMyCraftAt.LogMessageType.EndSessionStats, (true, Color.Beige)
         }
     };
 

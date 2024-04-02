@@ -87,11 +87,9 @@ public class CraftingSequence
         {
             var dir = new DirectoryInfo(Main.ConfigDirectory);
             var ext = ".json";
-            fileList = dir.GetFiles()
-                          .Where(file => file.Extension.ToLower() == ext)
-                          .Select(file => Path.GetFileNameWithoutExtension(file.Name))
-                          .ToList();
 
+            fileList = dir.GetFiles().Where(file => file.Extension.ToLower() == ext)
+                          .Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
         }
         catch (Exception e)
         {

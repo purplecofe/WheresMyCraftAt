@@ -49,7 +49,11 @@ public static class ElementHandler
         {
             while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+                await GameHandler.AsyncWait(
+                    HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
+                    token
+                );
+
                 var hoveredEntity = GetHoveredElementUiAction().Entity.Address;
 
                 if (HelperHandler.IsAddressSameCondition(itemToChange, hoveredEntity))
@@ -134,6 +138,7 @@ public static class ElementHandler
                 return false;
             }
 
+            ItemHandler.UpdateUsedItemDictionary(currencyName);
             Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.Info);
             return true;
         }

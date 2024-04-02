@@ -7,67 +7,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
-using Color = SharpDX.Color;
-using Vector4 = System.Numerics.Vector4;
 
 namespace WheresMyCraftAt.Logging;
 
 public static class Logging
 {
-    private static readonly Dictionary<Enums.WheresMyCraftAt.LogMessageType, Color> LogMessageColors = new()
-    {
-        // Light gray for detailed, low-level messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Trace, Color.LightGray
-        },
-
-        // Cyan for debug-level messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Debug, Color.Cyan
-        },
-
-        // White for informational messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Info, Color.White
-        },
-
-        // Yellow for warnings
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Warning, Color.Yellow
-        },
-
-        // Red for errors
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Error, Color.Red
-        },
-
-        // Dark red for critical errors
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Critical, Color.DarkRed
-        },
-
-        // Sky blue for profiler messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Profiler, Color.SkyBlue
-        },
-
-        // Magenta for Evaluation messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Evaluation, Color.Orange
-        },
-
-        // Magenta for special messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.Special, Color.Magenta
-        },
-
-        // Magenta for ItemData messages
-        {
-            Enums.WheresMyCraftAt.LogMessageType.ItemData, Color.LimeGreen
-        }
-    };
-
     private static readonly object Locker = new();
     public static List<DebugMsgDescription> MessagesList = new(24);
 
@@ -88,22 +35,27 @@ public static class Logging
             ImGui.Begin("Wheres My Craft At Logs", ref isOpen, flags);
             var logMessageTypes = Main.Settings.Debugging.LogMessageFilters.Keys.ToList();
 
-            for (var index = 0; index < logMessageTypes.Count; index++)
+            if (ImGui.TreeNode("Configure Logging Filters And Their Colors"))
             {
-                var logMessageType = logMessageTypes[index];
-                var isEnabled = Main.Settings.Debugging.LogMessageFilters[logMessageType];
-
-
-                ImGui.PushStyleColor(ImGuiCol.Text, LogMessageColors[logMessageType].ToImguiVec4());
-                ImGui.Checkbox(logMessageType.ToString(), ref isEnabled);
-                ImGui.PopStyleColor();
-
-                Main.Settings.Debugging.LogMessageFilters[logMessageType] = isEnabled;
-
-                if (index != logMessageTypes.Count - 1)
+                foreach (var logMessageType in logMessageTypes)
                 {
+                    var logSetting = Main.Settings.Debugging.LogMessageFilters[logMessageType];
+                    var colorToVector4 = logSetting.color.ToImguiVec4();
+
+                    ImGui.ColorEdit4(
+                        $"##ColorPicker_{logMessageType}",
+                        ref colorToVector4,
+                        ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf |
+                        ImGuiColorEditFlags.AlphaBar
+                    );
+
+                    logSetting.color = colorToVector4.ToSharpColor();
                     ImGui.SameLine();
+                    ImGui.Checkbox(logMessageType.ToString(), ref logSetting.enabled);
+                    Main.Settings.Debugging.LogMessageFilters[logMessageType] = logSetting;
                 }
+
+                ImGui.TreePop();
             }
 
             if (ImGui.Button("Save Log"))
@@ -113,8 +65,10 @@ public static class Logging
                 lock (Locker)
                 {
                     stringList = MessagesList
-                                 .Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters[msg.LogType])
-                                 .Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+                                 .Where(
+                                     msg => msg != null &&
+                                            Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled
+                                 ).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
                 }
 
                 SaveLog(stringList);
@@ -128,10 +82,7 @@ public static class Logging
 
                 if (!Directory.Exists(fullPath))
                 {
-                    Add(
-                        "Unable to open log directory because it does not exist.",
-                        Enums.WheresMyCraftAt.LogMessageType.Error
-                    );
+                    Add("Unable to open log directory because it does not exist.", LogMessageType.Error);
                 }
                 else
                 {
@@ -143,7 +94,7 @@ public static class Logging
                         }
                     );
 
-                    Add("Opened log directory in explorer.", Enums.WheresMyCraftAt.LogMessageType.Info);
+                    Add("Opened log directory in explorer.", LogMessageType.Info);
                 }
             }
 
@@ -153,12 +104,14 @@ public static class Logging
             {
                 foreach (var msg in MessagesList.Where(msg => msg != null))
                 {
-                    if (!Main.Settings.Debugging.LogMessageFilters[msg.LogType])
+                    var logType = Main.Settings.Debugging.LogMessageFilters[msg.LogType];
+
+                    if (!logType.enabled)
                     {
                         continue;
                     }
 
-                    ImGui.PushStyleColor(ImGuiCol.Text, msg.ColorV4);
+                    ImGui.PushStyleColor(ImGuiCol.Text, logType.color.ToImguiVec4());
                     ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
                     ImGui.PopStyleColor();
                 }
@@ -171,11 +124,11 @@ public static class Logging
         Main.Settings.Debugging.LogWindow.Value = isOpen;
     }
 
-    public static void Add(string msg, Enums.WheresMyCraftAt.LogMessageType messageType)
+    public static void Add(string msg, LogMessageType messageType)
     {
         try
         {
-            var color = LogMessageColors[messageType];
+            var color = Main.Settings.Debugging.LogMessageFilters[messageType].color;
 
             if (Main.Settings.Debugging.PrintTopLeft)
             {
@@ -186,8 +139,6 @@ public static class Logging
             {
                 Msg = msg,
                 Time = DateTime.Now,
-                ColorV4 = color.ToImguiVec4(),
-                Color = color,
                 LogType = messageType
             };
 
@@ -211,21 +162,48 @@ public static class Logging
             var filename = $"Log_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
             var fullFilePath = Path.Combine(fullPath, filename);
             File.WriteAllLines(fullFilePath, input);
-            Add($"Successfully saved file to {fullFilePath}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+            Add($"Successfully saved file to {fullFilePath}.", LogMessageType.Info);
         }
         catch (Exception e)
         {
             var errorPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
-            Add($"Error saving file to {errorPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Add($"Error saving file to {errorPath}: {e.Message}", LogMessageType.Error);
         }
+    }
+
+    public static void LogEndCraftingStats()
+    {
+        const LogMessageType messageType = LogMessageType.EndSessionStats;
+        Add("-----------", messageType);
+        Add("Total Items Applied Successfully:", messageType);
+
+        foreach (var itemUsed in Main.CurrentOperationUsedItemsList)
+            Add($"{itemUsed.Key}: {itemUsed.Value}", messageType);
+
+        Add("-----------", messageType);
+        Add("Total Steps Run:", LogMessageType.EndSessionStats);
+        var sortedStepCountList = Main.CurrentOperationStepCountList.OrderBy(x => x.Key);
+
+        foreach (var step in sortedStepCountList)
+        {
+            var stepIndexInputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[step.Key];
+
+            var stepAction = stepIndexInputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
+                : $"Use '{stepIndexInputs.CurrencyItem}'";
+
+            Add(
+                $"STEP [{step.Key + 1}] {stepAction}: (pass:{step.Value.passCount}, fail:{step.Value.failCount}, total:{step.Value.totalCount})",
+                messageType
+            );
+        }
+
+        Add("-----------", LogMessageType.EndSessionStats);
     }
 
     public class DebugMsgDescription
     {
         public string Msg { get; init; }
         public DateTime Time { get; init; }
-        public Vector4 ColorV4 { get; init; }
-        public Color Color { get; init; }
-        public Enums.WheresMyCraftAt.LogMessageType LogType { get; init; }
+        public LogMessageType LogType { get; init; }
     }
 }

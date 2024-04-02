@@ -13,6 +13,7 @@ public partial class WheresMyCraftAt
         Profiler, // Specific for performance profiling logs.
         Evaluation, // Specific for EvaluateConditions method in the crafting sequence executor.
         Special, // For messages that don't fit into other categories, can be used as per specific needs.
-        ItemData // For full ItemFilterLibrary logs.
+        ItemData, // For full ItemFilterLibrary logs.
+        EndSessionStats // For end session logging of stats.
     }
 }

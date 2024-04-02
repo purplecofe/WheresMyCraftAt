@@ -6,6 +6,7 @@ using System.Threading;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;
 
@@ -105,6 +106,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             // Determine the next step based on success or failure
             if (success)
             {
+                UpdateOperationStepsDictionary(currentStepIndex, true);
+
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}",
                     LogMessageType.Special
@@ -124,6 +127,8 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
             else
             {
+                UpdateOperationStepsDictionary(currentStepIndex, false);
+
                 Logging.Logging.Add(
                     $"CraftingSequenceStep: Sequence result {currentStep.FailureAction}",
                     LogMessageType.Special
@@ -177,7 +182,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                         LogMessageType.Error
                     );
 
-                    WheresMyCraftAt.Main.Stop();
+                    Main.Stop();
                 }
 
                 switch (group.GroupType)
@@ -257,6 +262,29 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
 
             return (allSuccessful, trueCount);
+        }
+
+        static void UpdateOperationStepsDictionary(int step, bool pass)
+        {
+            Main.CurrentOperationStepCountList ??= [];
+
+            if (Main.CurrentOperationStepCountList.TryGetValue(step, out var currentCount))
+            {
+                if (pass)
+                {
+                    Main.CurrentOperationStepCountList[step] = (
+                        currentCount.passCount + 1, currentCount.failCount, currentCount.totalCount + 1);
+                }
+                else
+                {
+                    Main.CurrentOperationStepCountList[step] = (
+                        currentCount.passCount, currentCount.failCount + 1, currentCount.totalCount + 1);
+                }
+            }
+            else
+            {
+                Main.CurrentOperationStepCountList[step] = pass ? (1, 0, 1) : (0, 1, 1);
+            }
         }
     }
 }

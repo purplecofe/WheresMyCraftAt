@@ -31,6 +31,8 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
     public Vector2 ClickWindowOffset;
     public SyncTask<bool> CurrentOperation;
+    public Dictionary<int, (int passCount, int failCount, int totalCount)> CurrentOperationStepCountList = [];
+    public Dictionary<string, int> CurrentOperationUsedItemsList = [];
     private List<Keys> keysToRelease = [];
     public CancellationTokenSource OperationCts;
     public List<CraftingStep> SelectedCraftingSteps = [];
@@ -89,6 +91,8 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             {
                 Logging.Logging.MessagesList.Clear();
                 Logging.Logging.Add("Attempting to Start New Operation.", Enums.WheresMyCraftAt.LogMessageType.Info);
+                CurrentOperationUsedItemsList = [];
+                CurrentOperationStepCountList = [];
                 ResetCancellationTokenSource();
                 CurrentOperation = AsyncStart(OperationCts.Token);
             }
@@ -127,6 +131,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         }
 
         Logging.Logging.Add("Stop() has been ran.", Enums.WheresMyCraftAt.LogMessageType.Warning);
+        Logging.Logging.LogEndCraftingStats();
     }
 
     private void ResetCancellationTokenSource()
@@ -156,7 +161,8 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return false;
         }
 
-        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(
+        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 ||
+            Settings.NonUserData.SelectedCraftingStepInputs.Any(
                 x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)
             ))
         {

@@ -1,5 +1,4 @@
-﻿using ExileCore;
-using ExileCore.Shared.Helpers;
+﻿using ExileCore.Shared.Helpers;
 using ImGuiNET;
 using ItemFilterLibrary;
 using SharpDX;
@@ -221,12 +220,17 @@ public static class CraftingSequenceMenu
                 #region Copy Conditions From Step X
 
                 // Ensure we're operating on a collection that supports LINQ's indexed Select
-                var stepsWithIndex = currentSteps.Select((step, index) => new { Step = step, Index = index });
+                var stepsWithIndex = currentSteps.Select(
+                    (step, index) => new
+                    {
+                        Step = step,
+                        Index = index
+                    }
+                );
 
-                var stepNamesForDropdown = stepsWithIndex
-                    .Where(stepWithIndex => stepWithIndex.Index != stepIndex)
-                    .Select(stepWithIndex => $"STEP [{stepWithIndex.Index + 1}]")
-                    .ToArray();
+                var stepNamesForDropdown = stepsWithIndex.Where(stepWithIndex => stepWithIndex.Index != stepIndex)
+                                                         .Select(stepWithIndex => $"STEP [{stepWithIndex.Index + 1}]")
+                                                         .ToArray();
 
                 // Only show the dropdown if there are other steps to select
                 if (stepNamesForDropdown.Length > 0)
@@ -243,7 +247,10 @@ public static class CraftingSequenceMenu
                         ))
                     {
                         // Adjust index if necessary
-                        if (currentStepIndex >= stepIndex) currentStepIndex++;
+                        if (currentStepIndex >= stepIndex)
+                        {
+                            currentStepIndex++;
+                        }
 
                         // Ensure the index is within bounds before accessing
                         if (currentStepIndex >= 0 && currentStepIndex < currentSteps.Count)
@@ -252,16 +259,20 @@ public static class CraftingSequenceMenu
                             var targetStep = currentSteps[stepIndex];
 
                             // Deep copy of conditional groups from source step to target step
-                            targetStep.ConditionalGroups = sourceStep.ConditionalGroups.Select(group => new ConditionalGroup
-                            {
-                                GroupType = group.GroupType,
-                                ConditionalsToBePassForSuccess = group.ConditionalsToBePassForSuccess,
-                                Conditionals = group.Conditionals.Select(conditional => new ConditionalKeys
+                            targetStep.ConditionalGroups = sourceStep.ConditionalGroups.Select(
+                                group => new ConditionalGroup
                                 {
-                                    Name = conditional.Name,
-                                    Value = conditional.Value
-                                }).ToList()
-                            }).ToList();
+                                    GroupType = group.GroupType,
+                                    ConditionalsToBePassForSuccess = group.ConditionalsToBePassForSuccess,
+                                    Conditionals = group.Conditionals.Select(
+                                        conditional => new ConditionalKeys
+                                        {
+                                            Name = conditional.Name,
+                                            Value = conditional.Value
+                                        }
+                                    ).ToList()
+                                }
+                            ).ToList();
                         }
                     }
                 }
@@ -288,7 +299,6 @@ public static class CraftingSequenceMenu
                 #region Render Conditional Groups
 
                 var groupsToRemove = new List<int>();
-
 
                 for (var groupIndex = 0; groupIndex < currentStep.ConditionalGroups.Count; groupIndex++)
                 {
@@ -917,7 +927,7 @@ public static class CraftingSequenceMenu
             }
             else if (currentStep.SuccessAction == SuccessAction.End)
             {
-                ImGui.Text($"If so, the item is done!");
+                ImGui.Text("If so, the item is done!");
             }
 
             switch (currentStep.FailureAction)
@@ -1017,11 +1027,14 @@ public static class CraftingSequenceMenu
             }
             else
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = configDir
-                });
+                Process.Start(
+                    new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = configDir
+                    }
+                );
+
                 Logging.Logging.Add("Opened config directory in explorer.", LogMessageType.Info);
             }
         }
