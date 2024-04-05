@@ -1,0 +1,219 @@
+[
+  {
+    "CurrencyItem": "Orb of Transmutation",
+    "AutomaticSuccess": false,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 2,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "Sadist",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableSadist\"))"
+          },
+          {
+            "Name": "Prismatic Heart",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotablePrismaticHeart\"))"
+          },
+          {
+            "Name": "Disorienting Display",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDisorientingDisplay\"))"
+          },
+          {
+            "Name": "Doryani's Lesson",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDoryanisLesson\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": false,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 4,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 2,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "Sadist",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableSadist\"))"
+          },
+          {
+            "Name": "Prismatic Heart",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotablePrismaticHeart\"))"
+          },
+          {
+            "Name": "Disorienting Display",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDisorientingDisplay\"))"
+          },
+          {
+            "Name": "Doryani's Lesson",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDoryanisLesson\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Open Affix",
+            "Value": "ModsInfo.Prefixes.Count == 0 || ModsInfo.Suffixes.Count == 0"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Augmentation",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "Sadist",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableSadist\"))"
+          },
+          {
+            "Name": "Prismatic Heart",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotablePrismaticHeart\"))"
+          },
+          {
+            "Name": "Disorienting Display",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDisorientingDisplay\"))"
+          },
+          {
+            "Name": "Doryani's Lesson",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDoryanisLesson\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Regal Orb",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 5,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 3,
+        "Conditionals": [
+          {
+            "Name": "Sadist",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableSadist\"))"
+          },
+          {
+            "Name": "Prismatic Heart",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotablePrismaticHeart\"))"
+          },
+          {
+            "Name": "Disorienting Display",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDisorientingDisplay\"))"
+          },
+          {
+            "Name": "Doryani's Lesson",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDoryanisLesson\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 7,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 6,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Open Prefix",
+            "Value": "ModsInfo.Prefixes.Count <= 2"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Scouring",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 0,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Exalted Orb",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 6,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 3,
+        "Conditionals": [
+          {
+            "Name": "Sadist",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableSadist\"))"
+          },
+          {
+            "Name": "Prismatic Heart",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotablePrismaticHeart\"))"
+          },
+          {
+            "Name": "Disorienting Display",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDisorientingDisplay\"))"
+          },
+          {
+            "Name": "Doryani's Lesson",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"AfflictionNotableDoryanisLesson\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  }
+]

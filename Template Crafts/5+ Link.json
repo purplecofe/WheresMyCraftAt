@@ -1,0 +1,23 @@
+[
+  {
+    "CurrencyItem": "Orb of Fusing",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 0,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "5+ Links",
+            "Value": "SocketInfo.LargestLinkSize >= 5"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  }
+]
