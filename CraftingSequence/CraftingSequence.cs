@@ -51,10 +51,7 @@ public class CraftingSequence
         {
             var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
 
-            Logging.Logging.Add(
-                $"Error saving file to {fullPath}: {e.Message}",
-                Enums.WheresMyCraftAt.LogMessageType.Error
-            );
+            Logging.Logging.Add($"Error saving file to {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
     }
 
@@ -65,17 +62,13 @@ public class CraftingSequence
             var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
             var fileContent = File.ReadAllText(fullPath);
 
-            Main.Settings.NonUserData.SelectedCraftingStepInputs
-                = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
+            Main.Settings.NonUserData.SelectedCraftingStepInputs = JsonConvert.DeserializeObject<List<CraftingStepInput>>(fileContent);
         }
         catch (Exception e)
         {
             var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
 
-            Logging.Logging.Add(
-                $"Error loading file from {fullPath}: {e.Message}",
-                Enums.WheresMyCraftAt.LogMessageType.Error
-            );
+            Logging.Logging.Add($"Error loading file from {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
     }
 
@@ -88,15 +81,11 @@ public class CraftingSequence
             var dir = new DirectoryInfo(Main.ConfigDirectory);
             var ext = ".json";
 
-            fileList = dir.GetFiles().Where(file => file.Extension.ToLower() == ext)
-                          .Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
+            fileList = dir.GetFiles().Where(file => file.Extension.ToLower() == ext).Select(file => Path.GetFileNameWithoutExtension(file.Name)).ToList();
         }
         catch (Exception e)
         {
-            Logging.Logging.Add(
-                $"{Main.Name}: An error occurred while getting files: {e.Message}",
-                Enums.WheresMyCraftAt.LogMessageType.Error
-            );
+            Logging.Logging.Add($"{Main.Name}: An error occurred while getting files: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
 
         return fileList;
@@ -119,8 +108,7 @@ public class CraftingSequence
         public ConditionGroup GroupType { get; set; } = ConditionGroup.AND;
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
 
-        public List<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> ConditionalChecks { get; set; }
-            = [];
+        public List<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> ConditionalChecks { get; set; } = [];
     }
 
     public class CraftingStepInput

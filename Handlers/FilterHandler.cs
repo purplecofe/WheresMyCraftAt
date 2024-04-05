@@ -25,8 +25,7 @@ public static class FilterHandler
         return false;
     }
 
-    public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery,
-        SpecialSlot slot, CancellationToken token)
+    public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery, SpecialSlot slot, CancellationToken token)
     {
         Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
@@ -42,8 +41,7 @@ public static class FilterHandler
         return (asyncResult.Item1, false);
     }
 
-    public static async SyncTask<(bool result, ItemData itemData)> AsyncRetrieveItemData(SpecialSlot slot,
-        CancellationToken token)
+    public static async SyncTask<(bool result, ItemData itemData)> AsyncRetrieveItemData(SpecialSlot slot, CancellationToken token)
     {
         Logging.Logging.Add("Attempting to get ItemData.", LogMessageType.ItemData);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
@@ -68,5 +66,5 @@ public static class FilterHandler
         return result;
     }
 
-    public static CustomItemData GetItemData(Entity item) => new(item, Main.GameController);
+    public static CustomItemData GetItemData(Entity item) => new CustomItemData(item, Main.GameController);
 }

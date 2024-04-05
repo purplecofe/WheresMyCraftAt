@@ -19,7 +19,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 {
     public static WheresMyCraftAt Main;
 
-    public readonly Dictionary<Enums.WheresMyCraftAt.SpecialSlot, Vector2N> SpecialSlotDimensionMap = new()
+    public readonly Dictionary<Enums.WheresMyCraftAt.SpecialSlot, Vector2N> SpecialSlotDimensionMap = new Dictionary<Enums.WheresMyCraftAt.SpecialSlot, Vector2N>
     {
         {
             Enums.WheresMyCraftAt.SpecialSlot.CurrencyTab, new Vector2N(126f, 252f)
@@ -51,8 +51,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         RegisterHotkey(Settings.Debugging.ToggleLogWindow);
         keysToRelease = [Keys.LButton, Keys.RButton];
 
-        foreach (var key in keysToRelease)
-            Input.RegisterKey(key);
+        foreach (var key in keysToRelease) Input.RegisterKey(key);
 
         return true;
     }
@@ -122,8 +121,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
         CurrentOperation = null;
 
-        foreach (var key in keysToRelease.Where(Input.GetKeyState))
-            Input.KeyUp(key);
+        foreach (var key in keysToRelease.Where(Input.GetKeyState)) Input.KeyUp(key);
 
         if (ItemHandler.IsItemRightClickedCondition())
         {
@@ -153,23 +151,14 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         if (!GameHandler.IsInGameCondition())
         {
-            Logging.Logging.Add(
-                "Not in game, operation will be terminated.",
-                Enums.WheresMyCraftAt.LogMessageType.Error
-            );
+            Logging.Logging.Add("Not in game, operation will be terminated.", Enums.WheresMyCraftAt.LogMessageType.Error);
 
             return false;
         }
 
-        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 ||
-            Settings.NonUserData.SelectedCraftingStepInputs.Any(
-                x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)
-            ))
+        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)))
         {
-            Logging.Logging.Add(
-                "No Crafting Steps or currency to use is null, operation will be terminated.",
-                Enums.WheresMyCraftAt.LogMessageType.Error
-            );
+            Logging.Logging.Add("No Crafting Steps or currency to use is null, operation will be terminated.", Enums.WheresMyCraftAt.LogMessageType.Error);
 
             return false;
         }
@@ -182,10 +171,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
             if (!isStashOpen || !isInvOpen)
             {
-                Logging.Logging.Add(
-                    "Inventory or Stash could not be opened.",
-                    Enums.WheresMyCraftAt.LogMessageType.Warning
-                );
+                Logging.Logging.Add("Inventory or Stash could not be opened.", Enums.WheresMyCraftAt.LogMessageType.Warning);
 
                 return false;
             }

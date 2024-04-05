@@ -7,7 +7,7 @@ namespace WheresMyCraftAt.Handlers;
 public static class HelperHandler
 {
     private const float PerlinTimeResetThreshold = 10000.0f; // Set your desired reset threshold
-    private static readonly Random random = new();
+    private static readonly Random random = new Random();
 
     private static float perlinTime; // This variable will keep track of the "time" for Perlin noise
 
@@ -51,22 +51,14 @@ public static class HelperHandler
         var dynamicShrinkPercentage = (noiseValue + 1) * 0.5f * range + floor;
         dynamicShrinkPercentage = Math.Clamp(dynamicShrinkPercentage, floor, ceiling);
 
-        Logging.Logging.Add(
-            $"Generated Perlin noise value: {noiseValue} (Dynamic shrink percentage: {dynamicShrinkPercentage})",
-            Enums.WheresMyCraftAt.LogMessageType.Debug
-        );
+        Logging.Logging.Add($"Generated Perlin noise value: {noiseValue} (Dynamic shrink percentage: {dynamicShrinkPercentage})", Enums.WheresMyCraftAt.LogMessageType.Debug);
 
         // Calculate the shrinkage in terms of width and height
         var shrinkWidth = rect.Width * dynamicShrinkPercentage / 100f;
         var shrinkHeight = rect.Height * dynamicShrinkPercentage / 100f;
 
         // Create a smaller rectangle
-        var smallerRect = new RectangleF(
-            rect.Left + shrinkWidth / 2,
-            rect.Top + shrinkHeight / 2,
-            rect.Width - shrinkWidth,
-            rect.Height - shrinkHeight
-        );
+        var smallerRect = new RectangleF(rect.Left + shrinkWidth / 2, rect.Top + shrinkHeight / 2, rect.Width - shrinkWidth, rect.Height - shrinkHeight);
 
         // Generate a random point within the smaller rectangle
         var x = (int)(random.NextDouble() * smallerRect.Width + smallerRect.Left);

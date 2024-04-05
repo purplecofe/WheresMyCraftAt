@@ -33,45 +33,31 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 }
 
                 // Info: Starting a new step
-                Logging.Logging.Add(
-                    $"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]",
-                    LogMessageType.Special
-                );
+                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
 
                 stopwatch.Restart(); // Start timing
 
-                if (currentStep.ConditionalCheckGroups.Count != 0 &&
-                    currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
+                if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
                     success = await EvaluateConditionsAsync(currentStep, token);
 
-                    Logging.Logging.Add(
-                        $"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}",
-                        LogMessageType.Special
-                    );
+                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
                 }
                 else
                 {
                     // Execute the method if no prior conditional check or if it's not applicable
                     var methodResult = await currentStep.Method(token);
 
-                    Logging.Logging.Add(
-                        $"CraftingSequenceStep: Method result is {methodResult}",
-                        LogMessageType.Special
-                    );
+                    Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
                 }
 
-                if (currentStep.ConditionalCheckGroups.Count != 0 &&
-                    currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
+                if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                 {
                     // Count how many conditions are true and check if it meets or exceeds the required count
                     success = await EvaluateConditionsAsync(currentStep, token);
 
-                    Logging.Logging.Add(
-                        $"CraftingSequenceStep: All ConditionalChecks after method are {success}",
-                        LogMessageType.Special
-                    );
+                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
                 }
 
                 if (currentStep.AutomaticSuccess)
@@ -83,22 +69,13 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 stopwatch.Stop(); // Stop timing after the step is executed
 
                 // Profiler: Time taken for step execution
-                Logging.Logging.Add(
-                    $"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms",
-                    LogMessageType.Profiler
-                );
+                Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
             }
             catch (Exception ex)
             {
-                Logging.Logging.Add(
-                    $"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}",
-                    LogMessageType.Error
-                );
+                Logging.Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
 
-                Logging.Logging.Add(
-                    $"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms",
-                    LogMessageType.Profiler
-                );
+                Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
 
                 return false;
             }
@@ -108,10 +85,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 UpdateOperationStepsDictionary(currentStepIndex, true);
 
-                Logging.Logging.Add(
-                    $"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}",
-                    LogMessageType.Special
-                );
+                Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
 
                 switch (currentStep.SuccessAction)
                 {
@@ -129,10 +103,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 UpdateOperationStepsDictionary(currentStepIndex, false);
 
-                Logging.Logging.Add(
-                    $"CraftingSequenceStep: Sequence result {currentStep.FailureAction}",
-                    LogMessageType.Special
-                );
+                Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
 
                 switch (currentStep.FailureAction)
                 {
@@ -149,20 +120,14 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             }
 
             // Info: Next step to be executed
-            Logging.Logging.Add(
-                currentStepIndex < steps.Count - 1 // Check if it's not the last step
-                    ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
-                    // If it's the last step, you might want to log a different message or nothing at all
-                    : "CraftingSequenceStep: Reached the last step in the sequence.",
-                LogMessageType.Special
-            );
+            Logging.Logging.Add(currentStepIndex < steps.Count - 1 // Check if it's not the last step
+                ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
+                // If it's the last step, you might want to log a different message or nothing at all
+                : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
         }
 
         // Info: Sequence completed successfully
-        Logging.Logging.Add(
-            "CraftingSequenceExecutor: Sequence execution completed successfully.",
-            LogMessageType.Special
-        );
+        Logging.Logging.Add("CraftingSequenceExecutor: Sequence execution completed successfully.", LogMessageType.Special);
 
         return true;
 
@@ -177,10 +142,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                 if (!trueCount.result)
                 {
-                    Logging.Logging.Add(
-                        "EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping",
-                        LogMessageType.Error
-                    );
+                    Logging.Logging.Add("EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping", LogMessageType.Error);
 
                     Main.Stop();
                 }
@@ -190,36 +152,24 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                     case ConditionGroup.AND:
                         andResult &= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
-                        Logging.Logging.Add(
-                            $"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
-                            LogMessageType.Evaluation
-                        );
+                        Logging.Logging.Add($"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
 
                         break;
                     case ConditionGroup.OR:
                         orResult |= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
-                        Logging.Logging.Add(
-                            $"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})",
-                            LogMessageType.Evaluation
-                        );
+                        Logging.Logging.Add($"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
 
                         break;
                     case ConditionGroup.NOT:
                         if (trueCount.trueCount > 0)
                         {
-                            Logging.Logging.Add(
-                                "NOT Group Result: False (At least one condition is true)",
-                                LogMessageType.Evaluation
-                            );
+                            Logging.Logging.Add("NOT Group Result: False (At least one condition is true)", LogMessageType.Evaluation);
 
                             return false;
                         }
 
-                        Logging.Logging.Add(
-                            "NOT Group Result: True (No conditions are true)",
-                            LogMessageType.Evaluation
-                        );
+                        Logging.Logging.Add("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
 
                         break;
                 }
@@ -238,9 +188,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             return combinedResult;
         }
 
-        static async SyncTask<(bool result, int trueCount)> CountTrueAsync(
-            IEnumerable<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> conditionalChecks,
-            CancellationToken token)
+        static async SyncTask<(bool result, int trueCount)> CountTrueAsync(IEnumerable<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> conditionalChecks, CancellationToken token)
         {
             var trueCount = 0;
             var allSuccessful = true;
@@ -272,13 +220,11 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             {
                 if (pass)
                 {
-                    Main.CurrentOperationStepCountList[step] = (
-                        currentCount.passCount + 1, currentCount.failCount, currentCount.totalCount + 1);
+                    Main.CurrentOperationStepCountList[step] = (currentCount.passCount + 1, currentCount.failCount, currentCount.totalCount + 1);
                 }
                 else
                 {
-                    Main.CurrentOperationStepCountList[step] = (
-                        currentCount.passCount, currentCount.failCount + 1, currentCount.totalCount + 1);
+                    Main.CurrentOperationStepCountList[step] = (currentCount.passCount, currentCount.failCount + 1, currentCount.totalCount + 1);
                 }
             }
             else

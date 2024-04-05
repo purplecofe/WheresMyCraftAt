@@ -11,8 +11,7 @@ namespace WheresMyCraftAt.Extensions;
 
 public static class ItemExtensions
 {
-    public static async SyncTask<bool> AsyncTryClick(this NormalInventoryItem item, bool rightClick,
-        CancellationToken token)
+    public static async SyncTask<bool> AsyncTryClick(this NormalInventoryItem item, bool rightClick, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 

@@ -15,11 +15,7 @@ public static class InventoryHandler
     {
         Logging.Logging.Add("Waiting for inventory to open.", LogMessageType.Info);
 
-        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-            IsInventoryPanelOpenCondition,
-            timeout,
-            token
-        );
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsInventoryPanelOpenCondition, timeout, token);
 
         Logging.Logging.Add($"Inventory open status: {result}.", LogMessageType.Info);
         return result;
@@ -29,8 +25,7 @@ public static class InventoryHandler
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
 
     public static bool IsAnItemPickedUpCondition() =>
-        Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory
-            ?.ItemCount > 0;
+        Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
 
     public static bool IsInventoryPanelOpenCondition()
     {
@@ -39,8 +34,7 @@ public static class InventoryHandler
 
     public static bool TryGetPickedUpItem(out Entity pickedUpItem)
     {
-        pickedUpItem = IsAnItemPickedUpCondition() ? GetItemsFromAnInventory(InventorySlotE.Cursor1).FirstOrDefault()
-            : null;
+        pickedUpItem = IsAnItemPickedUpCondition() ? GetItemsFromAnInventory(InventorySlotE.Cursor1).FirstOrDefault() : null;
 
         if (pickedUpItem != null)
         {

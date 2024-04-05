@@ -15,8 +15,7 @@ public static class StashHandler
         await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsStashPanelOpenCondition, timeout, token);
 
     public static InventoryType GetTypeOfCurrentVisibleStash() =>
-        Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ??
-        InventoryType.InvalidInventory;
+        Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.InvType ?? InventoryType.InvalidInventory;
 
     public static IList<NormalInventoryItem> GetVisibleStashInventory() =>
         Main.GameController?.Game?.IngameState.IngameUi?.StashElement?.VisibleStash?.VisibleInventoryItems;
@@ -46,70 +45,42 @@ public static class StashHandler
         }
         else
         {
-            Logging.Logging.Add(
-                $"Found '{baseName}' [W:{foundItem.Width}, H:{foundItem.Height}] in stash.",
-                Enums.WheresMyCraftAt.LogMessageType.Info
-            );
+            Logging.Logging.Add($"Found '{baseName}' [W:{foundItem.Width}, H:{foundItem.Height}] in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
         }
 
         return foundItem != null;
     }
 
-    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetItemInStash(string currencyName,
-        CancellationToken token)
+    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetItemInStash(string currencyName, CancellationToken token)
     {
         NormalInventoryItem orbItem = null;
 
-        Logging.Logging.Add(
-            $"Attempting to find item '{currencyName}' in stash.",
-            Enums.WheresMyCraftAt.LogMessageType.Info
-        );
+        Logging.Logging.Add($"Attempting to find item '{currencyName}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
-        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-            () => TryGetItemInStash(currencyName, out orbItem),
-            2,
-            Main.ServerLatency,
-            token
-        );
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetItemInStash(currencyName, out orbItem), 2, Main.ServerLatency, token);
 
-        Logging.Logging.Add(
-            $"Item '{currencyName}' found status: {result}.",
-            Enums.WheresMyCraftAt.LogMessageType.Info
-        );
+        Logging.Logging.Add($"Item '{currencyName}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return Tuple.Create(result, orbItem);
     }
 
-    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetStashSpecialSlot(
-        Enums.WheresMyCraftAt.SpecialSlot slotType, CancellationToken token)
+    public static async SyncTask<Tuple<bool, NormalInventoryItem>> AsyncTryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, CancellationToken token)
     {
         NormalInventoryItem inventoryItem = null;
 
-        Logging.Logging.Add(
-            $"Attempting to find special slot '{slotType}' in stash.",
-            Enums.WheresMyCraftAt.LogMessageType.Info
-        );
+        Logging.Logging.Add($"Attempting to find special slot '{slotType}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
-        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-            () => TryGetStashSpecialSlot(slotType, out inventoryItem),
-            2,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
-            token
-        );
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetStashSpecialSlot(slotType, out inventoryItem), 2,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
 
-        Logging.Logging.Add(
-            $"Special slot '{slotType}' found status: {result}.",
-            Enums.WheresMyCraftAt.LogMessageType.Info
-        );
+        Logging.Logging.Add($"Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return Tuple.Create(result, inventoryItem);
     }
 
-    public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType,
-        out NormalInventoryItem inventoryItem)
+    public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, out NormalInventoryItem inventoryItem)
     {
-        inventoryItem = TryGetVisibleStashInventory(out var stashContents)
-            ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType]) : null;
+        inventoryItem = TryGetVisibleStashInventory(out var stashContents) ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType]) : null;
 
         if (inventoryItem == null)
         {

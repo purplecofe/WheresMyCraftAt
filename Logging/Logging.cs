@@ -15,8 +15,8 @@ namespace WheresMyCraftAt.Logging;
 
 public static class Logging
 {
-    private static readonly object Locker = new();
-    public static List<DebugMsgDescription> MessagesList = new(24);
+    private static readonly object Locker = new object();
+    public static List<DebugMsgDescription> MessagesList = new List<DebugMsgDescription>(24);
 
     public static void Render()
     {
@@ -42,12 +42,7 @@ public static class Logging
                     var logSetting = Main.Settings.Debugging.LogMessageFilters[logMessageType];
                     var colorToVector4 = logSetting.color.ToImguiVec4();
 
-                    ImGui.ColorEdit4(
-                        $"##ColorPicker_{logMessageType}",
-                        ref colorToVector4,
-                        ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf |
-                        ImGuiColorEditFlags.AlphaBar
-                    );
+                    ImGui.ColorEdit4($"##ColorPicker_{logMessageType}", ref colorToVector4, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreviewHalf | ImGuiColorEditFlags.AlphaBar);
 
                     logSetting.color = colorToVector4.ToSharpColor();
                     ImGui.SameLine();
@@ -64,11 +59,8 @@ public static class Logging
 
                 lock (Locker)
                 {
-                    stringList = MessagesList
-                                 .Where(
-                                     msg => msg != null &&
-                                            Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled
-                                 ).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+                    stringList = MessagesList.Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}")
+                        .ToList();
                 }
 
                 SaveLog(stringList);
@@ -86,13 +78,11 @@ public static class Logging
                 }
                 else
                 {
-                    Process.Start(
-                        new ProcessStartInfo
-                        {
-                            FileName = "explorer.exe",
-                            Arguments = fullPath
-                        }
-                    );
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = fullPath
+                    });
 
                     Add("Opened log directory in explorer.", LogMessageType.Info);
                 }
@@ -191,8 +181,7 @@ public static class Logging
         {
             var sortedStepCountList = Main.CurrentOperationStepCountList.OrderBy(x => x.Key).ToList();
 
-            var maxTitleLength
-                = sortedStepCountList.Max(s => $"STEP [{s.Key + 1}] ".Length + GetStepActionTitle(s.Key).Length);
+            var maxTitleLength = sortedStepCountList.Max(s => $"STEP [{s.Key + 1}] ".Length + GetStepActionTitle(s.Key).Length);
 
             var maxPassLength = sortedStepCountList.Max(s => s.Value.passCount.ToString().Length);
             var maxFailLength = sortedStepCountList.Max(s => s.Value.failCount.ToString().Length);
@@ -216,8 +205,7 @@ public static class Logging
         {
             var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];
 
-            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item"
-                : $"Use '{inputs.CurrencyItem}'";
+            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item" : $"Use '{inputs.CurrencyItem}'";
         }
     }
 

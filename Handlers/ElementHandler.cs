@@ -39,8 +39,7 @@ public static class ElementHandler
         return false;
     }
 
-    public static async SyncTask<bool> AsyncExecuteNotSameItemWithCancellationHandling(long itemToChange, int timeoutS,
-        CancellationToken token)
+    public static async SyncTask<bool> AsyncExecuteNotSameItemWithCancellationHandling(long itemToChange, int timeoutS, CancellationToken token)
     {
         using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         ctsTimeout.CancelAfter(TimeSpan.FromSeconds(timeoutS));
@@ -49,51 +48,35 @@ public static class ElementHandler
         {
             while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                await GameHandler.AsyncWait(
-                    HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay),
-                    token
-                );
+                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
 
                 var hoveredEntity = GetHoveredElementUiAction().Entity.Address;
 
                 if (HelperHandler.IsAddressSameCondition(itemToChange, hoveredEntity))
                 {
-                    Logging.Logging.Add(
-                        "AsyncExecuteNotSameItemWithCancellationHandling: Item address is the same. Waiting for change.",
-                        LogMessageType.Info
-                    );
+                    Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Item address is the same. Waiting for change.", LogMessageType.Info);
 
                     continue;
                 }
 
-                Logging.Logging.Add(
-                    "AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.",
-                    LogMessageType.Info
-                );
+                Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.", LogMessageType.Info);
 
                 return true;
             }
 
-            Logging.Logging.Add(
-                "AsyncExecuteNotSameItemWithCancellationHandling: Timeout occurred.",
-                LogMessageType.Warning
-            );
+            Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Timeout occurred.", LogMessageType.Warning);
 
             return false;
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add(
-                "AsyncExecuteNotSameItemWithCancellationHandling: Operation canceled.",
-                LogMessageType.Info
-            );
+            Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Operation canceled.", LogMessageType.Info);
 
             return false;
         }
     }
 
-    public static async SyncTask<bool> AsyncTryApplyOrb(this NormalInventoryItem item, string currencyName,
-        CancellationToken token)
+    public static async SyncTask<bool> AsyncTryApplyOrb(this NormalInventoryItem item, string currencyName, CancellationToken token)
     {
         try
         {
@@ -108,10 +91,7 @@ public static class ElementHandler
 
             var storeAddressOfItem = item.Item.Address;
 
-            Logging.Logging.Add(
-                $"Address of item before trying to modify item is {storeAddressOfItem:X}.",
-                LogMessageType.Info
-            );
+            Logging.Logging.Add($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
@@ -127,11 +107,7 @@ public static class ElementHandler
                 return false;
             }
 
-            if (!await AsyncExecuteNotSameItemWithCancellationHandling(
-                    storeAddressOfItem,
-                    Main.Settings.DelayOptions.ActionTimeoutInSeconds,
-                    token
-                ))
+            if (!await AsyncExecuteNotSameItemWithCancellationHandling(storeAddressOfItem, Main.Settings.DelayOptions.ActionTimeoutInSeconds, token))
             {
                 Logging.Logging.Add($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
