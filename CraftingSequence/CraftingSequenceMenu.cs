@@ -19,7 +19,7 @@ public static class CraftingSequenceMenu
 {
     private const string DeletePopup = "Delete Confirmation";
     private const string OverwritePopup = "Overwrite Confirmation";
-    private const string FilterEditPopup = "Filter (Multi-Line)";
+    private static EditorRecord Editor = new EditorRecord(-1, -1, -1);
 
     // Load last saved for both on initialization as its less confusing
     private static string _fileSaveName = Main.Settings.NonUserData.CraftingSequenceLastSaved;
@@ -31,6 +31,11 @@ public static class CraftingSequenceMenu
 
     public static void Draw()
     {
+        if (!Main.Settings.Enable)
+        {
+            ResetEditingIdentifiers();
+        }
+
         DrawFileOptions();
         DrawConfirmAndClear();
         DrawInstructions();
@@ -210,6 +215,7 @@ public static class CraftingSequenceMenu
 
                     if (ImGui.Combo($"Copy Conditional Groups From##CopyConditionalGroupsFrom{stepIndex}", ref currentStepIndex, stepNamesForDropdown, stepNamesForDropdown.Length))
                     {
+                        ResetEditingIdentifiers();
                         // Adjust index if necessary
                         if (currentStepIndex >= stepIndex)
                         {
@@ -245,6 +251,7 @@ public static class CraftingSequenceMenu
 
                 if (ImGui.Button($"Add Conditional Group##{stepIndex}"))
                 {
+                    ResetEditingIdentifiers();
                     currentStep.ConditionalGroups.Add(new ConditionalGroup());
                 }
 
@@ -319,6 +326,7 @@ public static class CraftingSequenceMenu
                     // Manage Conditional Checks
                     if (ImGui.Button($"Add Conditional Check##addconditionalcheck{stepIndex}_{groupIndex}"))
                     {
+                        ResetEditingIdentifiers();
                         currentStep.ConditionalGroups[groupIndex].Conditionals.Add(new ConditionalKeys());
                     }
 
@@ -361,9 +369,10 @@ public static class CraftingSequenceMenu
 
                         if (ImGui.Button($"Remove##{stepIndex}_{groupIndex}_{conditionalIndex}"))
                         {
-                            checksToRemove.Add(conditionalIndex); // Mark this check for removal
+                            ResetEditingIdentifiers();
+                            checksToRemove.Add(conditionalIndex);
                             PopStyleColors(3);
-                            continue; // Skip the rest of the loop to avoid accessing a removed item
+                            continue;
                         }
 
                         PopStyleColors(3);
@@ -376,23 +385,42 @@ public static class CraftingSequenceMenu
                         {
                             currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
                         }
-                        // Update the check key
 
                         ImGui.SameLine();
-                        const bool showPopup = true;
 
-                        // Initialize both tempCondValue and condEditValue when opening the popup
+                        #region Edit Button
 
-                        if (ImGui.Button($"Edit##edit{stepIndex}_{groupIndex}_{conditionalIndex}"))
+                        var isEditing = IsCurrentEditorContext(groupIndex, stepIndex, conditionalIndex);
+                        var editString = isEditing ? "Editing" : "Edit";
+
+                        if (isEditing) SetButtonColor(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active);
+
+                        if (ImGui.Button($"{editString}##edit{stepIndex}_{groupIndex}_{conditionalIndex}"))
                         {
-                            condEditValue = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
-
-                            tempCondValue = condEditValue;
-
-                            ImGui.OpenPopup(FilterEditPopup + $"##conditionalEditPopup{stepIndex}_{groupIndex}_{conditionalIndex}");
+                            switch (isEditing)
+                            {
+                                case true:
+                                    ResetEditingIdentifiers();
+                                    break;
+                                case false:
+                                    condEditValue = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
+                                    tempCondValue = condEditValue;
+                                    Editor = new EditorRecord(groupIndex, stepIndex, conditionalIndex);
+                                    break;
+                            }
                         }
 
-                        ConditionValueEditPopup(showPopup, stepIndex, groupIndex, conditionalIndex, currentStep);
+                        if (isEditing)
+                        {
+                            ImGui.PopStyleColor(3);
+                        }
+
+                        if (isEditing)
+                        {
+                            ConditionValueEditWindow(currentStep, stepIndex, groupIndex, conditionalIndex);
+                        }
+
+                        #endregion
                     }
 
                     ImGui.Unindent();
@@ -429,13 +457,13 @@ public static class CraftingSequenceMenu
 
             if (ImGui.Button($"[^] Insert Step Above##insertStepAbove{stepIndex}"))
             {
-                // Manually initialize the ConditionalGroups
+                ResetEditingIdentifiers();
                 currentSteps.Insert(stepIndex, new CraftingStepInput());
-                PopStyleColors(3); // Always pop style color to avoid styling issues
+                PopStyleColors(3);
                 continue;
             }
 
-            PopStyleColors(3); // Always pop style color to avoid styling issues
+            PopStyleColors(3);
 
             #endregion
 
@@ -447,14 +475,13 @@ public static class CraftingSequenceMenu
 
             if (ImGui.Button($"[-] Remove This Step##removethisstep{stepIndex}"))
             {
-                Logging.Logging.Add($"Removing step ({stepIndex})", LogMessageType.Debug);
+                ResetEditingIdentifiers();
                 currentSteps.RemoveAt(stepIndex);
-                //stepIndex--;
-                PopStyleColors(3); // Always pop style color to avoid styling issues
+                PopStyleColors(3);
                 continue;
             }
 
-            PopStyleColors(3); // Always pop style color to avoid styling issues
+            PopStyleColors(3);
 
             #endregion
 
@@ -468,13 +495,13 @@ public static class CraftingSequenceMenu
 
                 if (ImGui.Button($"[v] Insert Step Below##insertstepbelow{stepIndex}"))
                 {
-                    // Manually initialize the ConditionalGroups
+                    ResetEditingIdentifiers();
                     currentSteps.Insert(stepIndex + 1, new CraftingStepInput());
-                    PopStyleColors(3); // Always pop style color to avoid styling issues
+                    PopStyleColors(3);
                     continue;
                 }
 
-                PopStyleColors(3); // Always pop style color to avoid styling issues
+                PopStyleColors(3);
             }
 
             #endregion
@@ -494,6 +521,7 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("[=] Add New Step##addnewstep"))
         {
+            ResetEditingIdentifiers();
             Main.Settings.NonUserData.SelectedCraftingStepInputs.Add(new CraftingStepInput());
         }
 
@@ -504,6 +532,10 @@ public static class CraftingSequenceMenu
         Main.Settings.NonUserData.CraftingSequenceLastSaved = _fileSaveName;
         Main.Settings.NonUserData.CraftingSequenceLastSelected = _selectedFileName;
     }
+
+    private static bool IsCurrentEditorContext(int groupIndex, int stepIndex, int conditionalIndex) => Editor.stepIndex == stepIndex &&
+                                                                                                       Editor.groupIndex == groupIndex &&
+                                                                                                       Editor.conditionalIndex == conditionalIndex;
 
     private static void SetButtonColor(Color button, Color hovered, Color active)
     {
@@ -537,19 +569,27 @@ public static class CraftingSequenceMenu
         ImGui.PopStyleColor(count);
     }
 
-    private static void ConditionValueEditPopup(bool showPopup, int stepIndex, int groupIndex, int conditionalIndex, CraftingStepInput stepInput)
+    private static void ConditionValueEditWindow(CraftingStepInput stepInput, int stepIndex, int groupIndex, int conditionalIndex)
     {
-        if (!ImGui.BeginPopupModal(FilterEditPopup + $"##conditionalEditPopup{stepIndex}_{groupIndex}_{conditionalIndex}", ref showPopup, ImGuiWindowFlags.AlwaysAutoResize))
+        if (Editor.stepIndex != stepIndex || Editor.groupIndex != groupIndex || Editor.conditionalIndex != conditionalIndex)
         {
             return;
         }
 
-        ImGui.InputTextMultiline($"##text{stepIndex}_{groupIndex}_{conditionalIndex}", ref tempCondValue, 15000, new Vector2(800, 600), ImGuiInputTextFlags.AllowTabInput);
+        if (!ImGui.Begin("Edit Conditional", ImGuiWindowFlags.None))
+        {
+            ImGui.End();
+            return;
+        }
+
+        var conditionalName = Main.Settings.NonUserData.SelectedCraftingStepInputs[Editor.stepIndex].ConditionalGroups[Editor.groupIndex].Conditionals[Editor.conditionalIndex].Name;
+
+        ImGui.BulletText($"Editing: STEP[{Editor.stepIndex + 1}] => Group[{Editor.groupIndex + 1}] => Conditional[{(!string.IsNullOrEmpty(conditionalName) ? conditionalName : Editor.conditionalIndex+1)}]");
 
         if (ImGui.Button("Save"))
         {
-            stepInput.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value = tempCondValue;
-            ImGui.CloseCurrentPopup();
+            stepInput.ConditionalGroups[Editor.groupIndex].Conditionals[Editor.conditionalIndex].Value = tempCondValue;
+            ResetEditingIdentifiers();
         }
 
         ImGui.SameLine();
@@ -563,10 +603,9 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("Close"))
         {
-            ImGui.CloseCurrentPopup();
+            ResetEditingIdentifiers();
         }
 
-        // Aggregate all conditionals from all steps and groups, keeping track of the step index
         var allConditionalsWithStepInfo = Main.Settings.NonUserData.SelectedCraftingStepInputs.SelectMany((step, stepIndex) => step.ConditionalGroups.SelectMany(group => group.Conditionals,
             (group, conditional) => new
             {
@@ -574,7 +613,6 @@ public static class CraftingSequenceMenu
                 conditional
             })).ToList();
 
-        // Generate display names for each conditional with step information
         var conditionalNames = allConditionalsWithStepInfo
             .Select((c, index) => $"Step {c.stepIndex + 1}: " + (string.IsNullOrEmpty(c.conditional.Name) ? $"Unnamed Conditional {index + 1}" : c.conditional.Name)).ToArray();
 
@@ -590,7 +628,14 @@ public static class CraftingSequenceMenu
             }
         }
 
-        ImGui.EndPopup();
+        ImGui.InputTextMultiline("##text_edit", ref tempCondValue, 15000, ImGui.GetContentRegionAvail(), ImGuiInputTextFlags.AllowTabInput);
+
+        ImGui.End();
+    }
+
+    private static void ResetEditingIdentifiers()
+    {
+        Editor = new EditorRecord(-1, -1, -1);
     }
 
     private static void DrawConfirmAndClear()
@@ -928,4 +973,5 @@ public static class CraftingSequenceMenu
     }
 
     private static int GetEnumLength<T>() => Enum.GetNames(typeof(T)).Length;
+    private record EditorRecord(int groupIndex, int stepIndex, int conditionalIndex);
 }
