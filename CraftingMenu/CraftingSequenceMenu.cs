@@ -56,123 +56,69 @@ public static class CraftingSequenceMenu
             ImGui.PushID(stepIndex);
             var currentStep = currentSteps[stepIndex];
 
-            if (!ImGui.CollapsingHeader($"STEP [{stepIndex + 1}]", ImGuiTreeNodeFlags.DefaultOpen))
+            if (ImGui.CollapsingHeader($"STEP [{stepIndex + 1}]", ImGuiTreeNodeFlags.DefaultOpen))
             {
-                continue;
-            }
+                ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
 
-            ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
+                #region Step Settings
 
-            #region Step Settings
+                ImGui.Indent();
 
-            ImGui.Indent();
+                #region Method Type
 
-            #region Method Type
+                // Check Timing Combo Box
+                var checkTimingIndex = (int)currentStep.CheckType;
 
-            // Check Timing Combo Box
-            var checkTimingIndex = (int)currentStep.CheckType;
-
-            if (ImGui.Combo(" Method Type", ref checkTimingIndex, Enum.GetNames(typeof(ConditionalCheckType)), GetEnumLength<ConditionalCheckType>()))
-            {
-                currentStep.CheckType = (ConditionalCheckType)checkTimingIndex;
-            }
-
-            #endregion
-
-            #region NOT Check Only Settings
-
-            if (currentStep.CheckType != ConditionalCheckType.ConditionalCheckOnly)
-            {
-                // Currency Item Input
-                var currencyItem = currentStep.CurrencyItem;
-                var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
-                ImGui.SetNextItemWidth(availableWidth);
-
-                if (ImGui.InputTextWithHint("Currency Item", "Case Sensitive Currency BaseName \"Orb of Transmutation\"...", ref currencyItem, 100))
+                if (ImGui.Combo(" Method Type", ref checkTimingIndex, Enum.GetNames(typeof(ConditionalCheckType)), GetEnumLength<ConditionalCheckType>()))
                 {
-                    currentStep.CurrencyItem = currencyItem;
-                }
-
-                // Automatic Success Checkbox
-                var autoSuccess = currentStep.AutomaticSuccess;
-
-                if (ImGui.Checkbox("Automatic Success", ref autoSuccess))
-                {
-                    currentStep.AutomaticSuccess = autoSuccess;
-                }
-            }
-
-            #endregion
-
-            #region Success Action
-
-            // Success Action
-            var successActionIndex = (int)currentStep.SuccessAction;
-
-            if (ImGui.Combo("##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), GetEnumLength<SuccessAction>()))
-            {
-                currentStep.SuccessAction = (SuccessAction)successActionIndex;
-            }
-
-            #endregion
-
-            #region SuccessStepSelectorIndex
-
-            if (currentStep.SuccessAction == SuccessAction.GoToStep)
-            {
-                ImGui.SameLine();
-                var successActionStepIndex = currentStep.SuccessActionStepIndex;
-
-                // Generate step names, excluding the current step
-                var stepNames = new List<string>();
-
-                for (var step = 0; step < currentSteps.Count; step++)
-                    if (step != stepIndex) // Exclude the current step
-                    {
-                        stepNames.Add($"STEP [{step + 1}]");
-                    }
-
-                // Initialize dropdownIndex based on the successActionStepIndex
-                var dropdownIndex = successActionStepIndex >= stepIndex && successActionStepIndex < currentSteps.Count ? successActionStepIndex - 1 : successActionStepIndex;
-
-                var comboItems = string.Join('\0', stepNames) + '\0';
-
-                if (ImGui.Combo("##SuccessStepIndex", ref dropdownIndex, comboItems, stepNames.Count))
-                {
-                    // Adjust the selectedStepIndex based on the current step's position
-                    var selectedStepIndex = dropdownIndex >= stepIndex ? dropdownIndex + 1 : dropdownIndex;
-                    currentStep.SuccessActionStepIndex = selectedStepIndex;
-                }
-            }
-
-            ImGui.SameLine();
-            ImGui.Text("On Success");
-
-            #endregion
-
-            #region NOT Automatic Success Items
-
-            // Hide additional settings if AutomaticSuccess is true
-            if (!currentStep.AutomaticSuccess)
-            {
-                #region Failure Action
-
-                // Failure Action
-                var failureActionIndex = (int)currentStep.FailureAction;
-
-                if (ImGui.Combo("##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), GetEnumLength<FailureAction>()))
-                {
-                    currentStep.FailureAction = (FailureAction)failureActionIndex;
+                    currentStep.CheckType = (ConditionalCheckType)checkTimingIndex;
                 }
 
                 #endregion
 
-                #region FailureStepSelectorIndex
+                #region NOT Check Only Settings
 
-                if (currentStep.FailureAction == FailureAction.GoToStep)
+                if (currentStep.CheckType != ConditionalCheckType.ConditionalCheckOnly)
+                {
+                    // Currency Item Input
+                    var currencyItem = currentStep.CurrencyItem;
+                    var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
+                    ImGui.SetNextItemWidth(availableWidth);
+
+                    if (ImGui.InputTextWithHint("Currency Item", "Case Sensitive Currency BaseName \"Orb of Transmutation\"...", ref currencyItem, 100))
+                    {
+                        currentStep.CurrencyItem = currencyItem;
+                    }
+
+                    // Automatic Success Checkbox
+                    var autoSuccess = currentStep.AutomaticSuccess;
+
+                    if (ImGui.Checkbox("Automatic Success", ref autoSuccess))
+                    {
+                        currentStep.AutomaticSuccess = autoSuccess;
+                    }
+                }
+
+                #endregion
+
+                #region Success Action
+
+                // Success Action
+                var successActionIndex = (int)currentStep.SuccessAction;
+
+                if (ImGui.Combo("##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), GetEnumLength<SuccessAction>()))
+                {
+                    currentStep.SuccessAction = (SuccessAction)successActionIndex;
+                }
+
+                #endregion
+
+                #region SuccessStepSelectorIndex
+
+                if (currentStep.SuccessAction == SuccessAction.GoToStep)
                 {
                     ImGui.SameLine();
-                    var failureActionStepIndex = currentStep.FailureActionStepIndex;
+                    var successActionStepIndex = currentStep.SuccessActionStepIndex;
 
                     // Generate step names, excluding the current step
                     var stepNames = new List<string>();
@@ -183,319 +129,371 @@ public static class CraftingSequenceMenu
                             stepNames.Add($"STEP [{step + 1}]");
                         }
 
-                    // Initialize dropdownIndex based on the failureActionStepIndex
-                    var dropdownIndex = failureActionStepIndex >= stepIndex && failureActionStepIndex < currentSteps.Count ? failureActionStepIndex - 1 : failureActionStepIndex;
+                    // Initialize dropdownIndex based on the successActionStepIndex
+                    var dropdownIndex = successActionStepIndex >= stepIndex && successActionStepIndex < currentSteps.Count ? successActionStepIndex - 1 : successActionStepIndex;
 
                     var comboItems = string.Join('\0', stepNames) + '\0';
 
-                    if (ImGui.Combo("##FailureStepIndex", ref dropdownIndex, comboItems, stepNames.Count))
+                    if (ImGui.Combo("##SuccessStepIndex", ref dropdownIndex, comboItems, stepNames.Count))
                     {
                         // Adjust the selectedStepIndex based on the current step's position
                         var selectedStepIndex = dropdownIndex >= stepIndex ? dropdownIndex + 1 : dropdownIndex;
-                        currentStep.FailureActionStepIndex = selectedStepIndex;
+                        currentStep.SuccessActionStepIndex = selectedStepIndex;
                     }
                 }
 
                 ImGui.SameLine();
-                ImGui.Text("On Failure");
+                ImGui.Text("On Success");
 
                 #endregion
 
-                #region Copy Conditions From Step X
+                #region NOT Automatic Success Items
 
-                // Ensure we're operating on a collection that supports LINQ's indexed Select
-                var stepsWithIndex = currentSteps.Select((step, index) => new
+                // Hide additional settings if AutomaticSuccess is true
+                if (!currentStep.AutomaticSuccess)
                 {
-                    Step = step,
-                    Index = index
-                });
+                    #region Failure Action
 
-                var stepNamesForDropdown = stepsWithIndex.Where(stepWithIndex => stepWithIndex.Index != stepIndex).Select(stepWithIndex => $"STEP [{stepWithIndex.Index + 1}]").ToArray();
+                    // Failure Action
+                    var failureActionIndex = (int)currentStep.FailureAction;
 
-                // Only show the dropdown if there are other steps to select
-                if (stepNamesForDropdown.Length > 0)
-                {
-                    var currentStepIndex = -1;
-                    var maxItemWidth = stepNamesForDropdown.Max(name => ImGui.CalcTextSize(name).X);
-                    ImGui.SetNextItemWidth(maxItemWidth + 60);
-
-                    if (ImGui.Combo("Copy Conditional Groups From", ref currentStepIndex, stepNamesForDropdown, stepNamesForDropdown.Length))
+                    if (ImGui.Combo("##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), GetEnumLength<FailureAction>()))
                     {
-                        ResetEditingIdentifiers();
-                        // Adjust index if necessary
-                        if (currentStepIndex >= stepIndex)
-                        {
-                            currentStepIndex++;
-                        }
-
-                        // Ensure the index is within bounds before accessing
-                        if (currentStepIndex >= 0 && currentStepIndex < currentSteps.Count)
-                        {
-                            var sourceStep = currentSteps[currentStepIndex];
-                            var targetStep = currentSteps[stepIndex];
-
-                            // Deep copy of conditional groups from source step to target step
-                            targetStep.ConditionalGroups = sourceStep.ConditionalGroups.Select(group => new ConditionalGroup
-                            {
-                                GroupType = group.GroupType,
-                                ConditionalsToBePassForSuccess = group.ConditionalsToBePassForSuccess,
-                                Conditionals = group.Conditionals.Select(conditional => new ConditionalKeys
-                                {
-                                    Name = conditional.Name,
-                                    Value = conditional.Value
-                                }).ToList()
-                            }).ToList();
-                        }
+                        currentStep.FailureAction = (FailureAction)failureActionIndex;
                     }
-                }
 
-                #endregion
+                    #endregion
 
-                #region Add Conditional Group
+                    #region FailureStepSelectorIndex
 
-                using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
-                {
-                    if (ImGui.Button("Add Conditional Group"))
+                    if (currentStep.FailureAction == FailureAction.GoToStep)
                     {
-                        ResetEditingIdentifiers();
-                        currentStep.ConditionalGroups.Add(new ConditionalGroup());
-                    }
-                }
-
-                #endregion
-
-                #region Render Conditional Groups
-
-                var groupsToRemove = new List<int>();
-
-                for (var groupIndex = 0; groupIndex < currentStep.ConditionalGroups.Count; groupIndex++)
-                {
-                    ImGui.PushID(groupIndex);
-
-                    Color bgColor = currentStep.ConditionalGroups[groupIndex].GroupType switch
-                    {
-                        ConditionGroup.AND => Main.Settings.Styling.ConditionGroupBackgrounds.And,
-                        ConditionGroup.OR => Main.Settings.Styling.ConditionGroupBackgrounds.Or,
-                        ConditionGroup.NOT => Main.Settings.Styling.ConditionGroupBackgrounds.Not
-                    };
-
-                    using (new ColorBackground((ImGuiCol.ChildBg, bgColor)))
-                    {
-                        ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
-
-                        #region Conditional Group Header
-
-                        #region Group Delete
-
-                        using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
-                        {
-                            if (ImGui.Button("Remove Group"))
-                            {
-                                groupsToRemove.Add(groupIndex);
-                            }
-                        }
-
-                        #endregion
-
-                        #region Group Type
-
                         ImGui.SameLine();
+                        var failureActionStepIndex = currentStep.FailureActionStepIndex;
 
-                        var groupTypeIndex = (int)currentStep.ConditionalGroups[groupIndex].GroupType;
-                        ImGui.SetNextItemWidth(120);
+                        // Generate step names, excluding the current step
+                        var stepNames = new List<string>();
 
-                        if (ImGui.Combo(" Group Type", ref groupTypeIndex, Enum.GetNames(typeof(ConditionGroup)), GetEnumLength<ConditionGroup>()))
-                        {
-                            currentStep.ConditionalGroups[groupIndex].GroupType = (ConditionGroup)groupTypeIndex;
-                        }
-
-                        #endregion
-
-                        #region Add Conditional Check
-
-                        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
-                        {
-                            if (ImGui.Button("Add Conditional Check"))
+                        for (var step = 0; step < currentSteps.Count; step++)
+                            if (step != stepIndex) // Exclude the current step
                             {
-                                ResetEditingIdentifiers();
-                                currentStep.ConditionalGroups[groupIndex].Conditionals.Add(new ConditionalKeys());
+                                stepNames.Add($"STEP [{step + 1}]");
                             }
-                        }
 
-                        #endregion
+                        // Initialize dropdownIndex based on the failureActionStepIndex
+                        var dropdownIndex = failureActionStepIndex >= stepIndex && failureActionStepIndex < currentSteps.Count ? failureActionStepIndex - 1 : failureActionStepIndex;
 
-                        #region Conditional Group modification
+                        var comboItems = string.Join('\0', stepNames) + '\0';
 
-                        if (currentStep.ConditionalGroups[groupIndex].GroupType != ConditionGroup.NOT)
+                        if (ImGui.Combo("##FailureStepIndex", ref dropdownIndex, comboItems, stepNames.Count))
                         {
-                            ImGui.SameLine();
+                            // Adjust the selectedStepIndex based on the current step's position
+                            var selectedStepIndex = dropdownIndex >= stepIndex ? dropdownIndex + 1 : dropdownIndex;
+                            currentStep.FailureActionStepIndex = selectedStepIndex;
+                        }
+                    }
 
-                            var conditionalChecksTrue = currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess;
+                    ImGui.SameLine();
+                    ImGui.Text("On Failure");
 
-                            if (currentStep.ConditionalGroups[groupIndex].GroupType != ConditionGroup.NOT)
+                    #endregion
+
+                    #region Copy Conditions From Step X
+
+                    // Ensure we're operating on a collection that supports LINQ's indexed Select
+                    var stepsWithIndex = currentSteps.Select((step, index) => new
+                    {
+                        Step = step,
+                        Index = index
+                    });
+
+                    var stepNamesForDropdown = stepsWithIndex.Where(stepWithIndex => stepWithIndex.Index != stepIndex).Select(stepWithIndex => $"STEP [{stepWithIndex.Index + 1}]").ToArray();
+
+                    // Only show the dropdown if there are other steps to select
+                    if (stepNamesForDropdown.Length > 0)
+                    {
+                        var currentStepIndex = -1;
+                        var maxItemWidth = stepNamesForDropdown.Max(name => ImGui.CalcTextSize(name).X);
+                        ImGui.SetNextItemWidth(maxItemWidth + 60);
+
+                        if (ImGui.Combo("Copy Conditional Groups From", ref currentStepIndex, stepNamesForDropdown, stepNamesForDropdown.Length))
+                        {
+                            ResetEditingIdentifiers();
+                            // Adjust index if necessary
+                            if (currentStepIndex >= stepIndex)
                             {
-                                if (ImGui.InputInt("Req Checks to Pass", ref conditionalChecksTrue))
+                                currentStepIndex++;
+                            }
+
+                            // Ensure the index is within bounds before accessing
+                            if (currentStepIndex >= 0 && currentStepIndex < currentSteps.Count)
+                            {
+                                var sourceStep = currentSteps[currentStepIndex];
+                                var targetStep = currentSteps[stepIndex];
+
+                                // Deep copy of conditional groups from source step to target step
+                                targetStep.ConditionalGroups = sourceStep.ConditionalGroups.Select(group => new ConditionalGroup
                                 {
-                                    conditionalChecksTrue = Math.Max(1, Math.Min(conditionalChecksTrue, currentStep.ConditionalGroups[groupIndex].Conditionals.Count));
-                                    currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess = conditionalChecksTrue;
-                                }
+                                    GroupType = group.GroupType,
+                                    ConditionalsToBePassForSuccess = group.ConditionalsToBePassForSuccess,
+                                    Conditionals = group.Conditionals.Select(conditional => new ConditionalKeys
+                                    {
+                                        Name = conditional.Name,
+                                        Value = conditional.Value
+                                    }).ToList()
+                                }).ToList();
                             }
                         }
+                    }
 
-                        #endregion
+                    #endregion
 
-                        #endregion
+                    #region Add Conditional Group
 
-                        #region Conditional Group modification
-
-                        ImGui.Indent();
-                        var checksToRemove = new List<int>(); // Track checks to remove
-
-                        for (var conditionalIndex = 0; conditionalIndex < currentStep.ConditionalGroups[groupIndex].Conditionals.Count; conditionalIndex++)
+                    using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
+                    {
+                        if (ImGui.Button("Add Conditional Group"))
                         {
-                            ImGui.PushID(conditionalIndex);
+                            ResetEditingIdentifiers();
+                            currentStep.ConditionalGroups.Add(new ConditionalGroup());
+                        }
+                    }
+
+                    #endregion
+
+                    #region Render Conditional Groups
+
+                    var groupsToRemove = new List<int>();
+
+                    for (var groupIndex = 0; groupIndex < currentStep.ConditionalGroups.Count; groupIndex++)
+                    {
+                        ImGui.PushID(groupIndex);
+
+                        Color bgColor = currentStep.ConditionalGroups[groupIndex].GroupType switch
+                        {
+                            ConditionGroup.AND => Main.Settings.Styling.ConditionGroupBackgrounds.And,
+                            ConditionGroup.OR => Main.Settings.Styling.ConditionGroupBackgrounds.Or,
+                            ConditionGroup.NOT => Main.Settings.Styling.ConditionGroupBackgrounds.Not
+                        };
+
+                        using (new ColorBackground((ImGuiCol.ChildBg, bgColor)))
+                        {
+                            ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
+
+                            #region Conditional Group Header
+
+                            #region Group Delete
 
                             using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
                             {
-                                if (ImGui.Button("Remove"))
+                                if (ImGui.Button("Remove Group"))
                                 {
-                                    ResetEditingIdentifiers();
-                                    checksToRemove.Add(conditionalIndex);
-                                    continue;
+                                    groupsToRemove.Add(groupIndex);
                                 }
-                            }
-
-                            ImGui.SameLine();
-                            var checkKey = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name;
-                            var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
-                            ImGui.SetNextItemWidth(availableWidth);
-
-                            if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 1000))
-                            {
-                                currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
-                            }
-
-                            ImGui.SameLine();
-
-                            #region Edit Button
-
-                            var isEditing = IsCurrentEditorContext(groupIndex, stepIndex, conditionalIndex);
-                            var editString = isEditing ? "Editing" : "Edit";
-
-                            using (isEditing
-                                       ? new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active)
-                                       : null)
-                            {
-                                if (ImGui.Button($"{editString}"))
-                                {
-                                    if (isEditing)
-                                    {
-                                        ResetEditingIdentifiers();
-                                    }
-                                    else
-                                    {
-                                        condEditValue = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
-                                        tempCondValue = condEditValue;
-                                        Editor = new EditorRecord(groupIndex, stepIndex, conditionalIndex);
-                                    }
-                                }
-                            }
-
-                            if (isEditing)
-                            {
-                                ConditionValueEditWindow(currentStep, stepIndex, groupIndex, conditionalIndex);
                             }
 
                             #endregion
 
-                            ImGui.PopID();
-                        }
+                            #region Group Type
 
-                        ImGui.Unindent();
+                            ImGui.SameLine();
 
-                        foreach (var index in checksToRemove.OrderByDescending(j => j))
-                        {
-                            if (currentStep.ConditionalGroups[groupIndex].Conditionals.Count >= currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess &&
-                                currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess > 1)
+                            var groupTypeIndex = (int)currentStep.ConditionalGroups[groupIndex].GroupType;
+                            ImGui.SetNextItemWidth(120);
+
+                            if (ImGui.Combo(" Group Type", ref groupTypeIndex, Enum.GetNames(typeof(ConditionGroup)), GetEnumLength<ConditionGroup>()))
                             {
-                                currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess--;
+                                currentStep.ConditionalGroups[groupIndex].GroupType = (ConditionGroup)groupTypeIndex;
                             }
-                            // Decrement the required checks to pass
 
-                            currentStep.ConditionalGroups[groupIndex].Conditionals.RemoveAt(index); // Remove marked checks
+                            #endregion
+
+                            #region Add Conditional Check
+
+                            using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
+                            {
+                                if (ImGui.Button("Add Conditional Check"))
+                                {
+                                    ResetEditingIdentifiers();
+                                    currentStep.ConditionalGroups[groupIndex].Conditionals.Add(new ConditionalKeys());
+                                }
+                            }
+
+                            #endregion
+
+                            #region Conditional Group modification
+
+                            if (currentStep.ConditionalGroups[groupIndex].GroupType != ConditionGroup.NOT)
+                            {
+                                ImGui.SameLine();
+
+                                var conditionalChecksTrue = currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess;
+
+                                if (currentStep.ConditionalGroups[groupIndex].GroupType != ConditionGroup.NOT)
+                                {
+                                    if (ImGui.InputInt("Req Checks to Pass", ref conditionalChecksTrue))
+                                    {
+                                        conditionalChecksTrue = Math.Max(1, Math.Min(conditionalChecksTrue, currentStep.ConditionalGroups[groupIndex].Conditionals.Count));
+                                        currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess = conditionalChecksTrue;
+                                    }
+                                }
+                            }
+
+                            #endregion
+
+                            #endregion
+
+                            #region Conditional Group modification
+
+                            ImGui.Indent();
+                            var checksToRemove = new List<int>(); // Track checks to remove
+
+                            for (var conditionalIndex = 0; conditionalIndex < currentStep.ConditionalGroups[groupIndex].Conditionals.Count; conditionalIndex++)
+                            {
+                                ImGui.PushID(conditionalIndex);
+
+                                using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
+                                {
+                                    if (ImGui.Button("Remove"))
+                                    {
+                                        ResetEditingIdentifiers();
+                                        checksToRemove.Add(conditionalIndex);
+                                        continue;
+                                    }
+                                }
+
+                                ImGui.SameLine();
+                                var checkKey = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name;
+                                var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
+                                ImGui.SetNextItemWidth(availableWidth);
+
+                                if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 1000))
+                                {
+                                    currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
+                                }
+
+                                ImGui.SameLine();
+
+                                #region Edit Button
+
+                                var isEditing = IsCurrentEditorContext(groupIndex, stepIndex, conditionalIndex);
+                                var editString = isEditing ? "Editing" : "Edit";
+
+                                using (isEditing
+                                           ? new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active)
+                                           : null)
+                                {
+                                    if (ImGui.Button($"{editString}"))
+                                    {
+                                        if (isEditing)
+                                        {
+                                            ResetEditingIdentifiers();
+                                        }
+                                        else
+                                        {
+                                            condEditValue = currentStep.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
+                                            tempCondValue = condEditValue;
+                                            Editor = new EditorRecord(groupIndex, stepIndex, conditionalIndex);
+                                        }
+                                    }
+                                }
+
+                                if (isEditing)
+                                {
+                                    ConditionValueEditWindow(currentStep, stepIndex, groupIndex, conditionalIndex);
+                                }
+
+                                #endregion
+
+                                ImGui.PopID();
+                            }
+
+                            ImGui.Unindent();
+
+                            foreach (var index in checksToRemove.OrderByDescending(j => j))
+                            {
+                                if (currentStep.ConditionalGroups[groupIndex].Conditionals.Count >= currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess &&
+                                    currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess > 1)
+                                {
+                                    currentStep.ConditionalGroups[groupIndex].ConditionalsToBePassForSuccess--;
+                                }
+                                // Decrement the required checks to pass
+
+                                currentStep.ConditionalGroups[groupIndex].Conditionals.RemoveAt(index); // Remove marked checks
+                            }
+
+                            #endregion
+
+                            ImGui.EndChild();
                         }
 
-                        #endregion
-
-                        ImGui.EndChild();
+                        ImGui.PopID();
                     }
 
-                    ImGui.PopID();
-                }
+                    // Remove the marked groups after the loop
+                    foreach (var indexToRemove in groupsToRemove.OrderByDescending(i => i))
+                        currentStep.ConditionalGroups.RemoveAt(indexToRemove);
 
-                // Remove the marked groups after the loop
-                foreach (var indexToRemove in groupsToRemove.OrderByDescending(i => i))
-                    currentStep.ConditionalGroups.RemoveAt(indexToRemove);
+                    #endregion
+                }
 
                 #endregion
-            }
 
-            #endregion
-
-            #region Insert Step Above
-
-            using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
-            {
-                if (ImGui.Button("[^] Insert Step Above"))
-                {
-                    ResetEditingIdentifiers();
-                    currentSteps.Insert(stepIndex, new CraftingStepInput());
-                    continue;
-                }
-            }
-
-            #endregion
-
-            #region Remove Current Step
-
-            ImGui.SameLine();
-
-            using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
-            {
-                if (ImGui.Button("[-] Remove This Step"))
-                {
-                    ResetEditingIdentifiers();
-                    currentSteps.RemoveAt(stepIndex);
-                    continue;
-                }
-            }
-
-            #endregion
-
-            #region Insert Step Below
-
-            if (stepIndex < currentSteps.Count - 1)
-            {
-                ImGui.SameLine();
+                #region Insert Step Above
 
                 using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
                 {
-                    if (ImGui.Button("[v] Insert Step Below"))
+                    if (ImGui.Button("[^] Insert Step Above"))
                     {
                         ResetEditingIdentifiers();
-                        currentSteps.Insert(stepIndex + 1, new CraftingStepInput());
+                        currentSteps.Insert(stepIndex, new CraftingStepInput());
                         continue;
                     }
                 }
+
+                #endregion
+
+                #region Remove Current Step
+
+                ImGui.SameLine();
+
+                using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
+                {
+                    if (ImGui.Button("[-] Remove This Step"))
+                    {
+                        ResetEditingIdentifiers();
+                        currentSteps.RemoveAt(stepIndex);
+                        continue;
+                    }
+                }
+
+                #endregion
+
+                #region Insert Step Below
+
+                if (stepIndex < currentSteps.Count - 1)
+                {
+                    ImGui.SameLine();
+
+                    using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
+                    {
+                        if (ImGui.Button("[v] Insert Step Below"))
+                        {
+                            ResetEditingIdentifiers();
+                            currentSteps.Insert(stepIndex + 1, new CraftingStepInput());
+                            continue;
+                        }
+                    }
+                }
+
+                #endregion
+
+                ImGui.Unindent();
+
+                #endregion Step Settings
+
+                ImGui.EndChild();
             }
-
-            #endregion
-
-            ImGui.Unindent();
-
-            #endregion Step Settings
-
-            ImGui.EndChild();
             ImGui.PopID();
         }
 
