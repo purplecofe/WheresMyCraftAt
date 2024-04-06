@@ -31,10 +31,17 @@ public static class CraftingSequenceMenu
 
     public static void Draw()
     {
+        if (Main == null)
+            return;
+
         if (!Main.Settings.Enable)
             ResetEditingIdentifiers();
 
         DrawFileOptions();
+
+        if (Main.Settings.NonUserData.SelectedCraftingStepInputs.Count <= 0)
+            return;
+
         DrawConfirmAndClear();
         DrawInstructions();
         DrawCraftingStepInputs();
