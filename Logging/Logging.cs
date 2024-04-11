@@ -15,8 +15,8 @@ namespace WheresMyCraftAt.Logging;
 
 public static class Logging
 {
-    private static readonly object Locker = new object();
-    public static List<DebugMsgDescription> MessagesList = new List<DebugMsgDescription>(24);
+    private static readonly object Locker = new();
+    public static List<DebugMsgDescription> MessagesList = new(24);
 
     public static void Render()
     {
@@ -106,6 +106,11 @@ public static class Logging
                     ImGui.PopStyleColor();
                 }
             }
+
+            // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
+            // Using a scrollbar or mouse-wheel will take away from the bottom edge.
+            if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+                ImGui.SetScrollHereY(1.0f);
 
             ImGui.EndChild();
             ImGui.End();
