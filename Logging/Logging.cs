@@ -88,6 +88,16 @@ public static class Logging
                 }
             }
 
+            ImGui.SameLine();
+
+            if (ImGui.Button("Clear"))
+            {
+                lock (Locker)
+                {
+                    MessagesList.Clear();
+                }
+            }
+
             ImGui.BeginChild("LogMessages", new Vector2(0, 0), ImGuiChildFlags.Border);
 
             lock (Locker)
