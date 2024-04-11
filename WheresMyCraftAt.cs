@@ -197,6 +197,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         }
 
         Logging.Logging.Add("AsyncStart() method completed successfully.", LogMessageType.Info);
+        Logging.Logging.LogEndCraftingStats();
         return true;
     }
 
