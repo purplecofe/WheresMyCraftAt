@@ -57,6 +57,7 @@ public static class ItemHandler
     public static void PrintHumanModListFromItem(Entity item)
     {
         Logging.Logging.Add($"-- Items Mods for: [{item.Path}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.Add($"-- Item Address: [{item.Address:X}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         item.TryGetComponent<Mods>(out var modsComponent);
 

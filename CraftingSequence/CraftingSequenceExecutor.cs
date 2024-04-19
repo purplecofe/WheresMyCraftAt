@@ -15,7 +15,23 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
     public async SyncTask<bool> Execute(CancellationToken token)
     {
         var currentStepIndex = 0;
+        CraftingStep previousStep = null;
         var stopwatch = new Stopwatch(); // Stopwatch to time each step
+        var lastItemAddress = long.MinValue; // Add comparison to address somehow being the same as the last sequence, issue if there is.
+
+        // Log initial item
+        var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
+
+        if (asyncResult.Item1)
+        {
+            Logging.Logging.Add("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
+            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+        }
+        else
+        {
+            Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+            Main.Stop();
+        }
 
         while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
         {
@@ -25,11 +41,35 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
             try
             {
                 // Log item mods before each step
-                var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
+                asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
 
                 if (asyncResult.Item1)
                 {
+                    var currentItemAddress = asyncResult.Item2.Address;
+                    if (lastItemAddress != long.MinValue)
+                    {
+                        if (previousStep is {CheckType: not ConditionalCheckType.ConditionalCheckOnly})
+                        {
+                            if (lastItemAddress == currentItemAddress)
+                            {
+                                Logging.Logging.Add($"CraftingSequenceStep: Item Address is the same as the last", LogMessageType.Special);
+                                Logging.Logging.Add($"CraftingSequenceStep: (True) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                            }
+                            else
+                            {
+                                Logging.Logging.Add($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
+                                Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                            }
+                        }
+                    }
+
+                    lastItemAddress = currentItemAddress;
                     ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                }
+                else
+                {
+                    Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+                    Main.Stop();
                 }
 
                 // Info: Starting a new step
@@ -70,6 +110,7 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
 
                 // Profiler: Time taken for step execution
                 Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+                previousStep = currentStep;
             }
             catch (Exception ex)
             {
@@ -124,6 +165,15 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                 ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
                 // If it's the last step, you might want to log a different message or nothing at all
                 : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
+        }
+
+        // Log item mods at the end of crafting
+        asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
+
+        if (asyncResult.Item1)
+        {
+            Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
+            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
         }
 
         // Info: Sequence completed successfully

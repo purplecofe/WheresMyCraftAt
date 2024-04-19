@@ -35,8 +35,14 @@ public static class Logging
             ImGui.Begin("Wheres My Craft At Logs", ref isOpen, flags);
             var logMessageTypes = Main.Settings.Debugging.LogMessageFilters.Keys.ToList();
 
-            if (ImGui.TreeNode("Configure Logging Filters And Their Colors"))
+            var Label = "Configure Logging Filters And Their Colors";
+            var startPos = ImGui.GetCursorPosX();
+            ImGui.SetCursorPosX(startPos - 20f);
+            if (ImGui.TreeNodeEx($"##{Label}", ImGuiTreeNodeFlags.FramePadding | ImGuiTreeNodeFlags.SpanAvailWidth))
             {
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(startPos);
+                ImGui.SeparatorText(Label);
                 foreach (var logMessageType in logMessageTypes)
                 {
                     var logSetting = Main.Settings.Debugging.LogMessageFilters[logMessageType];
@@ -52,6 +58,13 @@ public static class Logging
 
                 ImGui.TreePop();
             }
+            else
+            {
+                ImGui.SameLine();
+                ImGui.SetCursorPosX(startPos);
+                ImGui.SeparatorText(Label);
+            }
+
 
             if (ImGui.Button("Save Log"))
             {
