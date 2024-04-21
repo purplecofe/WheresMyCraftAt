@@ -1,0 +1,52 @@
+[
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Barrels",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModBarrels\"))"
+          },
+          {
+            "Name": "More Scarabs OR More Currency",
+            "Value": "MapsInfo.MoreScarabs >= 50 || MapsInfo.MoreScarabs >= 50"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Chaos Orb",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 2,
+    "FailureAction": 0,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Barrels",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModBarrels\"))"
+          },
+          {
+            "Name": "More Scarabs OR More Currency",
+            "Value": "MapsInfo.MoreScarabs >= 50 || MapsInfo.MoreScarabs >= 50"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  }
+]

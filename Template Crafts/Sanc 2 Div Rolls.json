@@ -1,0 +1,52 @@
+[
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "increased number of Rare Monsters",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModRareMonsters\"))"
+          },
+          {
+            "Name": "Rare Monsters in Area Are Shaper-Touched",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModShaperTouched\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Chaos Orb",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 2,
+    "FailureAction": 0,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 2,
+        "Conditionals": [
+          {
+            "Name": "increased number of Rare Monsters",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModRareMonsters\"))"
+          },
+          {
+            "Name": "Rare Monsters in Area Are Shaper-Touched",
+            "Value": "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"MapUberModShaperTouched\"))"
+          }
+        ]
+      }
+    ],
+    "CheckType": 0
+  }
+]
