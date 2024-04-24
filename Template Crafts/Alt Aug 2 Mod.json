@@ -1,0 +1,85 @@
+[
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Check if we have 2 of our wanted mods",
+            "Value": "(\n\t// Prefixes\n    ModsInfo.ExplicitMods.Any(x =>\n        new[] \n        { \n            \"RawName1\", \n            \"RawName2\", \n        }.Any(prefix => x.RawName == prefix)\n\t\t// This checks if the roll is -1 from its max in the tier\n\t\t// Used on jewels, they have a single tier\n        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n    )\n    ||\n\t// Suffixes\n    ModsInfo.ExplicitMods.Any(x =>\n        new[] \n        { \n            \"RawName1\", \n            \"RawName2\", \n        }.Any(suffix => x.RawName == suffix)\n\t\t// This checks if the roll is -1 from its max in the tier\n\t\t// Used on jewels, they have a single tier\n        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n    )\n)"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 2,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 4,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Check if 1 of our mods exist",
+            "Value": "(\n\t// Prefixes\n    ModsInfo.ExplicitMods.Any(x =>\n        new[] \n        { \n            \"RawName1\", \n            \"RawName2\", \n        }.Any(prefix => x.RawName == prefix)\n\t\t// This checks if the roll is -1 from its max in the tier\n\t\t// Used on jewels, they have a single tier\n        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n    )\n    ||\n\t// Suffixes\n    ModsInfo.ExplicitMods.Any(x =>\n        new[] \n        { \n            \"RawName1\", \n            \"RawName2\", \n        }.Any(suffix => x.RawName == suffix)\n\t\t// This checks if the roll is -1 from its max in the tier\n\t\t// Used on jewels, they have a single tier\n        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n    )\n)"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 4,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "No more than 1 Mod",
+            "Value": "ModsInfo.ExplicitMods.Count == 1"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Augmentation",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 0,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 0,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  }
+]
