@@ -12,6 +12,7 @@ public static class KeyHandler
     {
         Logging.Logging.Add($"Attempting to press button: {button}", Enums.WheresMyCraftAt.LogMessageType.Info);
         var isButtonDown = await AsyncIsButtonDown(button, token);
+        await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxButtonDownUpDelay), token);
         var isButtonUp = await AsyncIsButtonUp(button, token);
 
         Logging.Logging.Add($"Button press result for {button}: Down - {isButtonDown}, Up - {isButtonUp}", Enums.WheresMyCraftAt.LogMessageType.Info);

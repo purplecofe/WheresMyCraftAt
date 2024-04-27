@@ -26,20 +26,20 @@ public static class ItemExtensions
 
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
+                Logging.Logging.Add($"AsyncTryClick: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
                 if (!ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()))
                 {
+                    Logging.Logging.Add($"AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
                     return false;
                 }
             }
 
-            if (!await KeyHandler.AsyncButtonPress(button, token))
-            {
-                // Log warning if button press fails
-                Logging.Logging.Add($"Failed to press {button}.", LogMessageType.Warning);
-                return false;
-            }
+            await KeyHandler.AsyncIsButtonDown(button, token);
+            await KeyHandler.AsyncIsButtonUp(button, token);
 
             var booleanCheck = false;
+            var mapLoopsAllowed = 10;
+            var maxRetriesAllowed = 3;
 
             switch (cursorStateCondition)
             {
@@ -48,7 +48,28 @@ public static class ItemExtensions
                     booleanCheck = await ItemHandler.AsyncWaitForNoItemOnCursor(token);
                     break;
                 case MouseActionType.Free when rightClick:
-                    booleanCheck = await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token);
+                    for (var loopCount = 0; loopCount < mapLoopsAllowed; loopCount++)
+                    {
+
+                        Logging.Logging.Add($"AsyncTryClick: MouseActionType.Free when rightClick retry count {loopCount}, attempts left {maxRetriesAllowed-loopCount}", LogMessageType.Debug);
+                        if (!await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token))
+                        {
+                            if (loopCount > maxRetriesAllowed)
+                            {
+                                Logging.Logging.Add($"AsyncTryClick: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
+                                return false;
+                            }
+
+                            await KeyHandler.AsyncIsButtonDown(button, token);
+                            await KeyHandler.AsyncIsButtonUp(button, token);
+                        }
+                        else
+                        {
+                            Logging.Logging.Add($"AsyncTryClick: Successfully pressed {button} and got an item on the cursor.", LogMessageType.Info);
+                            booleanCheck = true;
+                            break;
+                        }
+                    }
                     break;
                 case MouseActionType.Free:
                     booleanCheck = await ItemHandler.AsyncWaitForItemOnCursor(token);
@@ -59,9 +80,9 @@ public static class ItemExtensions
             Logging.Logging.Add($"Click action for {button} completed successfully.", LogMessageType.Info);
             return booleanCheck;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
-            // store states later possibly and apply state correction based on the progress?
+            Logging.Logging.Add($"AsyncTryClick: Catch!\n{e.Message}\n{e.StackTrace}", LogMessageType.Error);
             return false;
         }
     }

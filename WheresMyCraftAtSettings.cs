@@ -36,8 +36,13 @@ public class DelayOptions
 {
     public RangeNode<Vector2> MinMaxRandomDelay { get; set; } = new(
         new Vector2(20, 80),
-        Vector2.Zero,
-        new Vector2(600, 600)
+        new Vector2(1, 2),
+        new Vector2(15, 15)
+    );
+    public RangeNode<Vector2> MinMaxButtonDownUpDelay { get; set; } = new(
+        new Vector2(2, 2),
+        new Vector2(1, 2),
+        new Vector2(15, 15)
     );
 
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
