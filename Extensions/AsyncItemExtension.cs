@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
+using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.Extensions;
 
@@ -27,15 +28,20 @@ public static class ItemExtensions
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
                 Logging.Logging.Add($"AsyncTryClick: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
-                if (!ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()))
+                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token))
                 {
-                    Logging.Logging.Add($"AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
+                    Logging.Logging.Add($"AsyncTryClick: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
                     return false;
                 }
             }
 
-            await KeyHandler.AsyncIsButtonDown(button, token);
-            await KeyHandler.AsyncIsButtonUp(button, token);
+            //if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token))
+            //{
+            //    Logging.Logging.Add("AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
+            //    return false;
+            //}
+
+            await KeyHandler.AsyncButtonPress(button, token);
 
             var booleanCheck = false;
             var mapLoopsAllowed = 10;
@@ -59,9 +65,7 @@ public static class ItemExtensions
                                 Logging.Logging.Add($"AsyncTryClick: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
                                 return false;
                             }
-
-                            await KeyHandler.AsyncIsButtonDown(button, token);
-                            await KeyHandler.AsyncIsButtonUp(button, token);
+                            await KeyHandler.AsyncButtonPress(button, token);
                         }
                         else
                         {
