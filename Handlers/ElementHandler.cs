@@ -48,7 +48,7 @@ public static class ElementHandler
         {
             while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
                 var hoveredEntity = GetHoveredElementUiAction().Entity.Address;
 

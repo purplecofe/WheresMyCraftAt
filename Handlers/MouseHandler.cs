@@ -46,7 +46,7 @@ public static class MouseHandler
                     }
                 }
 
-                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), ctsTimeout.Token);
+                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), ctsTimeout.Token);
 
                 if (!IsMouseInPositionCondition(position))
                 {
@@ -71,7 +71,7 @@ public static class MouseHandler
         Logging.Logging.Add($"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => SetCursorPositionAction(position, applyOffset), () => IsMouseInPositionCondition(position),
-            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
         Logging.Logging.Add($"Mouse position check result: {result} (Desired position: {position})", Enums.WheresMyCraftAt.LogMessageType.Info);
 

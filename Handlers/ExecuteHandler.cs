@@ -15,12 +15,11 @@ public static class ExecuteHandler
         {
             while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
-
                 if (condition())
                 {
                     return true;
                 }
+                await GameHandler.AsyncWaitServerLatency(ctsTimeout.Token);
             }
 
             return false;
@@ -40,12 +39,11 @@ public static class ExecuteHandler
         {
             while (!ctsTimeout.Token.IsCancellationRequested)
             {
-                await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token);
-
                 if (condition())
                 {
                     return true;
                 }
+                await GameHandler.AsyncWait(loopDelay, ctsTimeout.Token); // was above conditional check
             }
 
             return false;

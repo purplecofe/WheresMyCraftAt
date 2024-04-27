@@ -34,15 +34,15 @@ public class NonUser
 [Submenu(CollapsedByDefault = false)]
 public class DelayOptions
 {
-    public RangeNode<Vector2> MinMaxRandomDelay { get; set; } = new(
-        new Vector2(20, 80),
+    public RangeNode<Vector2> MinMaxRandomDelayMS { get; set; } = new(
+        new Vector2(5, 15),
         new Vector2(1, 2),
-        new Vector2(15, 15)
+        new Vector2(999, 1000)
     );
-    public RangeNode<Vector2> MinMaxButtonDownUpDelay { get; set; } = new(
-        new Vector2(2, 2),
+    public RangeNode<Vector2> MinMaxButtonDownUpDelayMS { get; set; } = new(
+        new Vector2(5, 15),
         new Vector2(1, 2),
-        new Vector2(15, 15)
+        new Vector2(999, 1000)
     );
 
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);

@@ -34,21 +34,21 @@ public static class ItemHandler
         Logging.Logging.Add("Waiting for an item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(InventoryHandler.IsAnItemPickedUpCondition, timeout,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
     }
 
     public static async SyncTask<bool> AsyncWaitForNoItemOnCursor(CancellationToken token, int timeout = 2)
     {
         Logging.Logging.Add("Waiting for no item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsCursorFree, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsCursorFree, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
     }
 
     public static async SyncTask<bool> AsyncWaitForRightClickedItemOnCursor(CancellationToken token, int timeout = 2)
     {
         Logging.Logging.Add("Waiting for a right-clicked item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsItemRightClickedCondition, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsItemRightClickedCondition, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
     }
 
     public static List<string> GetHumanModListFromItem(Entity item) =>

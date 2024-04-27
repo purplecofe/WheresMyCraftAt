@@ -24,7 +24,7 @@ public static class KeyHandler
         Logging.Logging.Add($"Checking if button is down: {button}", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => PerformButtonAction(button, true), () => Input.IsKeyDown(button),
-            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
         Logging.Logging.Add($"Button down check result for {button}: {result}", Enums.WheresMyCraftAt.LogMessageType.Info);
 
@@ -36,7 +36,7 @@ public static class KeyHandler
         Logging.Logging.Add($"Checking if button is up: {button}", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => PerformButtonAction(button, false), () => !Input.IsKeyDown(button),
-            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+            Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
         Logging.Logging.Add($"Button up check result for {button}: {result}", Enums.WheresMyCraftAt.LogMessageType.Info);
 

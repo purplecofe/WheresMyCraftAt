@@ -28,18 +28,18 @@ public static class ItemExtensions
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
                 Logging.Logging.Add($"AsyncTryClick: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token))
+                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
                 {
                     Logging.Logging.Add($"AsyncTryClick: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
                     return false;
                 }
             }
 
-            //if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token))
-            //{
-            //    Logging.Logging.Add("AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
-            //    return false;
-            //}
+            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
+            {
+                Logging.Logging.Add("AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
+                return false;
+            }
 
             await KeyHandler.AsyncButtonPress(button, token);
 

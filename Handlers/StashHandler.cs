@@ -41,7 +41,7 @@ public static class StashHandler
 
         if (foundItem == null)
         {
-            Logging.Logging.Add($"Could not find '{baseName}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.Add($"Could not find '{baseName}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Warning);
         }
         else
         {
@@ -71,7 +71,7 @@ public static class StashHandler
         Logging.Logging.Add($"Attempting to find special slot '{slotType}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetStashSpecialSlot(slotType, out inventoryItem), 2,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelay), token);
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
         Logging.Logging.Add($"Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
