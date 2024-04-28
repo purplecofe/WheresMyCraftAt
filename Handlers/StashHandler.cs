@@ -43,6 +43,11 @@ public static class StashHandler
         {
             Logging.Logging.Add($"Could not find '{baseName}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Warning);
         }
+        else if (foundItem.Height < 1 || foundItem.Width < 1)
+        {
+            Logging.Logging.Add($"Found '{baseName}' [W:{foundItem.Width}, H:{foundItem.Height}] in stash but this is an incorrect size.", Enums.WheresMyCraftAt.LogMessageType.Warning);
+            return false;
+        }
         else
         {
             Logging.Logging.Add($"Found '{baseName}' [W:{foundItem.Width}, H:{foundItem.Height}] in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
