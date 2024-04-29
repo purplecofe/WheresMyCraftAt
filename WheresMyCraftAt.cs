@@ -153,6 +153,11 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
         Logging.Logging.Add("Stop() has been ran.", LogMessageType.Warning);
         Logging.Logging.LogEndCraftingStats();
+
+        if (Settings.Debugging.AutoFullLogDumpOnEnd)
+        {
+            Logging.Logging.SaveLog(Logging.Logging.CombineLogsToString(true));
+        }
     }
 
     private void ResetCancellationTokenSource()

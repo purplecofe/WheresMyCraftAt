@@ -65,18 +65,16 @@ public static class Logging
                 ImGui.SeparatorText(Label);
             }
 
-
-            if (ImGui.Button("Save Log"))
+            if (ImGui.Button("Save Toggled Log"))
             {
-                List<string> stringList;
+                SaveLog(CombineLogsToString(false));
+            }
 
-                lock (Locker)
-                {
-                    stringList = MessagesList.Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}")
-                        .ToList();
-                }
+            ImGui.SameLine();
 
-                SaveLog(stringList);
+            if (ImGui.Button("Save All Log"))
+            {
+                SaveLog(CombineLogsToString(true));
             }
 
             ImGui.SameLine();
@@ -133,7 +131,9 @@ public static class Logging
             // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
             // Using a scrollbar or mouse-wheel will take away from the bottom edge.
             if (ImGui.GetScrollY() >= ImGui.GetScrollMaxY())
+            {
                 ImGui.SetScrollHereY(1.0f);
+            }
 
             ImGui.EndChild();
             ImGui.End();
@@ -233,7 +233,25 @@ public static class Logging
         {
             var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];
 
-            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check the item" : $"Use '{inputs.CurrencyItem}'";
+            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly
+                ? "Check the item"
+                : $"Use '{inputs.CurrencyItem}'";
+        }
+    }
+
+    public static List<string> CombineLogsToString(bool all)
+    {
+        lock (Locker)
+        {
+            if (all)
+            {
+                // Include all messages without checking LogType
+                return MessagesList.Where(msg => msg != null).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+            }
+
+            // Only include messages whose LogType is enabled
+            return MessagesList.Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters.ContainsKey(msg.LogType) && Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled)
+                .Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
         }
     }
 

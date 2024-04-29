@@ -76,8 +76,10 @@ public static class StashHandler
 
         Logging.Logging.Add($"Attempting to find special slot '{slotType}' in stash.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
-        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetStashSpecialSlot(slotType, out inventoryItem), 2,
-            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetStashSpecialSlot(slotType, out inventoryItem),
+            2,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS),
+            token);
 
         Logging.Logging.Add($"Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
@@ -86,7 +88,14 @@ public static class StashHandler
 
     public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, out NormalInventoryItem inventoryItem)
     {
-        inventoryItem = TryGetVisibleStashInventory(out var stashContents) ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType] && item.IsValid && item.Item.IsValid && item.Item.TryGetComponent<Base>(out var baseNamComponent)) : null;
+        inventoryItem = TryGetVisibleStashInventory(out var stashContents)
+            ? stashContents.FirstOrDefault(item =>
+                item.Elem.Size == Main.SpecialSlotDimensionMap[slotType] 
+                && item.IsValid 
+                && item.Item.IsValid 
+                && item.Item.TryGetComponent<Base>(out var baseNamComponent) &&
+                item.Item.TryGetComponent<Mods>(out var modsComp))
+            : null;
 
         if (inventoryItem == null)
         {
@@ -102,7 +111,9 @@ public static class StashHandler
 
     public static bool TryGetVisibleStashInventory(out IList<NormalInventoryItem> inventoryItems)
     {
-        inventoryItems = IsVisibleStashValidCondition() ? GetVisibleStashInventory() : null;
+        inventoryItems = IsVisibleStashValidCondition()
+            ? GetVisibleStashInventory()
+            : null;
 
         if (inventoryItems == null)
         {

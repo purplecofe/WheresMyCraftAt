@@ -57,6 +57,7 @@ public class DebugOptions
     public HotkeyNode ToggleLogWindow { get; set; } = new(Keys.NumPad3);
     public ToggleNode PrintTopLeft { get; set; } = new(true);
     public RangeNode<int> PrintLingerTime { get; set; } = new(5, 0, 20);
+    public ToggleNode AutoFullLogDumpOnEnd { get; set; } = new(true);
 }
 
 [Submenu(CollapsedByDefault = true)]
