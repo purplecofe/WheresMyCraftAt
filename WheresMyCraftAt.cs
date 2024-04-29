@@ -49,6 +49,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public override bool Initialise()
     {
         Main = this;
+        InitializeLogMessageFilters();
         RegisterHotkey(Settings.RunOptions.RunButton);
         RegisterHotkey(Settings.Debugging.ToggleLogWindow);
         keysToRelease = [Keys.LButton, Keys.RButton];
@@ -56,6 +57,26 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
         foreach (var key in keysToRelease) Input.RegisterKey(key);
 
         return true;
+    }
+    private void InitializeLogMessageFilters()
+    {
+        AddOrUpdate(LogMessageType.Trace, (false, Color.LightGray));
+        AddOrUpdate(LogMessageType.Debug, (false, Color.Cyan));
+        AddOrUpdate(LogMessageType.Info, (false, Color.White));
+        AddOrUpdate(LogMessageType.Warning, (true, Color.Yellow));
+        AddOrUpdate(LogMessageType.Error, (true, Color.Red));
+        AddOrUpdate(LogMessageType.Critical, (true, Color.DarkRed));
+        AddOrUpdate(LogMessageType.Profiler, (false, Color.SkyBlue));
+        AddOrUpdate(LogMessageType.Evaluation, (false, Color.Orange));
+        AddOrUpdate(LogMessageType.Special, (false, Color.Magenta));
+        AddOrUpdate(LogMessageType.ItemData, (false, Color.LimeGreen));
+        AddOrUpdate(LogMessageType.EndSessionStats, (true, Color.Beige));
+        AddOrUpdate(LogMessageType.ItemUse, (true, new Color(160, 238, 0, 255)));
+    }
+
+    private void AddOrUpdate(LogMessageType messageType, (bool enabled, Color color) value)
+    {
+        Settings.Debugging.LogMessageFilters.TryAdd(messageType, value);
     }
 
     private static void RegisterHotkey(HotkeyNode hotkey)

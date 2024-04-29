@@ -115,7 +115,7 @@ public static class ElementHandler
             }
 
             ItemHandler.UpdateUsedItemDictionary(currencyName);
-            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.Info);
+            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
             return true;
         }
         catch (OperationCanceledException)

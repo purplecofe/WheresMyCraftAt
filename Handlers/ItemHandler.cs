@@ -66,6 +66,10 @@ public static class ItemHandler
             Logging.Logging.Add($"Rarity: {modsComponent.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
             Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
+        else
+        {
+            Logging.Logging.Add($"Could not find <Mods> Component.", Enums.WheresMyCraftAt.LogMessageType.Error);
+        }
 
         var modsList = GetHumanModListFromItem(item);
 

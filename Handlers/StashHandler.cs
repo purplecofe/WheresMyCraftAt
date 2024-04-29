@@ -1,4 +1,5 @@
-﻿using ExileCore.PoEMemory.Elements.InventoryElements;
+﻿using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System;
@@ -85,7 +86,7 @@ public static class StashHandler
 
     public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, out NormalInventoryItem inventoryItem)
     {
-        inventoryItem = TryGetVisibleStashInventory(out var stashContents) ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType]) : null;
+        inventoryItem = TryGetVisibleStashInventory(out var stashContents) ? stashContents.FirstOrDefault(item => item.Elem.Size == Main.SpecialSlotDimensionMap[slotType] && item.IsValid && item.Item.IsValid && item.Item.TryGetComponent<Base>(out var baseNamComponent)) : null;
 
         if (inventoryItem == null)
         {

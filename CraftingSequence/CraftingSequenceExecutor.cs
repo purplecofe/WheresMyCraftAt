@@ -60,11 +60,12 @@ public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
                                 Logging.Logging.Add($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
                                 Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
                             }
+
+                            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
                         }
                     }
 
                     lastItemAddress = currentItemAddress;
-                    ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
                 }
                 else
                 {
