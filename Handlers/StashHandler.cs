@@ -81,9 +81,17 @@ public static class StashHandler
             HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS),
             token);
 
-        Logging.Logging.Add($"Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        switch (result)
+        {
+            case false:
+                Logging.Logging.Add($"AsyncTryGetStashSpecialSlot: Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Error);
+                Main.Stop();
+                return Tuple.Create(result, inventoryItem);
 
-        return Tuple.Create(result, inventoryItem);
+            default:
+                Logging.Logging.Add($"AsyncTryGetStashSpecialSlot: Special slot '{slotType}' found status: {result}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+                return Tuple.Create(result, inventoryItem);
+        }
     }
 
     public static bool TryGetStashSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slotType, out NormalInventoryItem inventoryItem)
@@ -96,15 +104,6 @@ public static class StashHandler
                 && item.Item.TryGetComponent<Base>(out var baseNamComponent) &&
                 item.Item.TryGetComponent<Mods>(out var modsComp))
             : null;
-
-        if (inventoryItem == null)
-        {
-            Logging.Logging.Add($"Special slot '{slotType}' not found.", Enums.WheresMyCraftAt.LogMessageType.Warning);
-        }
-        else
-        {
-            Logging.Logging.Add($"Found special slot '{slotType}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
-        }
 
         return inventoryItem != null;
     }
