@@ -3,7 +3,9 @@ using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
+using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -23,6 +25,19 @@ public static class InventoryHandler
 
     public static IList<Entity> GetItemsFromAnInventory(InventorySlotE invSlot) =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.Items;
+
+    public static IList<InventSlotItem> GetInventorySlotItemsFromAnInventory(InventorySlotE invSlot) =>
+        Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.InventorySlotItems;
+
+    public static bool TryGetInventoryItemFromSlot(Vector2 invSlot, out InventSlotItem inventoryItem)
+    {
+        var items = GetInventorySlotItemsFromAnInventory(InventorySlotE.MainInventory1);
+        inventoryItem = items is {Count: > 0}
+            ? items.FirstOrDefault(item => item.InventoryPositionNum == invSlot)
+            : null;
+
+        return inventoryItem != null;
+    }
 
     public static bool IsAnItemPickedUpCondition() =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;

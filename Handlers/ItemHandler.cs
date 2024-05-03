@@ -102,6 +102,8 @@ public static class ItemHandler
 
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);
 
+    public static string GetBaseNameFromItem(ServerInventory.InventSlotItem item) => GetBaseNameFromPath(item?.Item?.Path);
+
     public static string GetBaseNameFromPath(string path) =>
         Main.GameController?.Files.BaseItemTypes.Translate(path)?.BaseName ?? string.Empty;
 
