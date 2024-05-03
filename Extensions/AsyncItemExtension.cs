@@ -105,29 +105,17 @@ public static class ItemExtensions
             // Log info about the click action
             Logging.Logging.Add($"AsyncTryClick: Clicking with {button} on item.", LogMessageType.Info);
 
-            Element matchingElement;
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
                 Logging.Logging.Add($"AsyncTryClick: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
-
-                if (!ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
-                {
-                    Logging.Logging.Add($"AsyncTryClick: Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Error);
-                    return false;
-                }
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(matchingElement, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
+                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
                 {
                     Logging.Logging.Add($"AsyncTryClick: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
                     return false;
                 }
             }
 
-            if (!ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
-            {
-                Logging.Logging.Add($"AsyncTryClick: Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Error);
-                return false;
-            }
-            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(matchingElement, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
+            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
             {
                 Logging.Logging.Add("AsyncTryClick: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
                 return false;

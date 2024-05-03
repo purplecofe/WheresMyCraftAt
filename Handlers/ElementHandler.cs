@@ -18,6 +18,7 @@ public static class ElementHandler
     public static Element GetHoveredElementUiAction() => Main.GameController?.Game?.IngameState?.UIHoverElement;
 
     public static bool IsElementsSameCondition(Element first, Element second) => first.Address == second.Address;
+    public static bool IsElementsSameCondition(InventSlotItem item, Element second) => TryGetMatchingElementFromSlotItem(item, out var matchingElement) && matchingElement.Address == second.Address;
 
     public static bool IsInGameUiElementVisibleCondition(Func<IngameUIElements, Element> panelSelector) =>
         panelSelector(Main.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
@@ -179,11 +180,12 @@ public static class ElementHandler
     public static bool TryGetMatchingElementFromSlotItem(InventSlotItem item, out Element matchingElement)
     {
         matchingElement = null;
-
         var inventoryItems = Main.GameController.IngameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory]?.VisibleInventoryItems;
+
         if (inventoryItems is {Count: > 0})
         {
             matchingElement = inventoryItems.FirstOrDefault(x => x.GetClientRectCache == item.GetClientRect());
+            Logging.Logging.Add($"Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Warning);
         }
 
         return matchingElement != null;
