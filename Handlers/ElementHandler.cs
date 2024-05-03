@@ -4,8 +4,10 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System;
+using System.Linq;
 using System.Threading;
 using WheresMyCraftAt.Extensions;
+using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -123,5 +125,67 @@ public static class ElementHandler
             Logging.Logging.Add("Operation canceled.", LogMessageType.Info);
             return false;
         }
+    }
+
+    public static async SyncTask<bool> AsyncTryApplyOrb(this InventSlotItem item, string currencyName, CancellationToken token)
+    {
+        try
+        {
+            var (item1, orbItem) = await StashHandler.AsyncTryGetItemInStash(currencyName, token);
+
+            if (!item1)
+            {
+                Logging.Logging.Add($"'{currencyName}' not found in stash.", LogMessageType.Error);
+                Main.Stop();
+                return false;
+            }
+
+            var storeAddressOfItem = item.Item.Address;
+
+            Logging.Logging.Add($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
+
+            if (!await orbItem.AsyncTryClick(true, token))
+            {
+                Logging.Logging.Add($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
+                Main.Stop();
+                return false;
+            }
+
+            if (!await item.AsyncTryClick(false, token))
+            {
+                Logging.Logging.Add("Failed to left click target item.", LogMessageType.Error);
+                Main.Stop();
+                return false;
+            }
+
+            if (!await AsyncExecuteNotSameItemWithCancellationHandling(storeAddressOfItem, Main.Settings.DelayOptions.ActionTimeoutInSeconds, token))
+            {
+                Logging.Logging.Add($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
+                Main.Stop();
+                return false;
+            }
+
+            ItemHandler.UpdateUsedItemDictionary(currencyName);
+            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            Logging.Logging.Add("Operation canceled.", LogMessageType.Info);
+            return false;
+        }
+    }
+
+    public static bool TryGetMatchingElementFromSlotItem(InventSlotItem item, out Element matchingElement)
+    {
+        matchingElement = null;
+
+        var inventoryItems = Main.GameController.IngameState.IngameUi.InventoryPanel[InventoryIndex.PlayerInventory]?.VisibleInventoryItems;
+        if (inventoryItems is {Count: > 0})
+        {
+            matchingElement = inventoryItems.FirstOrDefault(x => x.GetClientRectCache == item.GetClientRect());
+        }
+
+        return matchingElement != null;
     }
 }
