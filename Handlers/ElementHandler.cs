@@ -185,7 +185,6 @@ public static class ElementHandler
         if (inventoryItems is {Count: > 0})
         {
             matchingElement = inventoryItems.FirstOrDefault(x => x.GetClientRectCache == item.GetClientRect());
-            Logging.Logging.Add($"Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Warning);
         }
 
         return matchingElement != null;

@@ -10,172 +10,178 @@ using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;
 
-public class CraftingSequenceExecutor(IReadOnlyList<CraftingStep> steps)
+public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 {
     public async SyncTask<bool> Execute(CancellationToken token)
     {
-        var currentStepIndex = 0;
-        CraftingStep previousStep = null;
-        var stopwatch = new Stopwatch(); // Stopwatch to time each step
-        var lastItemAddress = long.MinValue; // Add comparison to address somehow being the same as the last sequence, issue if there is.
-
-        // Log initial item
-        var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
-
-        if (asyncResult.Item1)
+        foreach (var craftingBase in itemsToSequence)
         {
-            Logging.Logging.Add("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
-            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
-        }
-        else
-        {
-            Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
-            Main.Stop();
-        }
+            var currentStepIndex = 0;
+            CraftingStep previousStep = null;
+            var stopwatch = new Stopwatch(); // Stopwatch to time each step
+            var lastItemAddress = long.MinValue; // Add comparison to address somehow being the same as the last sequence, issue if there is.
+            var endCraft = false;
 
-        while (currentStepIndex >= 0 && currentStepIndex < steps.Count)
-        {
-            var currentStep = steps[currentStepIndex];
-            var success = false; // Defaulting success to false
+            // Log initial item
+            var asyncResult = await craftingBase.MethodReadItem(token);
 
-            try
+            if (asyncResult.Item1)
             {
-                // Log item mods before each step
-                asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
-
-                if (asyncResult.Item1)
-                {
-                    var currentItemAddress = asyncResult.Item2.Address;
-                    if (lastItemAddress != long.MinValue)
-                    {
-                        if (previousStep is {CheckType: not ConditionalCheckType.ConditionalCheckOnly})
-                        {
-                            if (lastItemAddress == currentItemAddress)
-                            {
-                                Logging.Logging.Add($"CraftingSequenceStep: Item Address is the same as the last", LogMessageType.Special);
-                                Logging.Logging.Add($"CraftingSequenceStep: (True) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
-                            }
-                            else
-                            {
-                                Logging.Logging.Add($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
-                                Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
-                            }
-
-                            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
-                        }
-                    }
-
-                    lastItemAddress = currentItemAddress;
-                }
-                else
-                {
-                    Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
-                    Main.Stop();
-                }
-
-                // Info: Starting a new step
-                Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
-
-                stopwatch.Restart(); // Start timing
-
-                if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
-                {
-                    // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = await EvaluateConditionsAsync(currentStep, token);
-
-                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
-                }
-                else
-                {
-                    // Execute the method if no prior conditional check or if it's not applicable
-                    var methodResult = await currentStep.Method(token);
-
-                    Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
-                }
-
-                if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
-                {
-                    // Count how many conditions are true and check if it meets or exceeds the required count
-                    success = await EvaluateConditionsAsync(currentStep, token);
-
-                    Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
-                }
-
-                if (currentStep.AutomaticSuccess)
-                {
-                    success = true; // Override success if AutomaticSuccess is true
-                    Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
-                }
-
-                stopwatch.Stop(); // Stop timing after the step is executed
-
-                // Profiler: Time taken for step execution
-                Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
-                previousStep = currentStep;
-            }
-            catch (Exception ex)
-            {
-                Logging.Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
-
-                Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
-
-                return false;
-            }
-
-            // Determine the next step based on success or failure
-            if (success)
-            {
-                UpdateOperationStepsDictionary(currentStepIndex, true);
-
-                Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
-
-                switch (currentStep.SuccessAction)
-                {
-                    case SuccessAction.Continue:
-                        currentStepIndex++;
-                        break;
-                    case SuccessAction.End:
-                        return true; // End the execution of the sequence
-                    case SuccessAction.GoToStep:
-                        currentStepIndex = currentStep.SuccessActionStepIndex;
-                        break;
-                }
+                Logging.Logging.Add("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
+                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
             }
             else
             {
-                UpdateOperationStepsDictionary(currentStepIndex, false);
-
-                Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
-
-                switch (currentStep.FailureAction)
-                {
-                    case FailureAction.RepeatStep:
-                        // Stay on the current step
-                        break;
-                    case FailureAction.Restart:
-                        currentStepIndex = 0; // Restart from the first step
-                        break;
-                    case FailureAction.GoToStep:
-                        currentStepIndex = currentStep.FailureActionStepIndex;
-                        break;
-                }
+                Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+                Main.Stop();
             }
 
-            // Info: Next step to be executed
-            Logging.Logging.Add(currentStepIndex < steps.Count - 1 // Check if it's not the last step
-                ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
-                // If it's the last step, you might want to log a different message or nothing at all
-                : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
-        }
+            while (!endCraft && currentStepIndex >= 0 && currentStepIndex < craftingBase.CraftingSteps.Count)
+            {
+                var currentStep = craftingBase.CraftingSteps[currentStepIndex];
+                var success = false; // Defaulting success to false
 
-        // Log item mods at the end of crafting
-        asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token);
+                try
+                {
+                    // Log item mods before each step
+                    asyncResult = await craftingBase.MethodReadItem(token);
 
-        if (asyncResult.Item1)
-        {
-            Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
-            ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                    if (asyncResult.Item1)
+                    {
+                        var currentItemAddress = asyncResult.Item2.Address;
+                        if (lastItemAddress != long.MinValue)
+                        {
+                            if (previousStep is { CheckType: not ConditionalCheckType.ConditionalCheckOnly })
+                            {
+                                if (lastItemAddress == currentItemAddress)
+                                {
+                                    Logging.Logging.Add($"CraftingSequenceStep: Item Address is the same as the last", LogMessageType.Special);
+                                    Logging.Logging.Add($"CraftingSequenceStep: (True) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                                }
+                                else
+                                {
+                                    Logging.Logging.Add($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
+                                    Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                                }
+
+                                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                            }
+                        }
+
+                        lastItemAddress = currentItemAddress;
+                    }
+                    else
+                    {
+                        Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+                        Main.Stop();
+                    }
+
+                    // Info: Starting a new step
+                    Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
+
+                    stopwatch.Restart(); // Start timing
+
+                    if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
+                    {
+                        // Count how many conditions are true and check if it meets or exceeds the required count
+                        success = await EvaluateConditionsAsync(currentStep, token);
+
+                        Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
+                    }
+                    else
+                    {
+                        // Execute the method if no prior conditional check or if it's not applicable
+                        var methodResult = await currentStep.Method(token);
+
+                        Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
+                    }
+
+                    if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
+                    {
+                        // Count how many conditions are true and check if it meets or exceeds the required count
+                        success = await EvaluateConditionsAsync(currentStep, token);
+
+                        Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
+                    }
+
+                    if (currentStep.AutomaticSuccess)
+                    {
+                        success = true; // Override success if AutomaticSuccess is true
+                        Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
+                    }
+
+                    stopwatch.Stop(); // Stop timing after the step is executed
+
+                    // Profiler: Time taken for step execution
+                    Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+                    previousStep = currentStep;
+                }
+                catch (Exception ex)
+                {
+                    Logging.Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
+
+                    Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+
+                    return false;
+                }
+
+                // Determine the next step based on success or failure
+                if (success)
+                {
+                    UpdateOperationStepsDictionary(currentStepIndex, true);
+
+                    Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
+
+                    switch (currentStep.SuccessAction)
+                    {
+                        case SuccessAction.Continue:
+                            currentStepIndex++;
+                            break;
+                        case SuccessAction.End:
+                            endCraft = true;
+                            break; // End the execution of the sequence
+                        case SuccessAction.GoToStep:
+                            currentStepIndex = currentStep.SuccessActionStepIndex;
+                            break;
+                    }
+                }
+                else
+                {
+                    UpdateOperationStepsDictionary(currentStepIndex, false);
+
+                    Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
+
+                    switch (currentStep.FailureAction)
+                    {
+                        case FailureAction.RepeatStep:
+                            // Stay on the current step
+                            break;
+                        case FailureAction.Restart:
+                            currentStepIndex = 0; // Restart from the first step
+                            break;
+                        case FailureAction.GoToStep:
+                            currentStepIndex = currentStep.FailureActionStepIndex;
+                            break;
+                    }
+                }
+
+                // Info: Next step to be executed
+                Logging.Logging.Add(currentStepIndex < craftingBase.CraftingSteps.Count - 1 // Check if it's not the last step
+                    ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
+                    // If it's the last step, you might want to log a different message or nothing at all
+                    : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
+            }
+
+            // Log item mods at the end of crafting
+            asyncResult = await craftingBase.MethodReadItem(token);
+
+            if (asyncResult.Item1)
+            {
+                Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
+                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+            }
         }
+        
 
         // Info: Sequence completed successfully
         Logging.Logging.Add("CraftingSequenceExecutor: Sequence execution completed successfully.", LogMessageType.Special);

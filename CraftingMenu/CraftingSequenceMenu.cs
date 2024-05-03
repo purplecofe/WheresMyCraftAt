@@ -602,58 +602,75 @@ public static class CraftingSequenceMenu
         {
             Main.SelectedCraftingSteps.Clear();
 
-            foreach (var input in Main.Settings.NonUserData.SelectedCraftingStepInputs)
+            // first part inside new for loop when engaging in mass crafting
+            for (var i = 0; i <= 1; i++)
             {
-                var newStep = new CraftingStep
+                var i1 = i;
+                var newCraftingBase = new CraftingBase
                 {
-                    Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
-                    CheckType = input.CheckType,
-                    AutomaticSuccess = input.AutomaticSuccess,
-                    SuccessAction = input.SuccessAction,
-                    SuccessActionStepIndex = input.SuccessActionStepIndex,
-                    FailureAction = input.FailureAction,
-                    FailureActionStepIndex = input.FailureActionStepIndex,
-                    ConditionalCheckGroups = []
+                    //MethodReadItem = async token => await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token),
+                    MethodReadItem = async token => await InventoryHandler.AsyncTryGetInventoryItemFromSlot(new Vector2(0,i1), token),
+                    CraftingSteps = []
                 };
 
-                foreach (var conditionGroup in input.ConditionalGroups)
+                foreach (var input in Main.Settings.NonUserData.SelectedCraftingStepInputs)
                 {
-                    var newGroup = new ConditionalChecksGroup
+                    var i2 = i;
+                    var newStep = new CraftingStep
                     {
-                        GroupType = conditionGroup.GroupType,
-                        ConditionalsToBePassForSuccess = conditionGroup.ConditionalsToBePassForSuccess,
-                        ConditionalChecks = []
+                        //Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
+                        Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(new Vector2(0,i2), input.CurrencyItem, token),
+                        CheckType = input.CheckType,
+                        AutomaticSuccess = input.AutomaticSuccess,
+                        SuccessAction = input.SuccessAction,
+                        SuccessActionStepIndex = input.SuccessActionStepIndex,
+                        FailureAction = input.FailureAction,
+                        FailureActionStepIndex = input.FailureActionStepIndex,
+                        ConditionalCheckGroups = []
                     };
 
-                    if (input.AutomaticSuccess)
+                    foreach (var conditionGroup in input.ConditionalGroups)
                     {
-                        newStep.ConditionalCheckGroups.Add(newGroup);
-                        continue;
-                    }
-
-                    foreach (var checkKey in conditionGroup.Conditionals)
-                    {
-                        var filter = ItemFilter.LoadFromString(checkKey.Value);
-
-                        if (filter.Queries.Count == 0)
+                        var newGroup = new ConditionalChecksGroup
                         {
-                            Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
+                            GroupType = conditionGroup.GroupType,
+                            ConditionalsToBePassForSuccess = conditionGroup.ConditionalsToBePassForSuccess,
+                            ConditionalChecks = []
+                        };
 
-                            return;
+                        if (input.AutomaticSuccess)
+                        {
+                            newStep.ConditionalCheckGroups.Add(newGroup);
+                            continue;
                         }
 
-                        newGroup.ConditionalChecks.Add(async token =>
+                        foreach (var checkKey in conditionGroup.Conditionals)
                         {
-                            var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, SpecialSlot.CurrencyTab, token);
+                            var filter = ItemFilter.LoadFromString(checkKey.Value);
 
-                            return resultTuple;
-                        });
+                            if (filter.Queries.Count == 0)
+                            {
+                                Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
+
+                                return;
+                            }
+
+                            var i3 = i;
+                            newGroup.ConditionalChecks.Add(async token =>
+                            {
+                                //var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, SpecialSlot.CurrencyTab, token);
+                                var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, new Vector2(0, i3), token);
+
+                                return resultTuple;
+                            });
+                        }
+
+                        newStep.ConditionalCheckGroups.Add(newGroup);
                     }
 
-                    newStep.ConditionalCheckGroups.Add(newGroup);
+                    newCraftingBase.CraftingSteps.Add(newStep);
                 }
-
-                Main.SelectedCraftingSteps.Add(newStep);
+                Main.SelectedCraftingSteps.Add(newCraftingBase);
             }
 
             Logging.Logging.Add($"CraftingSequenceMenu: Steps added {Main.SelectedCraftingSteps.Count}", LogMessageType.Info);

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;
@@ -89,6 +90,12 @@ public class CraftingSequence
         }
 
         return fileList;
+    }
+
+    public class CraftingBase
+    {
+        public Func<CancellationToken, SyncTask<Tuple<bool, InventSlotItem>>> MethodReadItem { get; set; }
+        public List<CraftingStep> CraftingSteps { get; set; }
     }
 
     public class CraftingStep

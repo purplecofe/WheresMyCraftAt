@@ -37,7 +37,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public Dictionary<string, int> CurrentOperationUsedItemsList = [];
     private List<Keys> keysToRelease = [];
     public CancellationTokenSource OperationCts;
-    public List<CraftingStep> SelectedCraftingSteps = [];
+    public List<CraftingBase> SelectedCraftingSteps = [];
     public int ServerLatency;
 
     public WheresMyCraftAt()
