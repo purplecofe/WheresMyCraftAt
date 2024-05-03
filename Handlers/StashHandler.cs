@@ -101,8 +101,8 @@ public static class StashHandler
                 item.Elem.Size == Main.SpecialSlotDimensionMap[slotType] 
                 && item.IsValid 
                 && item.Item.IsValid 
-                && item.Item.TryGetComponent<Base>(out var baseNamComponent) &&
-                item.Item.TryGetComponent<Mods>(out var modsComp))
+                && item.Item.TryGetComponent<Base>(out _) &&
+                item.Item.TryGetComponent<Mods>(out _))
             : null;
 
         return inventoryItem != null;

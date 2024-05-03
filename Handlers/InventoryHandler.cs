@@ -1,13 +1,16 @@
-﻿using ExileCore.PoEMemory.MemoryObjects;
+﻿using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
+using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
+using Vector2 = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt.Handlers;
 
@@ -29,22 +32,51 @@ public static class InventoryHandler
     public static IList<InventSlotItem> GetInventorySlotItemsFromAnInventory(InventorySlotE invSlot) =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.InventorySlotItems;
 
-    public static bool TryGetInventoryItemFromSlot(Vector2 invSlot, out InventSlotItem inventoryItem)
-    {
-        var items = GetInventorySlotItemsFromAnInventory(InventorySlotE.MainInventory1);
-        inventoryItem = items is {Count: > 0}
-            ? items.FirstOrDefault(item => item.InventoryPositionNum == invSlot)
-            : null;
-
-        return inventoryItem != null;
-    }
-
     public static bool IsAnItemPickedUpCondition() =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
 
     public static bool IsInventoryPanelOpenCondition()
     {
         return ElementHandler.IsInGameUiElementVisibleCondition(ui => ui.InventoryPanel);
+    }
+
+    public static bool TryGetInventoryItemFromSlot(Vector2 invSlot, out InventSlotItem inventoryItem)
+    {
+        var items = GetInventorySlotItemsFromAnInventory(InventorySlotE.MainInventory1);
+        inventoryItem = items is {Count: > 0}
+            ? items.FirstOrDefault(item =>
+                item.InventoryPositionNum == invSlot 
+                && item.Item.IsValid 
+                && item.GetClientRect().Size != Size2F.Zero
+                && item.Item.TryGetComponent<Base>(out _) 
+                && item.Item.TryGetComponent<Mods>(out _))
+            : null;
+
+        return inventoryItem != null;
+    }
+
+    public static async SyncTask<Tuple<bool, InventSlotItem>> AsyncTryGetInventoryItemFromSlot(Vector2 invSlot, CancellationToken token)
+    {
+        InventSlotItem inventoryItem = null;
+
+        Logging.Logging.Add($"Attempting to find slot '{invSlot}' in inventory.", LogMessageType.Info);
+
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetInventoryItemFromSlot(invSlot, out inventoryItem),
+            2,
+            HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS),
+            token);
+
+        switch (result)
+        {
+            case false:
+                Logging.Logging.Add($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Error);
+                Main.Stop();
+                return Tuple.Create(result, inventoryItem);
+
+            default:
+                Logging.Logging.Add($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Info);
+                return Tuple.Create(result, inventoryItem);
+        }
     }
 
     public static bool TryGetPickedUpItem(out Entity pickedUpItem)
