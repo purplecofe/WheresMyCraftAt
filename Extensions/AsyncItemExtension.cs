@@ -110,7 +110,7 @@ public static class ItemExtensions
             {
                 Logging.Logging.Add($"AsyncTryClick: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
 
-                if (ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
+                if (!ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
                 {
                     Logging.Logging.Add($"AsyncTryClick: Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Error);
                     return false;
@@ -122,7 +122,7 @@ public static class ItemExtensions
                 }
             }
 
-            if (ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
+            if (!ElementHandler.TryGetMatchingElementFromSlotItem(item, out matchingElement))
             {
                 Logging.Logging.Add($"AsyncTryClick: Failed to get matching element from slot '{item.InventoryPositionNum}'", LogMessageType.Error);
                 return false;

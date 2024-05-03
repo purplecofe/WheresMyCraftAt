@@ -4,6 +4,7 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -25,6 +26,23 @@ public static class ItemHandler
         }
 
         Logging.Logging.Add($"Stash slot '{slot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+
+        return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
+    }
+    public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Vector2 invSlot, string orbName, CancellationToken token)
+    {
+        Logging.Logging.Add($"Attempting to apply orb '{orbName}' to slot '{invSlot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+
+        var asyncResult = await InventoryHandler.AsyncTryGetInventoryItemFromSlot(invSlot, token);
+
+        if (!asyncResult.Item1)
+        {
+            Logging.Logging.Add($"Failed to get inventory slot '{invSlot}' for orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Error);
+
+            return false;
+        }
+
+        Logging.Logging.Add($"Inventory slot '{invSlot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
     }
