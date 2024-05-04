@@ -34,10 +34,10 @@ public class WheresMyCraftAtSettings : ISettings
 public class RunOptions
 {
     public HotkeyNode RunButton { get; set; } = Keys.NumPad6;
-    public ToggleNode CraftInventoryInstead { get; set; } = new(false);
+    public ToggleNode CraftInventoryInsteadOfCurrencyTab { get; set; } = new(false);
 
     [JsonIgnore]
-    [ConditionalDisplay(nameof(CraftInventoryInstead))]
+    [ConditionalDisplay(nameof(CraftInventoryInsteadOfCurrencyTab))]
     public CustomNode InventorySectionSelector { get; }
     public int[,] InventoryCraftingSlots { get; set; } = new int[5, 12];
 
@@ -47,7 +47,8 @@ public class RunOptions
         {
             DrawDelegate = () =>
             {
-                ImGui.Text("Select the top left slot each item occupies in the inventory you want crafted on");
+                ImGui.Separator();
+                ImGui.TextWrapped("Select the top left slot each item occupies in the inventory you want crafted on.\nI highly advise Styling be enabled to visually see what slots are considered valid positions otherwise you will only get a tooltip when it is hovered.");
                 var itemsInInventory = InventoryHandler.TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1).ToList();
 
                 var numb = 1;

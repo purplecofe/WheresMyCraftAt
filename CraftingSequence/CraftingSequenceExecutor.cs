@@ -14,6 +14,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 {
     public async SyncTask<bool> Execute(CancellationToken token)
     {
+        var readFromInventory = Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab;
         foreach (var craftingBase in itemsToSequence)
         {
             var currentStepIndex = 0;
@@ -23,12 +24,14 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
             var endCraft = false;
 
             // Log initial item
-            var asyncResult = await craftingBase.MethodReadItem(token);
+            var asyncResult = readFromInventory
+                ? new AsyncResult(await craftingBase.MethodReadInventoryItem(token))
+                : new AsyncResult(await craftingBase.MethodReadStashItem(token));
 
-            if (asyncResult.Item1)
+            if (asyncResult.IsSuccess)
             {
                 Logging.Logging.Add("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
-                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
             }
             else
             {
@@ -44,11 +47,13 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 try
                 {
                     // Log item mods before each step
-                    asyncResult = await craftingBase.MethodReadItem(token);
+                    asyncResult = readFromInventory
+                        ? new AsyncResult(await craftingBase.MethodReadInventoryItem(token))
+                        : new AsyncResult(await craftingBase.MethodReadStashItem(token));
 
-                    if (asyncResult.Item1)
+                    if (asyncResult.IsSuccess)
                     {
-                        var currentItemAddress = asyncResult.Item2.Address;
+                        var currentItemAddress = asyncResult.Address;
                         if (lastItemAddress != long.MinValue)
                         {
                             if (previousStep is { CheckType: not ConditionalCheckType.ConditionalCheckOnly })
@@ -64,7 +69,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                                     Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
                                 }
 
-                                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                                ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
                             }
                         }
 
@@ -173,12 +178,14 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
             }
 
             // Log item mods at the end of crafting
-            asyncResult = await craftingBase.MethodReadItem(token);
+            asyncResult = readFromInventory
+                ? new AsyncResult(await craftingBase.MethodReadInventoryItem(token))
+                : new AsyncResult(await craftingBase.MethodReadStashItem(token));
 
-            if (asyncResult.Item1)
+            if (asyncResult.IsSuccess)
             {
                 Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
-                ItemHandler.PrintHumanModListFromItem(asyncResult.Item2.Item);
+                ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
             }
         }
         

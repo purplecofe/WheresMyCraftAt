@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using ExileCore.Shared.Enums;
+using ImGuiNET;
 using ItemFilterLibrary;
 using SharpDX;
 using System;
@@ -602,24 +603,98 @@ public static class CraftingSequenceMenu
         {
             Main.SelectedCraftingSteps.Clear();
 
-            // first part inside new for loop when engaging in mass crafting
-            for (var i = 0; i <= 1; i++)
+            if (Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab)
             {
-                var i1 = i;
+                var itemsInInventory = InventoryHandler.TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1).ToList();
+                for (var row = 0; row < 5; row++)
+                {
+                    for (var col = 0; col < 12; col++)
+                    {
+                        var isValidAndSelected = itemsInInventory.Any(item => item.PosX == col && item.PosY == row) && Main.Settings.RunOptions.InventoryCraftingSlots[row, col] == 1;
+                        if (!isValidAndSelected) continue;
+
+                        var newCraftingBase = new CraftingBase
+                        {
+                            CraftingSteps = [],
+                            CraftingPosition = new Vector2(col, row)
+                        };
+
+                        newCraftingBase.MethodReadInventoryItem = async token => await InventoryHandler.AsyncTryGetInventoryItemFromSlot(newCraftingBase.CraftingPosition, token);
+
+                        foreach (var input in Main.Settings.NonUserData.SelectedCraftingStepInputs)
+                        {
+                            var newStep = new CraftingStep
+                            {
+                                Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(newCraftingBase.CraftingPosition, input.CurrencyItem, token),
+                                CheckType = input.CheckType,
+                                AutomaticSuccess = input.AutomaticSuccess,
+                                SuccessAction = input.SuccessAction,
+                                SuccessActionStepIndex = input.SuccessActionStepIndex,
+                                FailureAction = input.FailureAction,
+                                FailureActionStepIndex = input.FailureActionStepIndex,
+                                ConditionalCheckGroups = []
+                            };
+
+                            foreach (var conditionGroup in input.ConditionalGroups)
+                            {
+                                var newGroup = new ConditionalChecksGroup
+                                {
+                                    GroupType = conditionGroup.GroupType,
+                                    ConditionalsToBePassForSuccess = conditionGroup.ConditionalsToBePassForSuccess,
+                                    ConditionalChecks = []
+                                };
+
+                                if (input.AutomaticSuccess)
+                                {
+                                    newStep.ConditionalCheckGroups.Add(newGroup);
+                                    continue;
+                                }
+
+                                foreach (var checkKey in conditionGroup.Conditionals)
+                                {
+                                    var filter = ItemFilter.LoadFromString(checkKey.Value);
+
+                                    if (filter.Queries.Count == 0)
+                                    {
+                                        Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
+
+                                        return;
+                                    }
+
+                                    newGroup.ConditionalChecks.Add(async token =>
+                                    {
+                                        var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, newCraftingBase.CraftingPosition, token);
+
+                                        return resultTuple;
+                                    });
+                                }
+
+                                newStep.ConditionalCheckGroups.Add(newGroup);
+                            }
+
+                            newCraftingBase.CraftingSteps.Add(newStep);
+                        }
+
+                        Main.SelectedCraftingSteps.Add(newCraftingBase);
+                    }
+                }
+
+                Logging.Logging.Add($"CraftingSequenceMenu: {Main.SelectedCraftingSteps.Count} items added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}",
+                    LogMessageType.Info);
+            }
+            else
+            {
                 var newCraftingBase = new CraftingBase
                 {
-                    //MethodReadItem = async token => await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token),
-                    MethodReadItem = async token => await InventoryHandler.AsyncTryGetInventoryItemFromSlot(new Vector2(0,i1), token),
-                    CraftingSteps = []
+                    CraftingSteps = [],
+                    MethodReadStashItem = async token => await StashHandler.AsyncTryGetStashSpecialSlot(SpecialSlot.CurrencyTab, token),
                 };
 
                 foreach (var input in Main.Settings.NonUserData.SelectedCraftingStepInputs)
                 {
-                    var i2 = i;
                     var newStep = new CraftingStep
                     {
-                        //Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
-                        Method = async token => await ItemHandler.AsyncTryApplyOrbToSlot(new Vector2(0,i2), input.CurrencyItem, token),
+                        Method = async token => await ItemHandler.AsyncTryApplyOrbToSpecialSlot(SpecialSlot.CurrencyTab, input.CurrencyItem, token),
                         CheckType = input.CheckType,
                         AutomaticSuccess = input.AutomaticSuccess,
                         SuccessAction = input.SuccessAction,
@@ -655,11 +730,9 @@ public static class CraftingSequenceMenu
                                 return;
                             }
 
-                            var i3 = i;
                             newGroup.ConditionalChecks.Add(async token =>
                             {
-                                //var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, SpecialSlot.CurrencyTab, token);
-                                var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, new Vector2(0, i3), token);
+                                var resultTuple = await FilterHandler.AsyncIsMatchingCondition(filter, SpecialSlot.CurrencyTab, token);
 
                                 return resultTuple;
                             });
@@ -670,10 +743,10 @@ public static class CraftingSequenceMenu
 
                     newCraftingBase.CraftingSteps.Add(newStep);
                 }
-                Main.SelectedCraftingSteps.Add(newCraftingBase);
-            }
 
-            Logging.Logging.Add($"CraftingSequenceMenu: Steps added {Main.SelectedCraftingSteps.Count}", LogMessageType.Info);
+                Main.SelectedCraftingSteps.Add(newCraftingBase);
+                Logging.Logging.Add($"CraftingSequenceMenu: Currency Tab Item Added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}", LogMessageType.Info);
+            }
         }
 
         ImGui.SameLine();
