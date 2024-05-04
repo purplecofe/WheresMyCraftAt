@@ -32,6 +32,18 @@ public static class InventoryHandler
     public static IList<InventSlotItem> GetInventorySlotItemsFromAnInventory(InventorySlotE invSlot) =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory?.InventorySlotItems;
 
+    public static IList<InventSlotItem> TryGetValidCraftingItemsFromAnInventory(InventorySlotE invSlot)
+    {
+        var items = GetInventorySlotItemsFromAnInventory(invSlot)
+            .Where(item => item.Item.IsValid 
+                           && item.GetClientRect().Size != Size2F.Zero 
+                           && item.Item.TryGetComponent<Base>(out _) 
+                           && item.Item.TryGetComponent<Mods>(out _))
+            .ToList();
+
+        return items;
+    }
+
     public static bool IsAnItemPickedUpCondition() =>
         Main.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)InventorySlotE.Cursor1]?.Inventory?.ItemCount > 0;
 
@@ -42,14 +54,9 @@ public static class InventoryHandler
 
     public static bool TryGetInventoryItemFromSlot(Vector2 invSlot, out InventSlotItem inventoryItem)
     {
-        var items = GetInventorySlotItemsFromAnInventory(InventorySlotE.MainInventory1);
-        inventoryItem = items is {Count: > 0}
-            ? items.FirstOrDefault(item =>
-                item.InventoryPositionNum == invSlot 
-                && item.Item.IsValid 
-                && item.GetClientRect().Size != Size2F.Zero
-                && item.Item.TryGetComponent<Base>(out _) 
-                && item.Item.TryGetComponent<Mods>(out _))
+        var items = TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1);
+        inventoryItem = items is { Count: > 0 }
+            ? items.FirstOrDefault(item => item.InventoryPositionNum == invSlot)
             : null;
 
         return inventoryItem != null;
