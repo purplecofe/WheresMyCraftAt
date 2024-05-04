@@ -34,6 +34,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     public Vector2 ClickWindowOffset;
     public SyncTask<bool> CurrentOperation;
     public Dictionary<int, (int passCount, int failCount, int totalCount)> CurrentOperationStepCountList = [];
+    public int[,] CompletedCrafts = new int[5, 12];
     public Dictionary<string, int> CurrentOperationUsedItemsList = [];
     private List<Keys> keysToRelease = [];
     public CancellationTokenSource OperationCts;
@@ -116,6 +117,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
                 Logging.Logging.Add("Attempting to Start New Operation.", LogMessageType.Info);
                 CurrentOperationUsedItemsList = [];
                 CurrentOperationStepCountList = [];
+                CompletedCrafts = new int[5, 12];
                 ResetCancellationTokenSource();
                 CurrentOperation = AsyncStart(OperationCts.Token);
             }

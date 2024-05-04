@@ -227,8 +227,35 @@ public static class Logging
         }
 
         Add("-----------", LogMessageType.EndSessionStats);
-        return;
+        if (Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab)
+        {
+            Add("Successful Craft Slots", LogMessageType.EndSessionStats);
 
+            for (var row = 0; row < 5; row++)
+            {
+                var text = "";
+                for (var col = 0; col < 12; col++)
+                {
+                    if (Main.CompletedCrafts[row, col] == 1)
+                    {
+                        text += "[X]";
+                    }
+                    else
+                    {
+                        text += "[ ]";
+                    }
+
+                    if (col < 11)
+                    {
+                        text += ",";
+                    }
+                }
+
+                Add(text, LogMessageType.EndSessionStats);
+            }
+
+            Add("-----------", LogMessageType.EndSessionStats);
+        }
         static string GetStepActionTitle(int key)
         {
             var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];

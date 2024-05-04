@@ -606,9 +606,9 @@ public static class CraftingSequenceMenu
             if (Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab)
             {
                 var itemsInInventory = InventoryHandler.TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1).ToList();
-                for (var row = 0; row < 5; row++)
+                for (var col = 0; col < 12; col++)
                 {
-                    for (var col = 0; col < 12; col++)
+                    for (var row = 0; row < 5; row++)
                     {
                         var isValidAndSelected = itemsInInventory.Any(item => item.PosX == col && item.PosY == row) && Main.Settings.RunOptions.InventoryCraftingSlots[row, col] == 1;
                         if (!isValidAndSelected) continue;

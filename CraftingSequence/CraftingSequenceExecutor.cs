@@ -186,6 +186,10 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
             {
                 Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
                 ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
+                if (readFromInventory)
+                {
+                    Main.CompletedCrafts[(int)craftingBase.CraftingPosition.Y, (int)craftingBase.CraftingPosition.X] = 1;
+                }
             }
         }
         
