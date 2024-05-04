@@ -1,10 +1,14 @@
-﻿using ExileCore.Shared;
+﻿using ExileCore.PoEMemory.Elements.InventoryElements;
+using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
+using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
 namespace WheresMyCraftAt.CraftingSequence;
@@ -89,6 +93,14 @@ public class CraftingSequence
         }
 
         return fileList;
+    }
+
+    public class CraftingBase
+    {
+        public Func<CancellationToken, SyncTask<Tuple<bool, NormalInventoryItem>>> MethodReadStashItem { get; set; }
+        public Func<CancellationToken, SyncTask<Tuple<bool, InventSlotItem>>> MethodReadInventoryItem { get; set; }
+        public Vector2 CraftingPosition { get; set; }
+        public List<CraftingStep> CraftingSteps { get; set; }
     }
 
     public class CraftingStep

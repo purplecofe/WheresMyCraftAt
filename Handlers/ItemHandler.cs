@@ -12,7 +12,7 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class ItemHandler
 {
-    public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName, CancellationToken token)
+    public static async SyncTask<bool> AsyncTryApplyOrbToSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName, CancellationToken token)
     {
         Logging.Logging.Add($"Attempting to apply orb '{orbName}' to slot '{slot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
