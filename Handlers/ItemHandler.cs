@@ -119,27 +119,6 @@ public static class ItemHandler
         }
     }
 
-    public static bool HasCorrectMods(Entity item)
-    {
-        item.TryGetComponent<Mods>(out var modComp);
-        if (modComp == null || modComp.Address == 0)
-        {
-            return false;
-        }
-
-        switch (modComp.ItemRarity)
-        {
-            case ItemRarity.Normal:
-                return modComp.ItemMods is not {Count: >= 1};
-            case ItemRarity.Magic:
-            case ItemRarity.Rare:
-            case ItemRarity.Unique:
-                return modComp.ItemMods is {Count: > 0};
-        }
-
-        return false;
-    }
-
     public static string GetBaseNameFromItem(Entity item) => GetBaseNameFromPath(item?.Path);
 
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);

@@ -40,7 +40,8 @@ public static class InventoryHandler
                            && item.GetClientRect().Height > 0 && item.GetClientRect().Width > 0
                            && item.Item.TryGetComponent<Base>(out var baseComp)
                            && baseComp.Address != 0
-                           && ItemHandler.HasCorrectMods(item.Item))
+                           && item.Item.TryGetComponent<Base>(out var modComp)
+                           && modComp.Address != 0)
             .ToList();
 
         return items;
@@ -63,7 +64,7 @@ public static class InventoryHandler
             : null;
 
         Logging.Logging.Add(inventoryItem != null
-                ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum} and HasCorrectMods({ItemHandler.HasCorrectMods(inventoryItem.Item)})"
+                ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum})"
                 : $"TryGetInventoryItemFromSlot: InventoryItem IS NULL!",
             LogMessageType.Debug);
 
