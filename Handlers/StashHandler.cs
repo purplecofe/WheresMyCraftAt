@@ -98,11 +98,13 @@ public static class StashHandler
     {
         inventoryItem = TryGetVisibleStashInventory(out var stashContents)
             ? stashContents.FirstOrDefault(item =>
-                item.Elem.Size == Main.SpecialSlotDimensionMap[slotType] 
-                && item.IsValid 
-                && item.Item.IsValid 
-                && item.Item.TryGetComponent<Base>(out _) &&
-                item.Item.TryGetComponent<Mods>(out _))
+                item.Elem.Size == Main.SpecialSlotDimensionMap[slotType]
+                && item.IsValid
+                && item.Item.IsValid
+                && item.Item.TryGetComponent<Base>(out var baseComp)
+                && baseComp.Address != 0
+                && item.Item.TryGetComponent<Mods>(out var modComp)
+                && modComp.Address != 0)
             : null;
 
         return inventoryItem != null;
