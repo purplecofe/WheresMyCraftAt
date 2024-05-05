@@ -37,8 +37,10 @@ public static class InventoryHandler
         var items = GetInventorySlotItemsFromAnInventory(invSlot)
             .Where(item => item.Item.IsValid 
                            && item.GetClientRect().Size != Size2F.Zero 
-                           && item.Item.TryGetComponent<Base>(out _) 
-                           && item.Item.TryGetComponent<Mods>(out _))
+                           && item.Item.TryGetComponent<Base>(out var baseComp)
+                           && baseComp.Address != 0
+                           && item.Item.TryGetComponent<Mods>(out var modComp)
+                           && modComp.Address != 0)
             .ToList();
 
         return items;

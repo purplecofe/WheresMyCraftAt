@@ -22,6 +22,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
             var stopwatch = new Stopwatch(); // Stopwatch to time each step
             var lastItemAddress = long.MinValue; // Add comparison to address somehow being the same as the last sequence, issue if there is.
             var endCraft = false;
+            var catchError = false;
 
             // Log initial item
             var asyncResult = readFromInventory
@@ -39,7 +40,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 Main.Stop();
             }
 
-            while (!endCraft && currentStepIndex >= 0 && currentStepIndex < craftingBase.CraftingSteps.Count)
+            while (!endCraft && !catchError && currentStepIndex >= 0 && currentStepIndex < craftingBase.CraftingSteps.Count)
             {
                 var currentStep = craftingBase.CraftingSteps[currentStepIndex];
                 var success = false; // Defaulting success to false
@@ -127,7 +128,9 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 
                     Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
 
-                    return false;
+                    Logging.Logging.Add($"CraftingSequenceExecutor: Skipping onto the next item if there is one.", LogMessageType.Error);
+                    catchError = true;
+                    continue;
                 }
 
                 // Determine the next step based on success or failure
@@ -177,18 +180,21 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
             }
 
-            // Log item mods at the end of crafting
-            asyncResult = readFromInventory
-                ? new AsyncResult(await craftingBase.MethodReadInventoryItem(token))
-                : new AsyncResult(await craftingBase.MethodReadStashItem(token));
-
-            if (asyncResult.IsSuccess)
+            if (!catchError)
             {
-                Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
-                ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
-                if (readFromInventory)
+                // Log item mods at the end of crafting
+                asyncResult = readFromInventory
+                    ? new AsyncResult(await craftingBase.MethodReadInventoryItem(token))
+                    : new AsyncResult(await craftingBase.MethodReadStashItem(token));
+
+                if (asyncResult.IsSuccess)
                 {
-                    Main.CompletedCrafts[(int)craftingBase.CraftingPosition.Y, (int)craftingBase.CraftingPosition.X] = 1;
+                    Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
+                    ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
+                    if (readFromInventory)
+                    {
+                        Main.CompletedCrafts[(int)craftingBase.CraftingPosition.Y, (int)craftingBase.CraftingPosition.X] = 1;
+                    }
                 }
             }
         }
