@@ -119,11 +119,8 @@ public class DelayOptions
         new Vector2(1, 2),
         new Vector2(999, 1000)
     );
-    //public RangeNode<Vector2> MinMaxButtonDownUpDelayMS { get; set; } = new(
-    //    new Vector2(5, 15),
-    //    new Vector2(1, 2),
-    //    new Vector2(999, 1000)
-    //);
+
+    public RangeNode<int> AddressChangeDelayMS { get; set; } = new RangeNode<int>(20, 1, 150);
 
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
 }

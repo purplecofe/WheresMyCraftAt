@@ -64,6 +64,7 @@ public static class ElementHandler
 
                 Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.", LogMessageType.Info);
 
+                await GameHandler.AsyncWait(Main.Settings.DelayOptions.AddressChangeDelayMS, token);
                 return true;
             }
 

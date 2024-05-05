@@ -4,6 +4,7 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -121,7 +122,7 @@ public static class ItemHandler
     public static bool HasCorrectMods(Entity item)
     {
         item.TryGetComponent<Mods>(out var modComp);
-        if (modComp is not {Address: not 0})
+        if (modComp == null || modComp.Address == 0)
         {
             return false;
         }
@@ -129,11 +130,11 @@ public static class ItemHandler
         switch (modComp.ItemRarity)
         {
             case ItemRarity.Normal:
-                return modComp.ItemMods.Count < 1;
+                return modComp.ItemMods is not {Count: >= 1};
             case ItemRarity.Magic:
             case ItemRarity.Rare:
             case ItemRarity.Unique:
-                return modComp.ItemMods.Count > 0;
+                return modComp.ItemMods is {Count: > 0};
         }
 
         return false;

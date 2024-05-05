@@ -57,13 +57,13 @@ public static class InventoryHandler
     public static bool TryGetInventoryItemFromSlot(Vector2 invSlot, out InventSlotItem inventoryItem)
     {
         var items = TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1);
-        inventoryItem = items is { Count: > 0 }
+        inventoryItem = items?.Count > 0
             ? items.FirstOrDefault(item => item.Item.Address != 0 
                                            && item.InventoryPositionNum == invSlot)
             : null;
 
         Logging.Logging.Add(inventoryItem != null
-                ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum}"
+                ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum} and HasCorrectMods({ItemHandler.HasCorrectMods(inventoryItem.Item)})"
                 : $"TryGetInventoryItemFromSlot: InventoryItem IS NULL!",
             LogMessageType.Debug);
 
