@@ -127,6 +127,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     Logging.Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
 
                     Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+                    Logging.Logging.Add($"CraftingSequenceExecutor: Error Item (name:{ItemHandler.GetBaseNameFromItem(asyncResult.Entity)}, adr:{asyncResult.Address:X})", LogMessageType.Error);
 
                     Logging.Logging.Add($"CraftingSequenceExecutor: Skipping onto the next item if there is one.", LogMessageType.Error);
                     catchError = true;

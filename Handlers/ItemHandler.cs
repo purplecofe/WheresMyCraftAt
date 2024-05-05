@@ -118,6 +118,29 @@ public static class ItemHandler
         }
     }
 
+    public static bool HasCorrectMods(Entity item)
+    {
+        item.TryGetComponent<Mods>(out var modComp);
+        if (modComp is not {Address: not 0})
+        {
+            return false;
+        }
+
+        switch (modComp.ItemRarity)
+        {
+            case ItemRarity.Normal:
+                return modComp.ItemMods.Count < 1;
+            case ItemRarity.Magic:
+            case ItemRarity.Rare:
+            case ItemRarity.Unique:
+                return modComp.ItemMods.Count > 0;
+        }
+
+        return false;
+    }
+
+    public static string GetBaseNameFromItem(Entity item) => GetBaseNameFromPath(item?.Path);
+
     public static string GetBaseNameFromItem(NormalInventoryItem item) => GetBaseNameFromPath(item.Entity?.Path);
 
     public static string GetBaseNameFromItem(ServerInventory.InventSlotItem item) => GetBaseNameFromPath(item?.Item?.Path);

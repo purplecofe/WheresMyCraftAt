@@ -36,11 +36,11 @@ public static class InventoryHandler
     {
         var items = GetInventorySlotItemsFromAnInventory(invSlot)
             .Where(item => item.Item.IsValid 
-                           && item.GetClientRect().Size != Size2F.Zero 
+                           && item.GetClientRect().Size != Size2F.Zero
+                           && item.GetClientRect().Height > 0 && item.GetClientRect().Width > 0
                            && item.Item.TryGetComponent<Base>(out var baseComp)
                            && baseComp.Address != 0
-                           && item.Item.TryGetComponent<Mods>(out var modComp)
-                           && modComp.Address != 0)
+                           && ItemHandler.HasCorrectMods(item.Item))
             .ToList();
 
         return items;
@@ -58,8 +58,14 @@ public static class InventoryHandler
     {
         var items = TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1);
         inventoryItem = items is { Count: > 0 }
-            ? items.FirstOrDefault(item => item.InventoryPositionNum == invSlot)
+            ? items.FirstOrDefault(item => item.Item.Address != 0 
+                                           && item.InventoryPositionNum == invSlot)
             : null;
+
+        Logging.Logging.Add(inventoryItem != null
+                ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum}"
+                : $"TryGetInventoryItemFromSlot: InventoryItem IS NULL!",
+            LogMessageType.Debug);
 
         return inventoryItem != null;
     }

@@ -184,7 +184,20 @@ public static class ElementHandler
 
         if (inventoryItems is {Count: > 0})
         {
-            matchingElement = inventoryItems.FirstOrDefault(x => x.GetClientRectCache == item.GetClientRect());
+            matchingElement = null;
+            foreach (var x in inventoryItems)
+            {
+                if (x.Item.Address == item.Item.Address)
+                {
+                    Logging.Logging.Add($"TryGetMatchingElementFromSlotItem: Address of server item: {x.Item.Address:X} matches element item: {item.Item.Address:X}", LogMessageType.Debug);
+                    if (x.GetClientRectCache == item.GetClientRect())
+                    {
+                        Logging.Logging.Add($"TryGetMatchingElementFromSlotItem: x.GetClientRectCache.Center '{x.GetClientRectCache.Center}' matches item.GetClientRect() '{item.GetClientRect().Center}'", LogMessageType.Debug);
+                        matchingElement = x;
+                        break;
+                    }
+                }
+            }
         }
 
         return matchingElement != null;

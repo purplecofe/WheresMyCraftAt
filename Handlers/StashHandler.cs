@@ -103,8 +103,7 @@ public static class StashHandler
                 && item.Item.IsValid
                 && item.Item.TryGetComponent<Base>(out var baseComp)
                 && baseComp.Address != 0
-                && item.Item.TryGetComponent<Mods>(out var modComp)
-                && modComp.Address != 0)
+                && ItemHandler.HasCorrectMods(item.Item))
             : null;
 
         return inventoryItem != null;
