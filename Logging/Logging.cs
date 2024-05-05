@@ -21,11 +21,11 @@ public static class Logging
     public static void Render()
     {
         using var fontPush = Main.Graphics.UseCurrentFont();
-        var flags = ImGuiWindowFlags.AlwaysVerticalScrollbar;
+        var flags = ImGuiWindowFlags.None;
 
         if (Main.CurrentOperation is not null)
         {
-            flags = ImGuiWindowFlags.AlwaysVerticalScrollbar | ImGuiWindowFlags.NoInputs;
+            flags = ImGuiWindowFlags.NoInputs;
         }
 
         var isOpen = Main.Settings.Debugging.LogWindow.Value;
@@ -109,7 +109,7 @@ public static class Logging
                 }
             }
 
-            ImGui.BeginChild("LogMessages", new Vector2(0, 0), ImGuiChildFlags.Border);
+            ImGui.BeginChild("LogMessages", new Vector2(0, 0), ImGuiChildFlags.Border, ImGuiWindowFlags.AlwaysHorizontalScrollbar | ImGuiWindowFlags.AlwaysVerticalScrollbar);
 
             lock (Locker)
             {
