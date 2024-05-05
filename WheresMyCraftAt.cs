@@ -227,6 +227,11 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 
         Logging.Logging.Add("AsyncStart() method completed successfully.", LogMessageType.Info);
         Logging.Logging.LogEndCraftingStats();
+
+        if (Settings.Debugging.AutoFullLogDumpOnEnd)
+        {
+            Logging.Logging.SaveLog(Logging.Logging.CombineLogsToString(true));
+        }
         return true;
     }
 
