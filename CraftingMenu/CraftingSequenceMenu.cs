@@ -748,6 +748,12 @@ public static class CraftingSequenceMenu
                 Logging.Logging.Add($"CraftingSequenceMenu: Currency Tab Item Added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}", LogMessageType.Info);
             }
         }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.TextUnformatted("This includes inventory setup\nif an item was removed since last apply\nAPPLY AGAIN");
+            ImGui.EndTooltip();
+        }
 
         ImGui.SameLine();
 
@@ -764,8 +770,6 @@ public static class CraftingSequenceMenu
                 Main.SelectedCraftingSteps.Clear();
             }
         }
-
-        ImGui.Separator();
         ImGui.Unindent();
     }
 
@@ -801,8 +805,6 @@ public static class CraftingSequenceMenu
             ImGui.NewLine();
         }
 
-        // End of indented Section
-        ImGui.Separator();
         ImGui.Unindent();
         return;
 
