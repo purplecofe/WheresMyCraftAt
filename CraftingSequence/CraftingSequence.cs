@@ -49,13 +49,13 @@ public class CraftingSequence
             var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
             var jsonString = JsonConvert.SerializeObject(input, Formatting.Indented);
             File.WriteAllText(fullPath, jsonString);
-            Logging.Logging.Add($"Successfully saved file to {fullPath}.", Enums.WheresMyCraftAt.LogMessageType.Info);
+            Logging.Logging.LogMessage($"Successfully saved file to {fullPath}.", Enums.WheresMyCraftAt.LogMessageType.Info);
         }
         catch (Exception e)
         {
             var fullPath = Path.Combine(Main.ConfigDirectory, filePath);
 
-            Logging.Logging.Add($"Error saving file to {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"Error saving file to {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
     }
 
@@ -72,7 +72,7 @@ public class CraftingSequence
         {
             var fullPath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
 
-            Logging.Logging.Add($"Error loading file from {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"Error loading file from {fullPath}: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
     }
 
@@ -89,7 +89,7 @@ public class CraftingSequence
         }
         catch (Exception e)
         {
-            Logging.Logging.Add($"{Main.Name}: An error occurred while getting files: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"{Main.Name}: An error occurred while getting files: {e.Message}", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
 
         return fileList;

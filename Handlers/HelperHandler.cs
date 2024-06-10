@@ -1,5 +1,7 @@
 ﻿using SharpDX;
 using System;
+using System.IO;
+using System.Linq;
 using Vector2 = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt.Handlers;
@@ -7,7 +9,7 @@ namespace WheresMyCraftAt.Handlers;
 public static class HelperHandler
 {
     private const float PerlinTimeResetThreshold = 10000.0f; // Set your desired reset threshold
-    private static readonly Random random = new Random();
+    private static readonly Random random = new();
 
     private static float perlinTime; // This variable will keep track of the "time" for Perlin noise
 
@@ -51,7 +53,7 @@ public static class HelperHandler
         var dynamicShrinkPercentage = (noiseValue + 1) * 0.5f * range + floor;
         dynamicShrinkPercentage = Math.Clamp(dynamicShrinkPercentage, floor, ceiling);
 
-        Logging.Logging.Add($"Generated Perlin noise value: {noiseValue} (Dynamic shrink percentage: {dynamicShrinkPercentage})", Enums.WheresMyCraftAt.LogMessageType.Debug);
+        Logging.Logging.LogMessage($"Generated Perlin noise value: {noiseValue} (Dynamic shrink percentage: {dynamicShrinkPercentage})", Enums.WheresMyCraftAt.LogMessageType.Debug);
 
         // Calculate the shrinkage in terms of width and height
         var shrinkWidth = rect.Width * dynamicShrinkPercentage / 100f;
@@ -64,6 +66,14 @@ public static class HelperHandler
         var x = (int)(random.NextDouble() * smallerRect.Width + smallerRect.Left);
         var y = (int)(random.NextDouble() * smallerRect.Height + smallerRect.Top);
         return new Vector2(x, y);
+    }
+
+    public static string CleanWindowsString(string inputString, char replacementChar = '_')
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        return new string(inputString.Select(c => invalidChars.Contains(c)
+            ? replacementChar
+            : c).ToArray());
     }
 
     public static bool IsAddressSameCondition(long addressFirst, long addressSecond) => addressFirst == addressSecond;

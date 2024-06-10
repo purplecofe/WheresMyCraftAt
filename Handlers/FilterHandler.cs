@@ -13,63 +13,63 @@ public static class FilterHandler
 {
     //public static bool IsMatchingCondition(ItemFilter filterQuery)
     //{
-    //    Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
+    //    Logging.Logging.LogMessage("Attempting to match item with filter query.", LogMessageType.Debug);
 
     //    if (StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var item))
     //    {
     //        var isMatch = IsItemMatchingCondition(item.Item, filterQuery);
-    //        Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
+    //        Logging.Logging.LogMessage($"Item match found: {isMatch}", LogMessageType.Info);
     //        return isMatch;
     //    }
 
-    //    Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
+    //    Logging.Logging.LogMessage("No item found to match condition.", LogMessageType.Error);
     //    return false;
     //}
 
     public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery, SpecialSlot slot, CancellationToken token)
     {
-        Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
+        Logging.Logging.LogMessage("Attempting to match item with filter query.", LogMessageType.Debug);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
 
         if (asyncResult.Item1)
         {
             var isMatch = IsItemMatchingCondition(asyncResult.Item2.Item, filterQuery);
-            Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
+            Logging.Logging.LogMessage($"Item match found: {isMatch}", LogMessageType.Info);
             return (asyncResult.Item1, isMatch);
         }
 
-        Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
+        Logging.Logging.LogMessage("No item found to match condition.", LogMessageType.Error);
         return (asyncResult.Item1, false);
     }
 
     public static async SyncTask<(bool result, bool isMatch)> AsyncIsMatchingCondition(ItemFilter filterQuery, Vector2 slot, CancellationToken token)
     {
-        Logging.Logging.Add("Attempting to match item with filter query.", LogMessageType.Debug);
+        Logging.Logging.LogMessage("Attempting to match item with filter query.", LogMessageType.Debug);
         var asyncResult = await InventoryHandler.AsyncTryGetInventoryItemFromSlot(slot, token);
 
         if (asyncResult.Item1)
         {
             var isMatch = IsItemMatchingCondition(asyncResult.Item2.Item, filterQuery);
-            Logging.Logging.Add($"Item match found: {isMatch}", LogMessageType.Info);
+            Logging.Logging.LogMessage($"Item match found: {isMatch}", LogMessageType.Info);
             return (asyncResult.Item1, isMatch);
         }
 
-        Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
+        Logging.Logging.LogMessage("No item found to match condition.", LogMessageType.Error);
         return (asyncResult.Item1, false);
     }
 
     public static async SyncTask<(bool result, ItemData itemData)> AsyncRetrieveItemData(SpecialSlot slot, CancellationToken token)
     {
-        Logging.Logging.Add("Attempting to get ItemData.", LogMessageType.ItemData);
+        Logging.Logging.LogMessage("Attempting to get ItemData.", LogMessageType.ItemData);
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
 
         if (asyncResult.Item1)
         {
-            Logging.Logging.Add("ItemData found.", LogMessageType.ItemData);
+            Logging.Logging.LogMessage("ItemData found.", LogMessageType.ItemData);
             return (asyncResult.Item1, new ItemData(asyncResult.Item2.Item, Main.GameController));
         }
 
-        Logging.Logging.Add("No item found to match condition.", LogMessageType.Error);
+        Logging.Logging.LogMessage("No item found to match condition.", LogMessageType.Error);
         return (asyncResult.Item1, null);
     }
 
@@ -79,9 +79,9 @@ public static class FilterHandler
         // ItemHandler.PrintHumanModListFromItem(item);
         var itemData = GetItemData(item);
         var result = filterQuery.Matches(itemData);
-        Logging.Logging.Add($"Item match result is {result}", LogMessageType.Special);
+        Logging.Logging.LogMessage($"Item match result is {result}", LogMessageType.Special);
         return result;
     }
 
-    public static CustomItemData GetItemData(Entity item) => new CustomItemData(item, Main.GameController);
+    public static CustomItemData GetItemData(Entity item) => new(item, Main.GameController);
 }

@@ -31,12 +31,12 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 
             if (asyncResult.IsSuccess)
             {
-                Logging.Logging.Add("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
+                Logging.Logging.LogMessage("## CraftingSequenceExecutor: Starting Item", LogMessageType.ItemData);
                 ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
             }
             else
             {
-                Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+                Logging.Logging.LogMessage($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
                 Main.Stop();
             }
 
@@ -61,13 +61,13 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                             {
                                 if (lastItemAddress == currentItemAddress)
                                 {
-                                    Logging.Logging.Add($"CraftingSequenceStep: Item Address is the same as the last", LogMessageType.Special);
-                                    Logging.Logging.Add($"CraftingSequenceStep: (True) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                                    Logging.Logging.LogMessage($"CraftingSequenceStep: Item Address is the same as the last", LogMessageType.Special);
+                                    Logging.Logging.LogMessage($"CraftingSequenceStep: (True) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
                                 }
                                 else
                                 {
-                                    Logging.Logging.Add($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
-                                    Logging.Logging.Add($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
+                                    Logging.Logging.LogMessage($"CraftingSequenceStep: Item Address is not the same as the last", LogMessageType.Special);
+                                    Logging.Logging.LogMessage($"CraftingSequenceStep: (False) LastAddress[{lastItemAddress:X}], CurrentAddress[{currentItemAddress:X}].", LogMessageType.Special);
                                 }
 
                                 ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
@@ -78,12 +78,12 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     }
                     else
                     {
-                        Logging.Logging.Add($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: Couldn't get StashSpecialSlot", LogMessageType.Error);
                         Main.Stop();
                     }
 
                     // Info: Starting a new step
-                    Logging.Logging.Add($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
+                    Logging.Logging.LogMessage($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
 
                     stopwatch.Restart(); // Start timing
 
@@ -92,14 +92,14 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                         // Count how many conditions are true and check if it meets or exceeds the required count
                         success = await EvaluateConditionsAsync(currentStep, token);
 
-                        Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
                     }
                     else
                     {
                         // Execute the method if no prior conditional check or if it's not applicable
                         var methodResult = await currentStep.Method(token);
 
-                        Logging.Logging.Add($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
                     }
 
                     if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
@@ -107,29 +107,29 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                         // Count how many conditions are true and check if it meets or exceeds the required count
                         success = await EvaluateConditionsAsync(currentStep, token);
 
-                        Logging.Logging.Add($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
                     }
 
                     if (currentStep.AutomaticSuccess)
                     {
                         success = true; // Override success if AutomaticSuccess is true
-                        Logging.Logging.Add($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
                     }
 
                     stopwatch.Stop(); // Stop timing after the step is executed
 
                     // Profiler: Time taken for step execution
-                    Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+                    Logging.Logging.LogMessage($"CraftingSequenceStep: Step [{currentStepIndex + 1}] completed in {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
                     previousStep = currentStep;
                 }
                 catch (Exception ex)
                 {
-                    Logging.Logging.Add($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
+                    Logging.Logging.LogMessage($"CraftingSequenceExecutor: Exception caught while executing step {currentStepIndex + 1}:\n{ex}", LogMessageType.Error);
 
-                    Logging.Logging.Add($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
-                    Logging.Logging.Add($"CraftingSequenceExecutor: Error Item (name:{ItemHandler.GetBaseNameFromItem(asyncResult.Entity)}, adr:{asyncResult.Address:X})", LogMessageType.Error);
+                    Logging.Logging.LogMessage($"CraftingSequenceStep: Step [{currentStepIndex + 1}] failed after {stopwatch.ElapsedMilliseconds} ms", LogMessageType.Profiler);
+                    Logging.Logging.LogMessage($"CraftingSequenceExecutor: Error Item (name:{ItemHandler.GetBaseNameFromItem(asyncResult.Entity)}, adr:{asyncResult.Address:X})", LogMessageType.Error);
 
-                    Logging.Logging.Add($"CraftingSequenceExecutor: Skipping onto the next item if there is one.", LogMessageType.Error);
+                    Logging.Logging.LogMessage($"CraftingSequenceExecutor: Skipping onto the next item if there is one.", LogMessageType.Error);
                     catchError = true;
                     continue;
                 }
@@ -139,7 +139,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 {
                     UpdateOperationStepsDictionary(currentStepIndex, true);
 
-                    Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
+                    Logging.Logging.LogMessage($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
 
                     switch (currentStep.SuccessAction)
                     {
@@ -158,7 +158,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 {
                     UpdateOperationStepsDictionary(currentStepIndex, false);
 
-                    Logging.Logging.Add($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
+                    Logging.Logging.LogMessage($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
 
                     switch (currentStep.FailureAction)
                     {
@@ -175,7 +175,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 }
 
                 // Info: Next step to be executed
-                Logging.Logging.Add(currentStepIndex < craftingBase.CraftingSteps.Count - 1 // Check if it's not the last step
+                Logging.Logging.LogMessage(currentStepIndex < craftingBase.CraftingSteps.Count - 1 // Check if it's not the last step
                     ? $"CraftingSequenceStep: Next step is [{currentStepIndex + 1}]"
                     // If it's the last step, you might want to log a different message or nothing at all
                     : "CraftingSequenceStep: Reached the last step in the sequence.", LogMessageType.Special);
@@ -190,7 +190,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 
                 if (asyncResult.IsSuccess)
                 {
-                    Logging.Logging.Add("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
+                    Logging.Logging.LogMessage("## CraftingSequenceExecutor: End Item", LogMessageType.ItemData);
                     ItemHandler.PrintHumanModListFromItem(asyncResult.Entity);
                     if (readFromInventory)
                     {
@@ -202,7 +202,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
         
 
         // Info: Sequence completed successfully
-        Logging.Logging.Add("CraftingSequenceExecutor: Sequence execution completed successfully.", LogMessageType.Special);
+        Logging.Logging.LogMessage("CraftingSequenceExecutor: Sequence execution completed successfully.", LogMessageType.Special);
 
         return true;
 
@@ -217,7 +217,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
 
                 if (!trueCount.result)
                 {
-                    Logging.Logging.Add("EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping", LogMessageType.Error);
+                    Logging.Logging.LogMessage("EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping", LogMessageType.Error);
 
                     Main.Stop();
                 }
@@ -227,24 +227,24 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     case ConditionGroup.AND:
                         andResult &= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
-                        Logging.Logging.Add($"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
+                        Logging.Logging.LogMessage($"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
 
                         break;
                     case ConditionGroup.OR:
                         orResult |= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
 
-                        Logging.Logging.Add($"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
+                        Logging.Logging.LogMessage($"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
 
                         break;
                     case ConditionGroup.NOT:
                         if (trueCount.trueCount > 0)
                         {
-                            Logging.Logging.Add("NOT Group Result: False (At least one condition is true)", LogMessageType.Evaluation);
+                            Logging.Logging.LogMessage("NOT Group Result: False (At least one condition is true)", LogMessageType.Evaluation);
 
                             return false;
                         }
 
-                        Logging.Logging.Add("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
+                        Logging.Logging.LogMessage("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
 
                         break;
                 }
@@ -254,12 +254,12 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     continue;
                 }
 
-                Logging.Logging.Add("Exiting early due to AND group result being false", LogMessageType.Evaluation);
+                Logging.Logging.LogMessage("Exiting early due to AND group result being false", LogMessageType.Evaluation);
                 return false;
             }
 
             var combinedResult = andResult || orResult;
-            Logging.Logging.Add($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
+            Logging.Logging.LogMessage($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
             return combinedResult;
         }
 

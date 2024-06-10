@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
@@ -16,7 +17,7 @@ namespace WheresMyCraftAt.Logging;
 public static class Logging
 {
     private static readonly object Locker = new();
-    public static List<DebugMsgDescription> MessagesList = new(24);
+    public static List<DebugMsgDescription> MessagesList = [];
 
     public static void Render()
     {
@@ -85,7 +86,7 @@ public static class Logging
 
                 if (!Directory.Exists(fullPath))
                 {
-                    Add("Unable to open log directory because it does not exist.", LogMessageType.Error);
+                    LogMessage("Unable to open log directory because it does not exist.", LogMessageType.Error);
                 }
                 else
                 {
@@ -95,7 +96,7 @@ public static class Logging
                         Arguments = fullPath
                     });
 
-                    Add("Opened log directory in explorer.", LogMessageType.Info);
+                    LogMessage("Opened log directory in explorer.", LogMessageType.Info);
                 }
             }
 
@@ -115,14 +116,14 @@ public static class Logging
             {
                 foreach (var msg in MessagesList.Where(msg => msg != null))
                 {
-                    var logType = Main.Settings.Debugging.LogMessageFilters[msg.LogType];
+                    var (enabled, color) = Main.Settings.Debugging.LogMessageFilters[msg.LogType];
 
-                    if (!logType.enabled)
+                    if (!enabled)
                     {
                         continue;
                     }
 
-                    ImGui.PushStyleColor(ImGuiCol.Text, logType.color.ToImguiVec4());
+                    ImGui.PushStyleColor(ImGuiCol.Text, color.ToImguiVec4());
                     ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
                     ImGui.PopStyleColor();
                 }
@@ -142,8 +143,14 @@ public static class Logging
         Main.Settings.Debugging.LogWindow.Value = isOpen;
     }
 
-    public static void Add(string msg, LogMessageType messageType)
+    public static void LogMessage(string msg, LogMessageType messageType)
     {
+        if (msg == null)
+        {
+            DebugWindow.LogError("LogMessage error: msg is null");
+            return;
+        }
+
         try
         {
             var color = Main.Settings.Debugging.LogMessageFilters[messageType].color;
@@ -167,7 +174,7 @@ public static class Logging
         }
         catch (Exception e)
         {
-            DebugWindow.LogError($"{nameof(DebugWindow)} -> {e}");
+            DebugWindow.LogError($"{nameof(Logging)} -> {e}");
         }
     }
 
@@ -175,88 +182,123 @@ public static class Logging
     {
         try
         {
-            var fullPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
+            var lastSelected = Main.Settings.NonUserData.CraftingSequenceLastSelected;
+            var fullPath = Path.Combine(Main.ConfigDirectory,
+                "SavedLogs",
+                !string.IsNullOrEmpty(lastSelected)
+                    ? HelperHandler.CleanWindowsString(lastSelected)
+                    : "Unknown");
+
             Directory.CreateDirectory(fullPath);
-            var filename = $"Log_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+            var filename = $"{DateTime.Now:dd-MM-yyyy__HH-mm-ss}__{(Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab ? "Inventory" : "Stash")}.txt";
             var fullFilePath = Path.Combine(fullPath, filename);
             File.WriteAllLines(fullFilePath, input);
-            Add($"Successfully saved file to {fullFilePath}.", LogMessageType.Info);
+            LogMessage($"Successfully saved file to {fullFilePath}.", LogMessageType.Info);
         }
         catch (Exception e)
         {
-            var errorPath = Path.Combine(Main.ConfigDirectory, "SavedLogs");
-            Add($"Error saving file to {errorPath}: {e.Message}", LogMessageType.Error);
+            var lastSelected = Main.Settings.NonUserData.CraftingSequenceLastSelected;
+            var errorPath = Path.Combine(Main.ConfigDirectory,
+                "SavedLogs",
+                !string.IsNullOrEmpty(lastSelected)
+                    ? HelperHandler.CleanWindowsString(lastSelected)
+                    : "Unknown");
+
+            LogMessage($"Error saving file to {errorPath}: {e.Message}", LogMessageType.Error);
         }
     }
 
     public static void LogEndCraftingStats()
     {
         const LogMessageType messageType = LogMessageType.EndSessionStats;
-        Add("-----------", messageType);
-        Add("Total Items Applied Successfully:", messageType);
-        var maxItemNameLength = Main.CurrentOperationUsedItemsList.Keys.Max(k => k.Length);
 
-        foreach (var itemUsed in Main.CurrentOperationUsedItemsList)
+        LogTotalItemsAppliedSuccessfully();
+        LogTotalStepsRun();
+        LogSuccessfulCraftSlots();
+
+        AddSeparator();
+
+        void AddSeparator()
         {
-            var paddedItemName = itemUsed.Key.PadRight(maxItemNameLength);
-            Add($"{paddedItemName}: {itemUsed.Value}", messageType);
+            LogMessage("-----------", messageType);
         }
 
-        Add("-----------", messageType);
-        Add("Total Steps Run:", LogMessageType.EndSessionStats);
-
-        if (Main.CurrentOperationStepCountList.Count != 0)
+        void LogTotalItemsAppliedSuccessfully()
         {
+            AddSeparator();
+            LogMessage("Total Items Applied Successfully:", messageType);
+            var maxItemNameLength = Main.CurrentOperationUsedItemsList.Keys.Max(k => k.Length);
+
+            foreach (var itemUsed in Main.CurrentOperationUsedItemsList)
+            {
+                var paddedItemName = itemUsed.Key.PadRight(maxItemNameLength);
+                LogMessage($"{paddedItemName}: {itemUsed.Value}", messageType);
+            }
+        }
+
+        void LogTotalStepsRun()
+        {
+            AddSeparator();
+            LogMessage("Total Steps Run:", messageType);
+
+            if (Main.CurrentOperationStepCountList.Count == 0) return;
             var sortedStepCountList = Main.CurrentOperationStepCountList.OrderBy(x => x.Key).ToList();
+            var maxLengths = CalculateMaxLengths(sortedStepCountList);
 
+            foreach (var (key, stepCount) in sortedStepCountList)
+            {
+                var formattedStepDetails = FormatStepDetails(key, stepCount, maxLengths);
+                LogMessage(formattedStepDetails, messageType);
+            }
+        }
+
+        (int maxTitleLength, int maxPassLength, int maxFailLength, int maxTotalLength) CalculateMaxLengths(
+            IEnumerable<KeyValuePair<int, (int passCount, int failCount, int totalCount)>> sortedStepCountList)
+        {
             var maxTitleLength = sortedStepCountList.Max(s => $"STEP [{s.Key + 1}] ".Length + GetStepActionTitle(s.Key).Length);
-
             var maxPassLength = sortedStepCountList.Max(s => s.Value.passCount.ToString().Length);
             var maxFailLength = sortedStepCountList.Max(s => s.Value.failCount.ToString().Length);
             var maxTotalLength = sortedStepCountList.Max(s => s.Value.totalCount.ToString().Length);
 
-            foreach (var (key, (passCount, failCount, totalCount)) in sortedStepCountList)
-            {
-                var stepTitleLine = $"STEP [{key + 1}] {GetStepActionTitle(key)}".PadRight(maxTitleLength);
-                var passLine = $": (pass:{passCount.ToString().PadLeft(maxPassLength)}, ";
-                var failLine = $"fail:{failCount.ToString().PadLeft(maxFailLength)}, ";
-                var totalLine = $"total:{totalCount.ToString().PadLeft(maxTotalLength)})";
-                var formattedStepDetails = stepTitleLine + passLine + failLine + totalLine;
-                Add(formattedStepDetails, messageType);
-            }
+            return (maxTitleLength, maxPassLength, maxFailLength, maxTotalLength);
         }
 
-        Add("-----------", LogMessageType.EndSessionStats);
-        if (Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab)
+        string FormatStepDetails(int key, (int passCount, int failCount, int totalCount) stepCount, (int maxTitleLength, int maxPassLength, int maxFailLength, int maxTotalLength) maxLengths)
         {
-            Add("Successful Craft Slots", LogMessageType.EndSessionStats);
+            var (maxTitleLength, maxPassLength, maxFailLength, maxTotalLength) = maxLengths;
+
+            var stepTitleLine = $"STEP [{key + 1}] {GetStepActionTitle(key)}".PadRight(maxTitleLength);
+            var passLine = $": (pass:{stepCount.passCount.ToString().PadLeft(maxPassLength)}, ";
+            var failLine = $"fail:{stepCount.failCount.ToString().PadLeft(maxFailLength)}, ";
+            var totalLine = $"total:{stepCount.totalCount.ToString().PadLeft(maxTotalLength)})";
+
+            return stepTitleLine + passLine + failLine + totalLine;
+        }
+
+        void LogSuccessfulCraftSlots()
+        {
+            if (!Main.Settings.RunOptions.CraftInventoryInsteadOfCurrencyTab) return;
+
+            AddSeparator();
+            LogMessage("Successful Craft Slots", messageType);
 
             for (var row = 0; row < 5; row++)
             {
                 var text = "";
                 for (var col = 0; col < 12; col++)
                 {
-                    if (Main.CompletedCrafts[row, col] == 1)
-                    {
-                        text += "[X]";
-                    }
-                    else
-                    {
-                        text += "[ ]";
-                    }
+                    text += Main.CompletedCrafts[row, col] == 1
+                        ? "[X]"
+                        : "[ ]";
 
-                    if (col < 11)
-                    {
-                        text += ",";
-                    }
+                    if (col < 11) text += ",";
                 }
 
-                Add(text, LogMessageType.EndSessionStats);
+                LogMessage(text, messageType);
             }
-
-            Add("-----------", LogMessageType.EndSessionStats);
         }
-        static string GetStepActionTitle(int key)
+
+        string GetStepActionTitle(int key)
         {
             var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];
 

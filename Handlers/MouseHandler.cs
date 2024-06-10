@@ -27,7 +27,7 @@ public static class MouseHandler
 
                 if (tryGetInputController is null)
                 {
-                    Logging.Logging.Add($"{Main.Name}: Failed to get Input Controller. Have you installed InputHumanizer?", Enums.WheresMyCraftAt.LogMessageType.Error);
+                    Logging.Logging.LogMessage($"{Main.Name}: Failed to get Input Controller. Have you installed InputHumanizer?", Enums.WheresMyCraftAt.LogMessageType.Error);
 
                     Main.Stop();
                     return false;
@@ -42,7 +42,7 @@ public static class MouseHandler
                 {
                     if (!await _inputController.MoveMouse(newPos, token))
                     {
-                        Logging.Logging.Add($"InputHumanizerMoveMouse: Failed to move mouse to desired position: {newPos}", Enums.WheresMyCraftAt.LogMessageType.Warning);
+                        Logging.Logging.LogMessage($"InputHumanizerMoveMouse: Failed to move mouse to desired position: {newPos}", Enums.WheresMyCraftAt.LogMessageType.Warning);
                     }
                 }
 
@@ -53,7 +53,7 @@ public static class MouseHandler
                     continue;
                 }
 
-                Logging.Logging.Add($"InputHumanizerMoveMouse: Mouse ended up in position: {GetCurrentMousePosition()}", Enums.WheresMyCraftAt.LogMessageType.Info);
+                Logging.Logging.LogMessage($"InputHumanizerMoveMouse: Mouse ended up in position: {GetCurrentMousePosition()}", Enums.WheresMyCraftAt.LogMessageType.Info);
 
                 return true;
             }
@@ -68,12 +68,12 @@ public static class MouseHandler
 
     public static async SyncTask<bool> AsyncSetMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
     {
-        Logging.Logging.Add($"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => SetCursorPositionAction(position, applyOffset), () => IsMouseInPositionCondition(position),
             Main.Settings.DelayOptions.ActionTimeoutInSeconds, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
 
-        Logging.Logging.Add($"Mouse position check result: {result} (Desired position: {position})", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Mouse position check result: {result} (Desired position: {position})", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return result;
     }
@@ -83,21 +83,21 @@ public static class MouseHandler
 
     public static async SyncTask<bool> AsyncMoveMouse(Vector2N position, bool applyOffset, CancellationToken token)
     {
-        Logging.Logging.Add($"Moving mouse to position {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Moving mouse to position {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var normalizedPosition = NormalizePosition(position);
         // uncomment to enable InputHumanizer and comment line under.
         //var result = await AsyncInputHumanizerMoveMouse(normalizedPosition, applyOffset, token);
         var result = await AsyncSetMouseInPlace(normalizedPosition, applyOffset, token);
 
-        Logging.Logging.Add($"Mouse move result: {result} (Target position: {normalizedPosition})", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Mouse move result: {result} (Target position: {normalizedPosition})", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return result;
     }
 
-    public static Vector2N GetCurrentMousePosition() => new Vector2N(Main.GameController.IngameState.MousePosX, Main.GameController.IngameState.MousePosY);
+    public static Vector2N GetCurrentMousePosition() => new(Main.GameController.IngameState.MousePosX, Main.GameController.IngameState.MousePosY);
 
-    public static Vector2N GetRelativeWinPos(Vector2N position) => new Vector2N(position.X + Main.ClickWindowOffset.X, position.Y + Main.ClickWindowOffset.Y);
+    public static Vector2N GetRelativeWinPos(Vector2N position) => new(position.X + Main.ClickWindowOffset.X, position.Y + Main.ClickWindowOffset.Y);
 
     public static bool IsMouseInPositionCondition(Vector2N position) => GetCurrentMousePosition() == position;
 

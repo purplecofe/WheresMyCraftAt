@@ -18,11 +18,11 @@ public static class InventoryHandler
 {
     public static async SyncTask<bool> AsyncWaitForInventoryOpen(CancellationToken token, int timeout = 2)
     {
-        Logging.Logging.Add("Waiting for inventory to open.", LogMessageType.Info);
+        Logging.Logging.LogMessage("Waiting for inventory to open.", LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsInventoryPanelOpenCondition, timeout, token);
 
-        Logging.Logging.Add($"Inventory open status: {result}.", LogMessageType.Info);
+        Logging.Logging.LogMessage($"Inventory open status: {result}.", LogMessageType.Info);
         return result;
     }
 
@@ -63,7 +63,7 @@ public static class InventoryHandler
                                            && item.InventoryPositionNum == invSlot)
             : null;
 
-        Logging.Logging.Add(inventoryItem != null
+        Logging.Logging.LogMessage(inventoryItem != null
                 ? $"TryGetInventoryItemFromSlot: InventoryItem is not null, position: {inventoryItem.Location.InventoryPositionNum})"
                 : $"TryGetInventoryItemFromSlot: InventoryItem IS NULL!",
             LogMessageType.Debug);
@@ -75,7 +75,7 @@ public static class InventoryHandler
     {
         InventSlotItem inventoryItem = null;
 
-        Logging.Logging.Add($"Attempting to find slot '{invSlot}' in inventory.", LogMessageType.Info);
+        Logging.Logging.LogMessage($"Attempting to find slot '{invSlot}' in inventory.", LogMessageType.Info);
 
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => TryGetInventoryItemFromSlot(invSlot, out inventoryItem),
             2,
@@ -85,12 +85,12 @@ public static class InventoryHandler
         switch (result)
         {
             case false:
-                Logging.Logging.Add($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Error);
                 Main.Stop();
                 return Tuple.Create(result, inventoryItem);
 
             default:
-                Logging.Logging.Add($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Info);
+                Logging.Logging.LogMessage($"AsyncTryGetInventoryItemFromSlot: Slot '{invSlot}' found status: {result}.", LogMessageType.Info);
                 return Tuple.Create(result, inventoryItem);
         }
     }
@@ -101,11 +101,11 @@ public static class InventoryHandler
 
         if (pickedUpItem != null)
         {
-            Logging.Logging.Add("An item is picked up.", LogMessageType.Info);
+            Logging.Logging.LogMessage("An item is picked up.", LogMessageType.Info);
         }
         else
         {
-            Logging.Logging.Add("No item is picked up.", LogMessageType.Warning);
+            Logging.Logging.LogMessage("No item is picked up.", LogMessageType.Warning);
         }
 
         return pickedUpItem != null;

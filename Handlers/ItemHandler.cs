@@ -15,42 +15,42 @@ public static class ItemHandler
 {
     public static async SyncTask<bool> AsyncTryApplyOrbToSpecialSlot(Enums.WheresMyCraftAt.SpecialSlot slot, string orbName, CancellationToken token)
     {
-        Logging.Logging.Add($"Attempting to apply orb '{orbName}' to slot '{slot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Attempting to apply orb '{orbName}' to slot '{slot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var asyncResult = await StashHandler.AsyncTryGetStashSpecialSlot(slot, token);
 
         if (!asyncResult.Item1)
         {
-            Logging.Logging.Add($"Failed to get stash slot '{slot}' for orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"Failed to get stash slot '{slot}' for orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Error);
 
             return false;
         }
 
-        Logging.Logging.Add($"Stash slot '{slot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Stash slot '{slot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
     }
     public static async SyncTask<bool> AsyncTryApplyOrbToSlot(Vector2 invSlot, string orbName, CancellationToken token)
     {
-        Logging.Logging.Add($"Attempting to apply orb '{orbName}' to slot '{invSlot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Attempting to apply orb '{orbName}' to slot '{invSlot}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var asyncResult = await InventoryHandler.AsyncTryGetInventoryItemFromSlot(invSlot, token);
 
         if (!asyncResult.Item1)
         {
-            Logging.Logging.Add($"Failed to get inventory slot '{invSlot}' for orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"Failed to get inventory slot '{invSlot}' for orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Error);
 
             return false;
         }
 
-        Logging.Logging.Add($"Inventory slot '{invSlot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage($"Inventory slot '{invSlot}' retrieved successfully. Applying orb '{orbName}'.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await asyncResult.Item2.AsyncTryApplyOrb(orbName, token);
     }
 
     public static async SyncTask<bool> AsyncWaitForItemOnCursor(CancellationToken token, int timeout = 2)
     {
-        Logging.Logging.Add("Waiting for an item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage("Waiting for an item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(InventoryHandler.IsAnItemPickedUpCondition, timeout,
             HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
@@ -58,14 +58,14 @@ public static class ItemHandler
 
     public static async SyncTask<bool> AsyncWaitForNoItemOnCursor(CancellationToken token, int timeout = 2)
     {
-        Logging.Logging.Add("Waiting for no item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage("Waiting for no item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsCursorFree, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
     }
 
     public static async SyncTask<bool> AsyncWaitForRightClickedItemOnCursor(CancellationToken token, int timeout = 2)
     {
-        Logging.Logging.Add("Waiting for a right-clicked item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
+        Logging.Logging.LogMessage("Waiting for a right-clicked item to be on the cursor.", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(IsItemRightClickedCondition, timeout, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token);
     }
@@ -75,34 +75,34 @@ public static class ItemHandler
 
     public static void PrintHumanModListFromItem(Entity item)
     {
-        Logging.Logging.Add($"-- Items Mods for: [{item.Path}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-        Logging.Logging.Add($"-- Item Address: [{item.Address:X}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-        Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.LogMessage($"-- Items Mods for: [{item.Path}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.LogMessage($"-- Item Address: [{item.Address:X}] --", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.LogMessage("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         item.TryGetComponent<Mods>(out var modsComponent);
 
         if (modsComponent != null)
         {
-            Logging.Logging.Add($"Rarity: {modsComponent.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-            Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            Logging.Logging.LogMessage($"Rarity: {modsComponent.ItemRarity}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            Logging.Logging.LogMessage("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
         else
         {
-            Logging.Logging.Add($"Could not find <Mods> Component.", Enums.WheresMyCraftAt.LogMessageType.Error);
+            Logging.Logging.LogMessage($"Could not find <Mods> Component.", Enums.WheresMyCraftAt.LogMessageType.Error);
         }
 
         var modsList = GetHumanModListFromItem(item);
 
         if (modsList.Count != 0)
         {
-            foreach (var itemMod in modsList) Logging.Logging.Add($"{itemMod}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            foreach (var itemMod in modsList) Logging.Logging.LogMessage($"{itemMod}", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
         else
         {
-            Logging.Logging.Add("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+            Logging.Logging.LogMessage("No mods found on the item.", Enums.WheresMyCraftAt.LogMessageType.ItemData);
         }
 
-        Logging.Logging.Add("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
-        Logging.Logging.Add("--", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.LogMessage("", Enums.WheresMyCraftAt.LogMessageType.ItemData);
+        Logging.Logging.LogMessage("--", Enums.WheresMyCraftAt.LogMessageType.ItemData);
     }
 
     public static void UpdateUsedItemDictionary(string currencyName)

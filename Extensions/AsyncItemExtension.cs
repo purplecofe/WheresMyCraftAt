@@ -25,21 +25,21 @@ public static class ItemExtensions
             var button = !rightClick ? Keys.LButton : Keys.RButton;
 
             // Log info about the click action
-            Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Clicking with {button} on item.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Clicking with {button} on item.", LogMessageType.Info);
 
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
-                Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
+                Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
                 {
-                    Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
+                    Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
                     return false;
                 }
             }
 
             if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
             {
-                Logging.Logging.Add("AsyncTryClick<NormalInventoryItem>: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
+                Logging.Logging.LogMessage("AsyncTryClick<NormalInventoryItem>: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
                 return false;
             }
 
@@ -59,19 +59,19 @@ public static class ItemExtensions
                     for (var loopCount = 0; loopCount < mapLoopsAllowed; loopCount++)
                     {
 
-                        Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: MouseActionType.Free when rightClick retry count {loopCount}, attempts left {maxRetriesAllowed - loopCount}", LogMessageType.Debug);
+                        Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: MouseActionType.Free when rightClick retry count {loopCount}, attempts left {maxRetriesAllowed - loopCount}", LogMessageType.Debug);
                         if (!await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token))
                         {
                             if (loopCount > maxRetriesAllowed)
                             {
-                                Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
+                                Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
                                 return false;
                             }
                             await KeyHandler.AsyncButtonPress(button, token);
                         }
                         else
                         {
-                            Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Successfully pressed {button} and got an item on the cursor.", LogMessageType.Info);
+                            Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Successfully pressed {button} and got an item on the cursor.", LogMessageType.Info);
                             booleanCheck = true;
                             break;
                         }
@@ -83,12 +83,12 @@ public static class ItemExtensions
             }
 
             // Log success of the click action
-            Logging.Logging.Add($"AsyncTryClick<NormalInventoryItem>: Click action for {button} completed successfully.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"AsyncTryClick<NormalInventoryItem>: Click action for {button} completed successfully.", LogMessageType.Info);
             return booleanCheck;
         }
         catch (OperationCanceledException e)
         {
-            Logging.Logging.Add($"AsyncTryClick: Catch!\n{e.Message}\n{e.StackTrace}", LogMessageType.Error);
+            Logging.Logging.LogMessage($"AsyncTryClick: Catch!\n{e.Message}\n{e.StackTrace}", LogMessageType.Error);
             return false;
         }
     }
@@ -103,21 +103,21 @@ public static class ItemExtensions
             var button = !rightClick ? Keys.LButton : Keys.RButton;
 
             // Log info about the click action
-            Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Clicking with {button} on item.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Clicking with {button} on item.", LogMessageType.Info);
 
             if (!await MouseHandler.AsyncMoveMouse(clickPosition, token))
             {
-                Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
+                Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Failed MouseHandler.AsyncMoveMouse, attempting ElementHandler.IsElementsSameCondition.", LogMessageType.Warning);
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
                 {
-                    Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
+                    Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Failed ElementHandler.IsElementsSameCondition after failing MouseHandler.AsyncMoveMouse.", LogMessageType.Error);
                     return false;
                 }
             }
 
             if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => ElementHandler.IsElementsSameCondition(item, ElementHandler.GetHoveredElementUiAction()), 2, HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), token))
             {
-                Logging.Logging.Add("AsyncTryClick<InventSlotItem>: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
+                Logging.Logging.LogMessage("AsyncTryClick<InventSlotItem>: Failed ElementHandler.IsElementsSameCondition.", LogMessageType.Error);
                 return false;
             }
 
@@ -137,19 +137,19 @@ public static class ItemExtensions
                     for (var loopCount = 0; loopCount < mapLoopsAllowed; loopCount++)
                     {
 
-                        Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: MouseActionType.Free when rightClick retry count {loopCount}, attempts left {maxRetriesAllowed - loopCount}", LogMessageType.Debug);
+                        Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: MouseActionType.Free when rightClick retry count {loopCount}, attempts left {maxRetriesAllowed - loopCount}", LogMessageType.Debug);
                         if (!await ItemHandler.AsyncWaitForRightClickedItemOnCursor(token))
                         {
                             if (loopCount > maxRetriesAllowed)
                             {
-                                Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
+                                Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Failed to press {button} and get an item on the cursor.", LogMessageType.Error);
                                 return false;
                             }
                             await KeyHandler.AsyncButtonPress(button, token);
                         }
                         else
                         {
-                            Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Successfully pressed {button} and got an item on the cursor.", LogMessageType.Info);
+                            Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Successfully pressed {button} and got an item on the cursor.", LogMessageType.Info);
                             booleanCheck = true;
                             break;
                         }
@@ -161,12 +161,12 @@ public static class ItemExtensions
             }
 
             // Log success of the click action
-            Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Click action for {button} completed successfully.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Click action for {button} completed successfully.", LogMessageType.Info);
             return booleanCheck;
         }
         catch (OperationCanceledException e)
         {
-            Logging.Logging.Add($"AsyncTryClick<InventSlotItem>: Catch!\n{e.Message}\n{e.StackTrace}", LogMessageType.Error);
+            Logging.Logging.LogMessage($"AsyncTryClick<InventSlotItem>: Catch!\n{e.Message}\n{e.StackTrace}", LogMessageType.Error);
             return false;
         }
     }

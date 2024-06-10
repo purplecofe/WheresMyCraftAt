@@ -21,7 +21,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
 {
     public static WheresMyCraftAt Main;
 
-    public readonly Dictionary<SpecialSlot, Vector2N> SpecialSlotDimensionMap = new Dictionary<SpecialSlot, Vector2N>
+    public readonly Dictionary<SpecialSlot, Vector2N> SpecialSlotDimensionMap = new()
     {
         {
             SpecialSlot.CurrencyTab, new Vector2N(126f, 252f)
@@ -114,7 +114,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             else
             {
                 Logging.Logging.MessagesList.Clear();
-                Logging.Logging.Add("Attempting to Start New Operation.", LogMessageType.Info);
+                Logging.Logging.LogMessage("Attempting to Start New Operation.", LogMessageType.Info);
                 CurrentOperationUsedItemsList = [];
                 CurrentOperationStepCountList = [];
                 CompletedCrafts = new int[5, 12];
@@ -154,7 +154,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             Input.KeyPressRelease(Keys.Escape);
         }
 
-        Logging.Logging.Add("Stop() has been ran.", LogMessageType.Warning);
+        Logging.Logging.LogMessage("Stop() has been ran.", LogMessageType.Warning);
         Logging.Logging.LogEndCraftingStats();
 
         if (Settings.Debugging.AutoFullLogDumpOnEnd)
@@ -182,50 +182,50 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
     {
         if (!GameHandler.IsInGameCondition())
         {
-            Logging.Logging.Add("Not in game, operation will be terminated.", LogMessageType.Error);
+            Logging.Logging.LogMessage("Not in game, operation will be terminated.", LogMessageType.Error);
 
             return false;
         }
 
         if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)))
         {
-            Logging.Logging.Add("No Crafting Steps or currency to use is null, operation will be terminated.", LogMessageType.Error);
+            Logging.Logging.LogMessage("No Crafting Steps or currency to use is null, operation will be terminated.", LogMessageType.Error);
 
             return false;
         }
 
         try
         {
-            Logging.Logging.Add("Beginning inventory and stash handling.", LogMessageType.Debug);
+            Logging.Logging.LogMessage("Beginning inventory and stash handling.", LogMessageType.Debug);
             var isInvOpen = await InventoryHandler.AsyncWaitForInventoryOpen(token);
             var isStashOpen = await StashHandler.AsyncWaitForStashOpen(token);
 
             if (!isStashOpen || !isInvOpen)
             {
-                Logging.Logging.Add("Inventory or Stash could not be opened.", LogMessageType.Warning);
+                Logging.Logging.LogMessage("Inventory or Stash could not be opened.", LogMessageType.Warning);
 
                 return false;
             }
 
-            Logging.Logging.Add("Executing crafting sequence.", LogMessageType.Debug);
+            Logging.Logging.LogMessage("Executing crafting sequence.", LogMessageType.Debug);
             var craftingSequenceExecutor = new CraftingSequenceExecutor(SelectedCraftingSteps);
 
             if (!await craftingSequenceExecutor.Execute(OperationCts.Token))
             {
-                Logging.Logging.Add("Crafting sequence execution failed.", LogMessageType.Error);
+                Logging.Logging.LogMessage("Crafting sequence execution failed.", LogMessageType.Error);
                 return false;
             }
 
-            Logging.Logging.Add("AsyncStart() Completed.", LogMessageType.Info);
+            Logging.Logging.LogMessage("AsyncStart() Completed.", LogMessageType.Info);
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add("Operation was canceled.", LogMessageType.Warning);
+            Logging.Logging.LogMessage("Operation was canceled.", LogMessageType.Warning);
             Stop();
             return false;
         }
 
-        Logging.Logging.Add("AsyncStart() method completed successfully.", LogMessageType.Info);
+        Logging.Logging.LogMessage("AsyncStart() method completed successfully.", LogMessageType.Info);
         Logging.Logging.LogEndCraftingStats();
 
         if (Settings.Debugging.AutoFullLogDumpOnEnd)

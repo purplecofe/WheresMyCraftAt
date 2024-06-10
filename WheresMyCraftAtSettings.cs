@@ -120,7 +120,7 @@ public class DelayOptions
         new Vector2(999, 1000)
     );
 
-    public RangeNode<int> AddressChangeDelayMS { get; set; } = new RangeNode<int>(20, 1, 150);
+    public RangeNode<int> AddressChangeDelayMS { get; set; } = new(20, 1, 150);
 
     public RangeNode<int> ActionTimeoutInSeconds { get; set; } = new(2, 1, 3);
 }

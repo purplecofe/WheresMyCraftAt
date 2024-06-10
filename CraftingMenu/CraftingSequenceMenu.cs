@@ -20,7 +20,7 @@ public static class CraftingSequenceMenu
 {
     private const string DeletePopup = "Delete Confirmation";
     private const string OverwritePopup = "Overwrite Confirmation";
-    private static EditorRecord Editor = new EditorRecord(-1, -1, -1);
+    private static EditorRecord Editor = new(-1, -1, -1);
 
     // Load last saved for both on initialization as its less confusing
     private static string _fileSaveName = Main.Settings.NonUserData.CraftingSequenceLastSaved;
@@ -656,7 +656,7 @@ public static class CraftingSequenceMenu
 
                                     if (filter.Queries.Count == 0)
                                     {
-                                        Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
+                                        Logging.Logging.LogMessage($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
 
                                         return;
                                     }
@@ -679,7 +679,7 @@ public static class CraftingSequenceMenu
                     }
                 }
 
-                Logging.Logging.Add($"CraftingSequenceMenu: {Main.SelectedCraftingSteps.Count} items added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}",
+                Logging.Logging.LogMessage($"CraftingSequenceMenu: {Main.SelectedCraftingSteps.Count} items added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}",
                     LogMessageType.Info);
             }
             else
@@ -725,7 +725,7 @@ public static class CraftingSequenceMenu
 
                             if (filter.Queries.Count == 0)
                             {
-                                Logging.Logging.Add($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
+                                Logging.Logging.LogMessage($"CraftingSequenceMenu: Failed to load filter from  for string: {checkKey.Name}", LogMessageType.Error);
 
                                 return;
                             }
@@ -745,7 +745,7 @@ public static class CraftingSequenceMenu
                 }
 
                 Main.SelectedCraftingSteps.Add(newCraftingBase);
-                Logging.Logging.Add($"CraftingSequenceMenu: Currency Tab Item Added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}", LogMessageType.Info);
+                Logging.Logging.LogMessage($"CraftingSequenceMenu: Currency Tab Item Added with a step count of {Main.SelectedCraftingSteps.FirstOrDefault()!.CraftingSteps.Count}", LogMessageType.Info);
             }
         }
         if (ImGui.IsItemHovered())
@@ -903,26 +903,25 @@ public static class CraftingSequenceMenu
             _files = GetFiles();
 
             // Sanitize the file name by replacing invalid characters
-            foreach (var c in Path.GetInvalidFileNameChars())
-                _fileSaveName = _fileSaveName.Replace(c, '_');
+            _fileSaveName = HelperHandler.CleanWindowsString(_fileSaveName);
 
             if (_fileSaveName == string.Empty)
             {
                 // Log error when the file name is empty
-                Logging.Logging.Add("Attempted to save file without a name.", LogMessageType.Error);
+                Logging.Logging.LogMessage("Attempted to save file without a name.", LogMessageType.Error);
             }
             else if (_files.Contains(_fileSaveName))
             {
                 ImGui.OpenPopup(OverwritePopup);
 
                 // Log info for overwrite confirmation
-                Logging.Logging.Add($"File {_fileSaveName} already exists, requesting overwrite confirmation.", LogMessageType.Info);
+                Logging.Logging.LogMessage($"File {_fileSaveName} already exists, requesting overwrite confirmation.", LogMessageType.Info);
             }
             else
             {
                 SaveFile(Main.Settings.NonUserData.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
                 // Log success when file is saved
-                Logging.Logging.Add($"File {_fileSaveName}.json saved successfully.", LogMessageType.Info);
+                Logging.Logging.LogMessage($"File {_fileSaveName}.json saved successfully.", LogMessageType.Info);
             }
         }
 
@@ -942,7 +941,7 @@ public static class CraftingSequenceMenu
                     _fileSaveName = fileName;
                     LoadFile(fileName);
                     // Log success when a file is loaded
-                    Logging.Logging.Add($"File {fileName} loaded successfully.", LogMessageType.Info);
+                    Logging.Logging.LogMessage($"File {fileName} loaded successfully.", LogMessageType.Info);
                 }
 
                 if (isSelected)
@@ -962,7 +961,7 @@ public static class CraftingSequenceMenu
 
             if (!Directory.Exists(configDir))
             {
-                Logging.Logging.Add("Unable to open config directory because it does not exist.", LogMessageType.Error);
+                Logging.Logging.LogMessage("Unable to open config directory because it does not exist.", LogMessageType.Error);
             }
             else
             {
@@ -972,7 +971,7 @@ public static class CraftingSequenceMenu
                     Arguments = configDir
                 });
 
-                Logging.Logging.Add("Opened config directory in explorer.", LogMessageType.Info);
+                Logging.Logging.LogMessage("Opened config directory in explorer.", LogMessageType.Info);
             }
         }
 
@@ -983,7 +982,7 @@ public static class CraftingSequenceMenu
                 SaveFile(Main.Settings.NonUserData.SelectedCraftingStepInputs, $"{_fileSaveName}.json");
 
                 // Log success when file is saved after overwrite confirmation
-                Logging.Logging.Add($"File {_fileSaveName}.json saved successfully after overwrite confirmation.", LogMessageType.Info);
+                Logging.Logging.LogMessage($"File {_fileSaveName}.json saved successfully after overwrite confirmation.", LogMessageType.Info);
             }
         }
 

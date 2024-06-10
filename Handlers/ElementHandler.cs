@@ -57,24 +57,24 @@ public static class ElementHandler
 
                 if (HelperHandler.IsAddressSameCondition(itemToChange, hoveredEntity))
                 {
-                    Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Item address is the same. Waiting for change.", LogMessageType.Info);
+                    Logging.Logging.LogMessage("AsyncExecuteNotSameItemWithCancellationHandling: Item address is the same. Waiting for change.", LogMessageType.Info);
 
                     continue;
                 }
 
-                Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.", LogMessageType.Info);
+                Logging.Logging.LogMessage("AsyncExecuteNotSameItemWithCancellationHandling: Item address has changed.", LogMessageType.Info);
 
                 await GameHandler.AsyncWait(Main.Settings.DelayOptions.AddressChangeDelayMS, token);
                 return true;
             }
 
-            Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Timeout occurred.", LogMessageType.Warning);
+            Logging.Logging.LogMessage("AsyncExecuteNotSameItemWithCancellationHandling: Timeout occurred.", LogMessageType.Warning);
 
             return false;
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add("AsyncExecuteNotSameItemWithCancellationHandling: Operation canceled.", LogMessageType.Info);
+            Logging.Logging.LogMessage("AsyncExecuteNotSameItemWithCancellationHandling: Operation canceled.", LogMessageType.Info);
 
             return false;
         }
@@ -88,43 +88,43 @@ public static class ElementHandler
 
             if (!item1)
             {
-                Logging.Logging.Add($"'{currencyName}' not found in stash.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"'{currencyName}' not found in stash.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             var storeAddressOfItem = item.Item.Address;
 
-            Logging.Logging.Add($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
-                Logging.Logging.Add($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await item.AsyncTryClick(false, token))
             {
-                Logging.Logging.Add("Failed to left click target item.", LogMessageType.Error);
+                Logging.Logging.LogMessage("Failed to left click target item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await AsyncExecuteNotSameItemWithCancellationHandling(storeAddressOfItem, Main.Settings.DelayOptions.ActionTimeoutInSeconds, token))
             {
-                Logging.Logging.Add($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             ItemHandler.UpdateUsedItemDictionary(currencyName);
-            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
+            Logging.Logging.LogMessage($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
             return true;
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add("Operation canceled.", LogMessageType.Info);
+            Logging.Logging.LogMessage("Operation canceled.", LogMessageType.Info);
             return false;
         }
     }
@@ -137,43 +137,43 @@ public static class ElementHandler
 
             if (!item1)
             {
-                Logging.Logging.Add($"'{currencyName}' not found in stash.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"'{currencyName}' not found in stash.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             var storeAddressOfItem = item.Item.Address;
 
-            Logging.Logging.Add($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
+            Logging.Logging.LogMessage($"Address of item before trying to modify item is {storeAddressOfItem:X}.", LogMessageType.Info);
 
             if (!await orbItem.AsyncTryClick(true, token))
             {
-                Logging.Logging.Add($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"Failed to right click orb '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await item.AsyncTryClick(false, token))
             {
-                Logging.Logging.Add("Failed to left click target item.", LogMessageType.Error);
+                Logging.Logging.LogMessage("Failed to left click target item.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             if (!await AsyncExecuteNotSameItemWithCancellationHandling(storeAddressOfItem, Main.Settings.DelayOptions.ActionTimeoutInSeconds, token))
             {
-                Logging.Logging.Add($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
+                Logging.Logging.LogMessage($"Item did not change after applying '{currencyName}'.", LogMessageType.Error);
                 Main.Stop();
                 return false;
             }
 
             ItemHandler.UpdateUsedItemDictionary(currencyName);
-            Logging.Logging.Add($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
+            Logging.Logging.LogMessage($"'{currencyName}' successfully applied to item.", LogMessageType.ItemUse);
             return true;
         }
         catch (OperationCanceledException)
         {
-            Logging.Logging.Add("Operation canceled.", LogMessageType.Info);
+            Logging.Logging.LogMessage("Operation canceled.", LogMessageType.Info);
             return false;
         }
     }
@@ -190,10 +190,10 @@ public static class ElementHandler
             {
                 if (x.Item.Address == item.Item.Address)
                 {
-                    Logging.Logging.Add($"TryGetMatchingElementFromSlotItem: Address of server item: {x.Item.Address:X} matches element item: {item.Item.Address:X}", LogMessageType.Debug);
+                    Logging.Logging.LogMessage($"TryGetMatchingElementFromSlotItem: Address of server item: {x.Item.Address:X} matches element item: {item.Item.Address:X}", LogMessageType.Debug);
                     if (x.GetClientRectCache == item.GetClientRect())
                     {
-                        Logging.Logging.Add($"TryGetMatchingElementFromSlotItem: x.GetClientRectCache.Center '{x.GetClientRectCache.Center}' matches item.GetClientRect() '{item.GetClientRect().Center}'", LogMessageType.Debug);
+                        Logging.Logging.LogMessage($"TryGetMatchingElementFromSlotItem: x.GetClientRectCache.Center '{x.GetClientRectCache.Center}' matches item.GetClientRect() '{item.GetClientRect().Center}'", LogMessageType.Debug);
                         matchingElement = x;
                         break;
                     }
