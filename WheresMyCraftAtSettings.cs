@@ -135,6 +135,9 @@ public class DebugOptions
     public ToggleNode PrintTopLeft { get; set; } = new(true);
     public RangeNode<int> PrintLingerTime { get; set; } = new(5, 0, 20);
     public ToggleNode AutoFullLogDumpOnEnd { get; set; } = new(true);
+
+    [JsonIgnore]
+    public ToggleNode InspectCraftedItem { get; set; } = new(false);
 }
 
 [Submenu(CollapsedByDefault = true)]

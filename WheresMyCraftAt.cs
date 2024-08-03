@@ -135,6 +135,12 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             TaskUtils.RunOrRestart(ref CurrentOperation, () => null);
         }
 
+        if (Settings.Debugging.InspectCraftedItem &&
+            StashHandler.TryGetStashSpecialSlot(SpecialSlot.CurrencyTab, out var item))
+        {
+            GameController.InspectObject(FilterHandler.GetItemData(item.Item), "Crafter item data");
+        }
+
         Logging.Logging.Render();
     }
 
