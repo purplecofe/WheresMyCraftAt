@@ -1,0 +1,95 @@
+[
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": true,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 1,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 2,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Check if we have 2 of our wanted mods",
+            "Value": "(\n\t(\n\t    ModsInfo.ExplicitMods.Any(x =>\n\t        new[] \n\t        { \n\t            \"FireCritMultiplier\", // GameStat.FireCriticalStrikeMultiplier\n\t            \"ColdCritMultiplier\", // GameStat.ColdCriticalStrikeMultiplier\n\t            \"LightningCritMultiplier\",// GameStat.LightningCriticalStrikeMultiplier\n\t            \"EnergyShieldJewel\", // GameStat.MaximumEnergyShieldPct\n\t            \"PercentIncreasedLifeJewel\", // GameStat.MaximumLifePct\n\t            \"PercentIncreasedManaJewel\",// GameStat.MaximumManaPct\n\t            \"FireGemCastSpeedJewel\", // GameStat.CastSpeedForFireSkillsPct\n\t            \"LightningDamageJewel\", // GameStat.LightningDamagePct\n\t            \"ShieldAttackSpeedJewel\",// GameStat.AttackSpeedPctWhileHoldingShield\n\t            \"ManaReservationEfficiencyJewel\" // GameStat.BaseManaReservationEfficiencyPct\n\t        }.Any(prefix => x.RawName == prefix)\n\t        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n\t    )\n\t    &&\n\t    ModsInfo.ExplicitMods.Any(x =>\n\t        new[] \n\t        { \n\t            \"ElementalCritMultiplier\", // GameStat.ElementalCriticalStrikeMultiplier\n\t            \"SpellCritMultiplier\", // GameStat.BaseSpellCriticalStrikeMultiplier\n\t            \"SpellCritChanceJewel\", // GameStat.SpellCriticalStrikeChancePct\n\t            \"StrengthIntelligenceJewel\", // GameStat.AdditionalStrengthAndIntelligence\n\t            \"DexterityIntelligenceJewel\",// GameStat.AdditionalDexterityAndIntelligence\n\t            \"AllResistancesJewel\", // GameStat.BaseResistAllElementsPct\n\t            \"AttackSpeedJewel\" // GameStat.AttackSpeedPct\n\t        }.Any(suffix => x.RawName == suffix)\n\t        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n\t    )\n\t)\n\t||\n\t(\n\t    HasAnyMatchingConditionSet( \n\t\t\tnew[]  \n\t\t\t{ \n\t\t\t\tnew[] \n\t\t\t\t{\n\t\t\t\t\t(ItemStats[GameStat.MaximumLifePct] >= 6),\n\t\t\t\t\t(\n\t\t\t\t\t\tItemStats[GameStat.BaseSpellCriticalStrikeMultiplier] >= 12 ||\n\t\t\t\t\t\tItemStats[GameStat.ElementalCriticalStrikeMultiplier] >= 12 ||\n\t\t\t\t\t\tItemStats[GameStat.SpellCriticalStrikeMultiplier] >= 14 ||\n\t\t\t\t\t\tItemStats[GameStat.FireDotMultiplier] >= 6 ||\n\t\t\t\t\t\tItemStats[GameStat.DamageTakenGoesToLifeOver4SecondsPct] > 6 ||\n\t\t\t\t\t\tItemStats[GameStat.BurnDamagePct] > 19 ||\n\t\t\t\t\t\tItemStats[GameStat.ChaosDotMultiplier] > 6\n\t\t\t\t\t)\n\t\t\t\t},\n\t\t\t\tnew[] \n\t\t\t\t{\n\t\t\t\t\t(ItemStats[GameStat.MaximumEnergyShieldPct] >= 6),\n\t\t\t\t\t(\n\t\t\t\t\t\tItemStats[GameStat.ElementalCriticalStrikeMultiplier] >= 12 ||\n\t\t\t\t\t\tItemStats[GameStat.AttackSpeedPct] >= 5\n\t\t\t\t\t)\n\t\t\t\t}\n\t\t\t}\n\t\t)\n\t)\n)\n// Quick and dirty dont want combos, i guess clean it up later?\n&&\n(\t\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"StrengthIntelligenceJewel\",\"LightningDamageJewel\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"DexterityIntelligenceJewel\",\"LightningDamageJewel\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"DexterityIntelligenceJewel\",\"ColdCritMultiplier\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"DexterityIntelligenceJewel\",\"FireCritMultiplier\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"AllResistancesJewel\",\"LightningDamageJewel\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"ShieldAttackSpeedJewel\",\"DexterityIntelligenceJewel\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"ShieldAttackSpeedJewel\",\"FireCritMultiplier\",}.Any(prefix => x.RawName == prefix)).Count() == 2) &&\n\t!(ModsInfo.ExplicitMods.Where(x =>new[] { \"FireGemCastSpeedJewel\",\"DexterityIntelligenceJewel\",}.Any(prefix => x.RawName == prefix)).Count() == 2)\n)"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 2,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 5,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "Check if 1 of our mods exist",
+            "Value": "(\n\t(\n\t    ModsInfo.ExplicitMods.Any(x =>\n\t        new[] \n\t        { \n\t            \"FireCritMultiplier\", // GameStat.FireCriticalStrikeMultiplier\n\t            \"ColdCritMultiplier\", // GameStat.ColdCriticalStrikeMultiplier\n\t            \"LightningCritMultiplier\",// GameStat.LightningCriticalStrikeMultiplier\n\t            \"EnergyShieldJewel\", // GameStat.MaximumEnergyShieldPct\n\t            \"PercentIncreasedLifeJewel\", // GameStat.MaximumLifePct\n\t            \"PercentIncreasedManaJewel\",// GameStat.MaximumManaPct\n\t            \"FireGemCastSpeedJewel\", // GameStat.CastSpeedForFireSkillsPct\n\t            \"LightningDamageJewel\", // GameStat.LightningDamagePct\n\t            \"ShieldAttackSpeedJewel\",// GameStat.AttackSpeedPctWhileHoldingShield\n\t            \"ManaReservationEfficiencyJewel\" // GameStat.BaseManaReservationEfficiencyPct\n\t        }.Any(prefix => x.RawName == prefix)\n\t        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n\t    )\n\t    ||\n\t    ModsInfo.ExplicitMods.Any(x =>\n\t        new[] \n\t        { \n\t            \"ElementalCritMultiplier\", // GameStat.ElementalCriticalStrikeMultiplier\n\t            \"SpellCritMultiplier\", // GameStat.BaseSpellCriticalStrikeMultiplier\n\t            \"SpellCritChanceJewel\", // GameStat.SpellCriticalStrikeChancePct\n\t            \"StrengthIntelligenceJewel\", // GameStat.AdditionalStrengthAndIntelligence\n\t            \"DexterityIntelligenceJewel\",// GameStat.AdditionalDexterityAndIntelligence\n\t            \"AllResistancesJewel\", // GameStat.BaseResistAllElementsPct\n\t            \"AttackSpeedJewel\" // GameStat.AttackSpeedPct\n\t        }.Any(suffix => x.RawName == suffix)\n\t        && x.Values[0] >= x.ValuesMinMax[0].Max - 1\n\t    )\n\t)\n\t||\n\t(\n\t    HasAnyMatchingConditionSet( \n\t\t\tnew[]  \n\t\t\t{ \n\t\t\t\tnew[] \n\t\t\t\t{\n\t\t\t\t\t(\n\t\t\t\t\t\tItemStats[GameStat.MaximumLifePct] >= 6 ||\n\t\t\t\t\t\tItemStats[GameStat.BaseSpellCriticalStrikeMultiplier] >= 12 ||\n\t\t\t\t\t\tItemStats[GameStat.ElementalCriticalStrikeMultiplier] >= 12 ||\n\t\t\t\t\t\tItemStats[GameStat.SpellCriticalStrikeMultiplier] >= 14 ||\n\t\t\t\t\t\tItemStats[GameStat.FireDotMultiplier] >= 6 ||\n\t\t\t\t\t\tItemStats[GameStat.DamageTakenGoesToLifeOver4SecondsPct] > 6 ||\n\t\t\t\t\t\tItemStats[GameStat.BurnDamagePct] > 19 ||\n\t\t\t\t\t\tItemStats[GameStat.ChaosDotMultiplier] > 6 ||\n\t\t\t\t\t\tItemStats[GameStat.MaximumEnergyShieldPct] >= 6 ||\n\t\t\t\t\t\tItemStats[GameStat.AttackSpeedPct] >= 5\n\t\t\t\t\t)\n\t\t\t\t}\n\t\t\t}\n\t\t)\n\t)\n)"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "",
+    "AutomaticSuccess": false,
+    "SuccessAction": 0,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 2,
+    "FailureActionStepIndex": 5,
+    "ConditionalGroups": [
+      {
+        "GroupType": 0,
+        "ConditionalsToBePassForSuccess": 1,
+        "Conditionals": [
+          {
+            "Name": "No more than 1 Mod",
+            "Value": "ModsInfo.HasOpenPrefix || ModsInfo.HasOpenSuffix"
+          }
+        ]
+      }
+    ],
+    "CheckType": 1
+  },
+  {
+    "CurrencyItem": "Orb of Augmentation",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  },
+  {
+    "CurrencyItem": "Orb of Alteration",
+    "AutomaticSuccess": true,
+    "SuccessAction": 2,
+    "SuccessActionStepIndex": 1,
+    "FailureAction": 1,
+    "FailureActionStepIndex": 1,
+    "ConditionalGroups": [],
+    "CheckType": 0
+  }
+]
