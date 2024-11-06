@@ -1,6 +1,5 @@
 ﻿using ExileCore;
 using ExileCore.Shared;
-using InputHumanizer.Input;
 using System;
 using System.Threading;
 using Vector2N = System.Numerics.Vector2;
@@ -10,62 +9,6 @@ namespace WheresMyCraftAt.Handlers;
 
 public static class MouseHandler
 {
-    private static IInputController _inputController;
-
-    // Testing seems fine, need to keep using this to feel confident
-    public static async SyncTask<bool> AsyncInputHumanizerMoveMouse(Vector2N position, bool applyOffset, CancellationToken token)
-    {
-        var newPos = applyOffset ? GetRelativeWinPos(position) : position;
-        using var ctsTimeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-        ctsTimeout.CancelAfter(TimeSpan.FromSeconds(Main.Settings.DelayOptions.ActionTimeoutInSeconds * 2));
-
-        try
-        {
-            while (!ctsTimeout.Token.IsCancellationRequested)
-            {
-                var tryGetInputController = Main.GameController.PluginBridge.GetMethod<Func<string, IInputController>>("InputHumanizer.TryGetInputController");
-
-                if (tryGetInputController is null)
-                {
-                    Logging.Logging.LogMessage($"{Main.Name}: Failed to get Input Controller. Have you installed InputHumanizer?", Enums.WheresMyCraftAt.LogMessageType.Error);
-
-                    Main.Stop();
-                    return false;
-                }
-
-                if ((_inputController = tryGetInputController(Main.Name)) is null)
-                {
-                    return false;
-                }
-
-                using (_inputController)
-                {
-                    if (!await _inputController.MoveMouse(newPos, token))
-                    {
-                        Logging.Logging.LogMessage($"InputHumanizerMoveMouse: Failed to move mouse to desired position: {newPos}", Enums.WheresMyCraftAt.LogMessageType.Warning);
-                    }
-                }
-
-                await GameHandler.AsyncWait(HelperHandler.GetRandomTimeInRange(Main.Settings.DelayOptions.MinMaxRandomDelayMS), ctsTimeout.Token);
-
-                if (!IsMouseInPositionCondition(position))
-                {
-                    continue;
-                }
-
-                Logging.Logging.LogMessage($"InputHumanizerMoveMouse: Mouse ended up in position: {GetCurrentMousePosition()}", Enums.WheresMyCraftAt.LogMessageType.Info);
-
-                return true;
-            }
-
-            return false;
-        }
-        catch (OperationCanceledException)
-        {
-            return false;
-        }
-    }
-
     public static async SyncTask<bool> AsyncSetMouseInPlace(Vector2N position, bool applyOffset, CancellationToken token)
     {
         Logging.Logging.LogMessage($"Checking if mouse is in the desired position at {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
@@ -86,8 +29,6 @@ public static class MouseHandler
         Logging.Logging.LogMessage($"Moving mouse to position {position} (Offset applied: {applyOffset}).", Enums.WheresMyCraftAt.LogMessageType.Info);
 
         var normalizedPosition = NormalizePosition(position);
-        // uncomment to enable InputHumanizer and comment line under.
-        //var result = await AsyncInputHumanizerMoveMouse(normalizedPosition, applyOffset, token);
         var result = await AsyncSetMouseInPlace(normalizedPosition, applyOffset, token);
 
         Logging.Logging.LogMessage($"Mouse move result: {result} (Target position: {normalizedPosition})", Enums.WheresMyCraftAt.LogMessageType.Info);

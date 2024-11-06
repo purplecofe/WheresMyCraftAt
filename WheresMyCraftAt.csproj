@@ -21,10 +21,7 @@
       <HintPath>$(exapiPackage)\GameOffsets.dll</HintPath>
       <Private>False</Private>
     </Reference>
-	  <Reference Include="InputHumanizerLib">
-		  <HintPath>$(exapiPackage)\InputHumanizerLib.dll</HintPath>
-	  </Reference>
-	  <Reference Include="InputHumanizerLib">
+	  <Reference Include="ItemFilterLibrary">
 		  <HintPath>$(exapiPackage)\ItemFilterLibrary.dll</HintPath>
 	  </Reference>
   </ItemGroup>
