@@ -124,7 +124,7 @@ public static class Logging
                     }
 
                     ImGui.PushStyleColor(ImGuiCol.Text, color.ToImguiVec4());
-                    ImGui.TextUnformatted($"{msg.Time.ToLongTimeString()}: {msg.Msg}");
+                    ImGui.TextUnformatted($"{msg.Time.ToString(Main.Settings.Styling.LogTimeFormat.Value)}: {msg.Msg}");
                     ImGui.PopStyleColor();
                 }
             }
@@ -314,13 +314,13 @@ public static class Logging
         {
             if (all)
             {
-                // Include all messages without checking LogType
-                return MessagesList.Where(msg => msg != null).Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+                return MessagesList.Where(msg => msg != null)
+                    .Select(msg => $"{msg.Time.ToString(Main.Settings.Styling.LogTimeFormat.Value)}: {msg.Msg}")
+                    .ToList();
             }
-
-            // Only include messages whose LogType is enabled
             return MessagesList.Where(msg => msg != null && Main.Settings.Debugging.LogMessageFilters.ContainsKey(msg.LogType) && Main.Settings.Debugging.LogMessageFilters[msg.LogType].enabled)
-                .Select(msg => $"{msg.Time.ToLongTimeString()}: {msg.Msg}").ToList();
+                .Select(msg => $"{msg.Time.ToString(Main.Settings.Styling.LogTimeFormat.Value)}: {msg.Msg}")
+                .ToList();
         }
     }
 

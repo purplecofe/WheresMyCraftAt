@@ -143,6 +143,7 @@ public class DebugOptions
 [Submenu(CollapsedByDefault = true)]
 public class StylingDooDads
 {
+    public TextNode LogTimeFormat { get; set; } = new TextNode("HH:mm:ss.ffff tt");
     public ToggleNode CustomMenuStyling { get; set; } = new(true);
     public RemovalButtonStyle RemovalButtons { get; set; } = new();
     public AdditionButtonStyle AdditionButtons { get; set; } = new();
