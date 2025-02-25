@@ -41,7 +41,7 @@ public static class CraftingSequenceMenu
         DrawFileOptions();
 
         if (Main.Settings.NonUserData.SelectedCraftingStepInputs.Count <= 0)
-            return;
+            Main.Settings.NonUserData.SelectedCraftingStepInputs.Add(new CraftingStepInput());
 
         DrawConfirmAndClear();
         DrawInstructions();
@@ -442,12 +442,16 @@ public static class CraftingSequenceMenu
 
                 #region Insert Step Above
 
-                using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
+                // This works even if there's only 1 step
+                using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal,
+                           Main.Settings.Styling.AdditionButtons.Hovered,
+                           Main.Settings.Styling.AdditionButtons.Active))
                 {
                     if (ImGui.Button("[^] Insert Step Above"))
                     {
                         ResetEditingIdentifiers();
                         currentSteps.Insert(stepIndex, new CraftingStepInput());
+
                         continue;
                     }
                 }
@@ -458,12 +462,18 @@ public static class CraftingSequenceMenu
 
                 ImGui.SameLine();
 
-                using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active))
+                using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal,
+                           Main.Settings.Styling.RemovalButtons.Hovered,
+                           Main.Settings.Styling.RemovalButtons.Active))
                 {
                     if (ImGui.Button("[-] Remove This Step"))
                     {
                         ResetEditingIdentifiers();
                         currentSteps.RemoveAt(stepIndex);
+
+                        if (stepIndex >= currentSteps.Count)
+                            stepIndex = Math.Max(0, currentSteps.Count - 1);
+
                         continue;
                     }
                 }
@@ -472,18 +482,17 @@ public static class CraftingSequenceMenu
 
                 #region Insert Step Below
 
-                if (stepIndex < currentSteps.Count - 1)
-                {
-                    ImGui.SameLine();
+                ImGui.SameLine();
 
-                    using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active))
+                using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal,
+                           Main.Settings.Styling.AdditionButtons.Hovered,
+                           Main.Settings.Styling.AdditionButtons.Active))
+                {
+                    if (ImGui.Button("[v] Insert Step Below"))
                     {
-                        if (ImGui.Button("[v] Insert Step Below"))
-                        {
-                            ResetEditingIdentifiers();
-                            currentSteps.Insert(stepIndex + 1, new CraftingStepInput());
-                            continue;
-                        }
+                        ResetEditingIdentifiers();
+                        currentSteps.Insert(stepIndex + 1, new CraftingStepInput());
+                        continue;
                     }
                 }
 
@@ -768,6 +777,8 @@ public static class CraftingSequenceMenu
             {
                 Main.Settings.NonUserData.SelectedCraftingStepInputs.Clear();
                 Main.SelectedCraftingSteps.Clear();
+
+                Main.Settings.NonUserData.SelectedCraftingStepInputs.Insert(0, new CraftingStepInput());
             }
         }
         ImGui.Unindent();
