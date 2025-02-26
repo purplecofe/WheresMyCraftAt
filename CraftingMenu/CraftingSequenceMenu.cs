@@ -67,7 +67,9 @@ public static class CraftingSequenceMenu
             {
                 ImGuiHelpers.SetDragDropPayload("StepIndex", stepIndex);
                 var headerText = $"STEP [{stepIndex + 1}]";
-                headerText += string.IsNullOrWhiteSpace(currentSteps[stepIndex + 1].CurrencyItem) ? " - No Currency" : $" - Use '{currentSteps[stepIndex + 1].CurrencyItem}'";
+                headerText += string.IsNullOrWhiteSpace(currentSteps[stepIndex].CurrencyItem)
+                    ? " - No Currency"
+                    : $" - Use '{currentSteps[stepIndex].CurrencyItem}'";
                 ImGui.Text($"Dragging Step '{headerText}'");
                 ImGui.EndDragDropSource();
             }
