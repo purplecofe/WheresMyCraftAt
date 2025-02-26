@@ -66,10 +66,11 @@ public static class CraftingSequenceMenu
             if (ImGui.BeginDragDropSource())
             {
                 ImGuiHelpers.SetDragDropPayload("StepIndex", stepIndex);
-                var headerText = $"STEP [{stepIndex + 1}]";
-                headerText += string.IsNullOrWhiteSpace(currentSteps[stepIndex].CurrencyItem)
-                    ? " - No Currency"
-                    : $" - Use '{currentSteps[stepIndex].CurrencyItem}'";
+                var headerText = $"STEP [{stepIndex + 1}] - ";
+                headerText += currentSteps[stepIndex + 1].CheckType == ConditionalCheckType.ConditionalCheckOnly
+                    ? "Check The Item"
+                    : $"Use '{currentSteps[stepIndex].CurrencyItem}'";
+
                 ImGui.Text($"Dragging Step '{headerText}'");
                 ImGui.EndDragDropSource();
             }
@@ -125,8 +126,8 @@ public static class CraftingSequenceMenu
     {
         ImGui.PushID(stepIndex);
         var currentStep = steps[stepIndex];
-        var headerText = $"STEP [{stepIndex + 1}]";
-        headerText += string.IsNullOrWhiteSpace(currentStep.CurrencyItem) ? " - No Currency" : $" - Use '{currentStep.CurrencyItem}'";
+        var headerText = $"STEP [{stepIndex + 1}] - ";
+        headerText += currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check The Item" : $"Use '{currentStep.CurrencyItem}'";
 
         if (ImGui.CollapsingHeader(headerText, ImGuiTreeNodeFlags.DefaultOpen))
         {
@@ -201,10 +202,7 @@ public static class CraftingSequenceMenu
                 if (s != stepIndex)
                 {
                     var description = $"Step {s + 1} - ";
-                    if (!string.IsNullOrEmpty(steps[s].CurrencyItem))
-                        description += $"Use '{steps[s].CurrencyItem}'";
-                    else
-                        description += "No Currency Specified";
+                    description += steps[s].CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check The Item" : $"Use '{steps[s].CurrencyItem}'";
 
                     stepNames.Add(description);
                 }
@@ -242,10 +240,7 @@ public static class CraftingSequenceMenu
                 if (s != stepIndex)
                 {
                     var description = $"Step {s + 1} - ";
-                    if (!string.IsNullOrEmpty(steps[s].CurrencyItem))
-                        description += $"Use '{steps[s].CurrencyItem}'";
-                    else
-                        description += "No Currency Specified";
+                    description += steps[s].CheckType == ConditionalCheckType.ConditionalCheckOnly ? "Check The Item" : $"Use '{steps[s].CurrencyItem}'";
 
                     stepNames.Add(description);
                 }
