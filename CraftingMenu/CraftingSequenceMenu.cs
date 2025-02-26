@@ -1,4 +1,5 @@
-﻿using ExileCore.Shared.Enums;
+﻿using ExileCore;
+using ExileCore.Shared.Enums;
 using ImGuiNET;
 using ItemFilterLibrary;
 using SharpDX;
@@ -55,7 +56,52 @@ public static class CraftingSequenceMenu
         var currentSteps = new List<CraftingStepInput>(Main.Settings.NonUserData.SelectedCraftingStepInputs);
 
         for (var stepIndex = 0; stepIndex < currentSteps.Count; stepIndex++)
+        {
+            ImGui.PushID("Step_" + stepIndex);
+
+            var dropTargetStart = ImGui.GetCursorPos();
+
+            ImGui.Button("=");
+
+            if (ImGui.BeginDragDropSource())
+            {
+                ImGuiHelpers.SetDragDropPayload("StepIndex", stepIndex);
+                var headerText = $"STEP [{stepIndex + 1}]";
+                headerText += string.IsNullOrWhiteSpace(currentSteps[stepIndex + 1].CurrencyItem) ? " - No Currency" : $" - Use '{currentSteps[stepIndex + 1].CurrencyItem}'";
+                ImGui.Text($"Dragging Step '{headerText}'");
+                ImGui.EndDragDropSource();
+            }
+
+            ImGui.PushStyleColor(ImGuiCol.Button, 0);
+
+            ImGui.PopStyleColor();
+
+            if (ImGui.IsItemHovered())
+                ImGui.SetTooltip("Drag me");
+
+            ImGui.SameLine();
+
             DrawSingleCraftingStep(currentSteps, ref stepIndex);
+
+            if (ImGuiHelpers.DrawAllColumnsBox("##DragTarget", dropTargetStart) && ImGui.BeginDragDropTarget())
+            {
+                var payload = ImGuiHelpers.AcceptDragDropPayload<int>("StepIndex");
+                if (payload != null && ImGui.IsMouseReleased(ImGuiMouseButton.Left))
+                {
+                    var sourceIndex = payload.Value;
+                    if (sourceIndex != stepIndex)
+                    {
+                        var draggedStep = currentSteps[sourceIndex];
+                        currentSteps.RemoveAt(sourceIndex);
+                        currentSteps.Insert(stepIndex, draggedStep);
+                    }
+                }
+
+                ImGui.EndDragDropTarget();
+            }
+
+            ImGui.PopID();
+        }
 
         Main.Settings.NonUserData.SelectedCraftingStepInputs = currentSteps;
 
@@ -77,8 +123,10 @@ public static class CraftingSequenceMenu
     {
         ImGui.PushID(stepIndex);
         var currentStep = steps[stepIndex];
+        var headerText = $"STEP [{stepIndex + 1}]";
+        headerText += string.IsNullOrWhiteSpace(currentStep.CurrencyItem) ? " - No Currency" : $" - Use '{currentStep.CurrencyItem}'";
 
-        if (ImGui.CollapsingHeader($"STEP [{stepIndex + 1}]", ImGuiTreeNodeFlags.DefaultOpen))
+        if (ImGui.CollapsingHeader(headerText, ImGuiTreeNodeFlags.DefaultOpen))
         {
             ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
             ImGui.Indent();
@@ -136,8 +184,10 @@ public static class CraftingSequenceMenu
     private static void DrawSuccessActionSection(CraftingStepInput step, List<CraftingStepInput> steps, int stepIndex)
     {
         var successActionIndex = (int)step.SuccessAction;
-        if (ImGui.Combo("##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), GetEnumLength<SuccessAction>()))
+        if (ImGui.Combo("##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), Enum.GetNames(typeof(SuccessAction)).Length))
+        {
             step.SuccessAction = (SuccessAction)successActionIndex;
+        }
 
         if (step.SuccessAction == SuccessAction.GoToStep)
         {
@@ -145,8 +195,18 @@ public static class CraftingSequenceMenu
             var dropdownIndex = step.SuccessActionStepIndex;
             var stepNames = new List<string>();
             for (var s = 0; s < steps.Count; s++)
+            {
                 if (s != stepIndex)
-                    stepNames.Add($"STEP [{s + 1}]");
+                {
+                    var description = $"Step {s + 1} - ";
+                    if (!string.IsNullOrEmpty(steps[s].CurrencyItem))
+                        description += $"Use '{steps[s].CurrencyItem}'";
+                    else
+                        description += "No Currency Specified";
+
+                    stepNames.Add(description);
+                }
+            }
 
             dropdownIndex = dropdownIndex >= stepIndex && dropdownIndex < steps.Count ? dropdownIndex - 1 : dropdownIndex;
             var comboItems = string.Join('\0', stepNames) + '\0';
@@ -165,8 +225,10 @@ public static class CraftingSequenceMenu
     private static void DrawFailureActionSection(CraftingStepInput step, List<CraftingStepInput> steps, int stepIndex)
     {
         var failureActionIndex = (int)step.FailureAction;
-        if (ImGui.Combo("##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), GetEnumLength<FailureAction>()))
+        if (ImGui.Combo("##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), Enum.GetNames(typeof(FailureAction)).Length))
+        {
             step.FailureAction = (FailureAction)failureActionIndex;
+        }
 
         if (step.FailureAction == FailureAction.GoToStep)
         {
@@ -174,8 +236,18 @@ public static class CraftingSequenceMenu
             var dropdownIndex = step.FailureActionStepIndex;
             var stepNames = new List<string>();
             for (var s = 0; s < steps.Count; s++)
+            {
                 if (s != stepIndex)
-                    stepNames.Add($"STEP [{s + 1}]");
+                {
+                    var description = $"Step {s + 1} - ";
+                    if (!string.IsNullOrEmpty(steps[s].CurrencyItem))
+                        description += $"Use '{steps[s].CurrencyItem}'";
+                    else
+                        description += "No Currency Specified";
+
+                    stepNames.Add(description);
+                }
+            }
 
             dropdownIndex = dropdownIndex >= stepIndex && dropdownIndex < steps.Count ? dropdownIndex - 1 : dropdownIndex;
             var comboItems = string.Join('\0', stepNames) + '\0';
@@ -292,9 +364,29 @@ public static class CraftingSequenceMenu
         }
 
         ImGui.SameLine();
+        if (groupIndex > 0)
+        {
+            if (ImGui.ArrowButton("Up", ImGuiDir.Up))
+            {
+                (step.ConditionalGroups[groupIndex - 1], step.ConditionalGroups[groupIndex])
+                    = (step.ConditionalGroups[groupIndex], step.ConditionalGroups[groupIndex - 1]);
+            }
+        }
+
+        ImGui.SameLine();
+        if (groupIndex < step.ConditionalGroups.Count - 1)
+        {
+            if (ImGui.ArrowButton("Down", ImGuiDir.Down))
+            {
+                (step.ConditionalGroups[groupIndex + 1], step.ConditionalGroups[groupIndex])
+                    = (step.ConditionalGroups[groupIndex], step.ConditionalGroups[groupIndex + 1]);
+            }
+        }
+
+        ImGui.SameLine();
         var groupTypeIndex = (int)step.ConditionalGroups[groupIndex].GroupType;
         ImGui.SetNextItemWidth(120);
-        if (ImGui.Combo(" Group Type", ref groupTypeIndex, Enum.GetNames(typeof(ConditionGroup)), GetEnumLength<ConditionGroup>()))
+        if (ImGui.Combo(" Group Type", ref groupTypeIndex, Enum.GetNames(typeof(ConditionGroup)), Enum.GetNames(typeof(ConditionGroup)).Length))
             step.ConditionalGroups[groupIndex].GroupType = (ConditionGroup)groupTypeIndex;
 
         using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
@@ -394,19 +486,6 @@ public static class CraftingSequenceMenu
 
     private static bool DrawStepManipulationControls(List<CraftingStepInput> steps, ref int stepIndex)
     {
-        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                   Main.Settings.Styling.AdditionButtons.Active))
-        {
-            if (ImGui.Button("[^] Insert Step Above"))
-            {
-                ResetEditingIdentifiers();
-                steps.Insert(stepIndex, new CraftingStepInput());
-                return true;
-            }
-        }
-
-        ImGui.SameLine();
-
         using (new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered,
                    Main.Settings.Styling.RemovalButtons.Active))
         {
@@ -417,19 +496,6 @@ public static class CraftingSequenceMenu
                 if (stepIndex >= steps.Count)
                     stepIndex = Math.Max(0, steps.Count - 1);
 
-                return true;
-            }
-        }
-
-        ImGui.SameLine();
-
-        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                   Main.Settings.Styling.AdditionButtons.Active))
-        {
-            if (ImGui.Button("[v] Insert Step Below"))
-            {
-                ResetEditingIdentifiers();
-                steps.Insert(stepIndex + 1, new CraftingStepInput());
                 return true;
             }
         }
