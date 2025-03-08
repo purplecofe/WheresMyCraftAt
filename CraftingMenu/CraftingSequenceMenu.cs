@@ -190,27 +190,6 @@ public static class CraftingSequenceMenu
 
     private static void DrawBranchManager(List<CraftingStepInput> steps, CraftingStepInput currentStep, int stepIndex)
     {
-        for (int branchIndex = 0; branchIndex < currentStep.Branches.Count; branchIndex++)
-        {
-            var branch = currentStep.Branches[branchIndex];
-            ImGui.PushID($"branch{branchIndex}");
-            using (RemovalButton)
-            {
-                if (ImGui.Button("Remove"))
-                {
-                    ResetEditingIdentifiers();
-                    currentStep.Branches.RemoveAt(branchIndex);
-                    branchIndex--;
-                    ImGui.PopID();
-                    continue;
-                }
-            }
-
-            ImGui.SameLine();
-            DrawBranchEditor(currentStep, branch, steps, stepIndex, branchIndex);
-            ImGui.PopID();
-        }
-
         using (AdditionButton)
         {
             if (ImGui.Button("Add Branch"))
@@ -239,6 +218,28 @@ public static class CraftingSequenceMenu
                     });
             }
         }
+        ImGui.Indent();
+        for (int branchIndex = 0; branchIndex < currentStep.Branches.Count; branchIndex++)
+        {
+            var branch = currentStep.Branches[branchIndex];
+            ImGui.PushID($"branch{branchIndex}");
+            using (RemovalButton)
+            {
+                if (ImGui.Button("Remove"))
+                {
+                    ResetEditingIdentifiers();
+                    currentStep.Branches.RemoveAt(branchIndex);
+                    branchIndex--;
+                    ImGui.PopID();
+                    continue;
+                }
+            }
+
+            ImGui.SameLine();
+            DrawBranchEditor(currentStep, branch, steps, stepIndex, branchIndex);
+            ImGui.PopID();
+        }
+        ImGui.Unindent();
     }
 
     private static void DrawMethodTypeSection(CraftingStepInput step)
