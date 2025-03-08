@@ -148,6 +148,7 @@ public class StylingDooDads
     public RemovalButtonStyle RemovalButtons { get; set; } = new();
     public AdditionButtonStyle AdditionButtons { get; set; } = new();
     public ConditionalGroupStyle ConditionGroupBackgrounds { get; set; } = new();
+    public BranchGroupStyle BranchGroup { get; set; } = new();
     public InventoryVisualizerGroupStyle InventoryVisualizer { get; set; } = new();
 }
 
@@ -181,4 +182,10 @@ public class InventoryVisualizerGroupStyle
     public ColorNode BackgroundNormal { get; set; } = new(new Color(209, 209, 209, 60));
     public ColorNode BackgroundHovered { get; set; } = new(new Color(152, 128, 34, 178));
     public ColorNode BackgroundActive { get; set; } = new(new Color(152, 128, 34, 240));
+}
+
+[Submenu]
+public class BranchGroupStyle
+{
+    public ColorNode Background { get; set; } = new(new Color(231, 255, 43, 18));
 }

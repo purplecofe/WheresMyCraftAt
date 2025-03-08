@@ -218,28 +218,35 @@ public static class CraftingSequenceMenu
                     });
             }
         }
-        ImGui.Indent();
-        for (int branchIndex = 0; branchIndex < currentStep.Branches.Count; branchIndex++)
+
+        using (new ColorBackground((ImGuiCol.ChildBg, Main.Settings.Styling.BranchGroup.Background.Value)))
         {
-            var branch = currentStep.Branches[branchIndex];
-            ImGui.PushID($"branch{branchIndex}");
-            using (RemovalButton)
+            ImGui.BeginChild("ConditionalGroup", Vector2.Zero, ImGuiChildFlags.Border | ImGuiChildFlags.AutoResizeY);
+            ImGui.Indent();
+            for (int branchIndex = 0; branchIndex < currentStep.Branches.Count; branchIndex++)
             {
-                if (ImGui.Button("Remove"))
+                var branch = currentStep.Branches[branchIndex];
+                ImGui.PushID($"branch{branchIndex}");
+                using (RemovalButton)
                 {
-                    ResetEditingIdentifiers();
-                    currentStep.Branches.RemoveAt(branchIndex);
-                    branchIndex--;
-                    ImGui.PopID();
-                    continue;
+                    if (ImGui.Button("Remove"))
+                    {
+                        ResetEditingIdentifiers();
+                        currentStep.Branches.RemoveAt(branchIndex);
+                        branchIndex--;
+                        ImGui.PopID();
+                        continue;
+                    }
                 }
+
+                ImGui.SameLine();
+                DrawBranchEditor(currentStep, branch, steps, stepIndex, branchIndex);
+                ImGui.PopID();
             }
 
-            ImGui.SameLine();
-            DrawBranchEditor(currentStep, branch, steps, stepIndex, branchIndex);
-            ImGui.PopID();
+            ImGui.Unindent();
+            ImGui.EndChild();
         }
-        ImGui.Unindent();
     }
 
     private static void DrawMethodTypeSection(CraftingStepInput step)
