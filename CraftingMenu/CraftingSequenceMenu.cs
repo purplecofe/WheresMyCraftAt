@@ -352,6 +352,9 @@ public static class CraftingSequenceMenu
 
         var failureActionIndex = (int)branch.MatchAction;
         var actionNames = Enum.GetNames<AnyAction>();
+        var maxItemWidth = actionNames.Max(name => ImGui.CalcTextSize(name).X);
+        ImGui.SetNextItemWidth(maxItemWidth + 60);
+
         if (ImGui.Combo("##MatchAction", ref failureActionIndex, actionNames, actionNames.Length))
         {
             branch.MatchAction = (AnyAction)failureActionIndex;
