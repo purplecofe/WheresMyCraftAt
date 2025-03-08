@@ -70,7 +70,7 @@ public static class CraftingSequenceMenu
             {
                 ImGuiHelpers.SetDragDropPayload("StepIndex", stepIndex);
                 var headerText = $"STEP [{stepIndex + 1}] - ";
-                var nextStep = currentSteps[stepIndex + 1];
+                var nextStep = currentSteps[stepIndex];
                 headerText += GetStepText(nextStep);
 
                 ImGui.Text($"Dragging Step '{headerText}'");
