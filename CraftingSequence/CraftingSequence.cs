@@ -1,5 +1,4 @@
 ﻿using ExileCore.PoEMemory.Elements.InventoryElements;
-using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using Newtonsoft.Json;
 using System;
@@ -18,7 +17,8 @@ public class CraftingSequence
     public enum ConditionalCheckType
     {
         ModifyThenCheck,
-        ConditionalCheckOnly
+        ConditionalCheckOnly,
+        Branch,
     }
 
     public enum ConditionGroup
@@ -28,18 +28,30 @@ public class CraftingSequence
         NOT
     }
 
+    public enum AnyAction
+    {
+        RepeatStep,
+        Restart,
+        GoToStep,
+        Continue,
+        End,
+    }
+
     public enum FailureAction
     {
         RepeatStep,
         Restart,
-        GoToStep
+        GoToStep,
+        Continue,
+        End,
     }
 
     public enum SuccessAction
     {
         Continue,
         End,
-        GoToStep
+        GoToStep,
+        RepeatStep,
     }
 
     public static void SaveFile(List<CraftingStepInput> input, string filePath)
@@ -109,10 +121,11 @@ public class CraftingSequence
         public List<ConditionalChecksGroup> ConditionalCheckGroups { get; set; } = [];
         public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
         public bool AutomaticSuccess { get; set; } = false;
-        public SuccessAction SuccessAction { get; set; }
+        public AnyAction SuccessAction { get; set; }
         public int SuccessActionStepIndex { get; set; }
-        public FailureAction FailureAction { get; set; }
+        public AnyAction FailureAction { get; set; }
         public int FailureActionStepIndex { get; set; }
+        public List<CraftingStepBranch> Branches { get; set; } = [];
     }
 
     public class ConditionalChecksGroup
@@ -123,6 +136,20 @@ public class CraftingSequence
         public List<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> ConditionalChecks { get; set; } = [];
     }
 
+    public class CraftingStepBranch
+    {
+        public List<ConditionalChecksGroup> ConditionalGroups { get; set; } = [];
+        public AnyAction MatchAction { get; set; } = AnyAction.Continue;
+        public int MatchActionStepIndex { get; set; } = 1;
+    }
+
+    public class CraftingStepBranchInput
+    {
+        public List<ConditionalChecksGroupInput> ConditionalGroups { get; set; } = [];
+        public AnyAction MatchAction { get; set; } = AnyAction.Continue;
+        public int MatchActionStepIndex { get; set; } = 1;
+    }
+
     public class CraftingStepInput
     {
         public string CurrencyItem { get; set; } = string.Empty;
@@ -131,11 +158,12 @@ public class CraftingSequence
         public int SuccessActionStepIndex { get; set; } = 1;
         public FailureAction FailureAction { get; set; } = FailureAction.Restart;
         public int FailureActionStepIndex { get; set; } = 1;
-        public List<ConditionalGroup> ConditionalGroups { get; set; } = [];
+        public List<ConditionalChecksGroupInput> ConditionalGroups { get; set; } = [];
+        public List<CraftingStepBranchInput> Branches { get; set; } = [];
         public ConditionalCheckType CheckType { get; set; } = ConditionalCheckType.ModifyThenCheck;
     }
 
-    public class ConditionalGroup
+    public class ConditionalChecksGroupInput
     {
         public ConditionGroup GroupType { get; set; } = ConditionGroup.AND;
         public int ConditionalsToBePassForSuccess { get; set; } = 1;
