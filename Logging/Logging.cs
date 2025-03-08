@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using WheresMyCraftAt.CraftingMenu;
 using WheresMyCraftAt.Handlers;
-using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 
@@ -227,7 +227,7 @@ public static class Logging
         {
             AddSeparator();
             LogMessage("Total Items Applied Successfully:", messageType);
-            var maxItemNameLength = Main.CurrentOperationUsedItemsList.Keys.Max(k => k.Length);
+            var maxItemNameLength = Main.CurrentOperationUsedItemsList.Keys.Select(k => k.Length).DefaultIfEmpty().Max();
 
             foreach (var itemUsed in Main.CurrentOperationUsedItemsList)
             {
@@ -302,9 +302,7 @@ public static class Logging
         {
             var inputs = Main.Settings.NonUserData.SelectedCraftingStepInputs[key];
 
-            return inputs.CheckType == ConditionalCheckType.ConditionalCheckOnly
-                ? "Check the item"
-                : $"Use '{inputs.CurrencyItem}'";
+            return CraftingSequenceMenu.GetStepText(inputs);
         }
     }
 
