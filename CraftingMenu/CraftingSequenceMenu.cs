@@ -110,8 +110,7 @@ public static class CraftingSequenceMenu
 
         Main.Settings.NonUserData.SelectedCraftingStepInputs = currentSteps;
 
-        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                   Main.Settings.Styling.AdditionButtons.Active))
+        using (AdditionButton)
         {
             if (ImGui.Button("[=] Add New Step"))
             {
@@ -212,29 +211,33 @@ public static class CraftingSequenceMenu
             ImGui.PopID();
         }
 
-        if (ImGui.Button("Add branch"))
+        using (AdditionButton)
         {
-            currentStep.Branches.Add(new CraftingStepBranchInput
+            if (ImGui.Button("Add branch"))
             {
-                MatchAction = AnyAction.Continue,
-                MatchActionStepIndex = 1,
-                ConditionalGroups =
-                [
-                    new ConditionalChecksGroupInput
+                currentStep.Branches.Add(
+                    new CraftingStepBranchInput
                     {
-                        ConditionalsToBePassForSuccess = 1,
-                        GroupType = ConditionGroup.AND,
-                        Conditionals =
+                        MatchAction = AnyAction.Continue,
+                        MatchActionStepIndex = 1,
+                        ConditionalGroups =
                         [
-                            new ConditionalKeys
+                            new ConditionalChecksGroupInput
                             {
-                                Name = "",
-                                Value = "",
+                                ConditionalsToBePassForSuccess = 1,
+                                GroupType = ConditionGroup.AND,
+                                Conditionals =
+                                [
+                                    new ConditionalKeys
+                                    {
+                                        Name = "",
+                                        Value = "",
+                                    }
+                                ],
                             }
                         ],
-                    }
-                ],
-            });
+                    });
+            }
         }
     }
 
@@ -427,8 +430,7 @@ public static class CraftingSequenceMenu
 
     private static void DrawAddConditionalGroupButton(CraftingStepInput step)
     {
-        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                   Main.Settings.Styling.AdditionButtons.Active))
+        using (AdditionButton)
         {
             if (ImGui.Button("Add Conditional Group"))
             {
@@ -509,8 +511,7 @@ public static class CraftingSequenceMenu
         if (ImGui.Combo(" Group Type", ref groupTypeIndex, Enum.GetNames(typeof(ConditionGroup)), Enum.GetNames(typeof(ConditionGroup)).Length))
             step.ConditionalGroups[groupIndex].GroupType = (ConditionGroup)groupTypeIndex;
 
-        using (new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                   Main.Settings.Styling.AdditionButtons.Active))
+        using (AdditionButton)
         {
             if (ImGui.Button("Add Conditional Check"))
             {
@@ -586,8 +587,7 @@ public static class CraftingSequenceMenu
         var editString = isEditing ? "Editing" : "Edit";
 
         using (isEditing
-                   ? new ColorButton(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered,
-                       Main.Settings.Styling.AdditionButtons.Active)
+                   ? AdditionButton
                    : null)
         {
             if (ImGui.Button(editString))
@@ -628,8 +628,6 @@ public static class CraftingSequenceMenu
 
         return false;
     }
-
-    private static ColorButton RemovalButton => new(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active);
 
     private static void ConditionValueEditWindow(CraftingStepInput stepInput, int stepIndex, int branchIndex, int groupIndex, int conditionalIndex)
     {
@@ -1103,5 +1101,7 @@ public static class CraftingSequenceMenu
         return isItemClicked;
     }
 
+    private static ColorButton RemovalButton => new(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active);
+    private static ColorButton AdditionButton => new(Main.Settings.Styling.AdditionButtons.Normal, Main.Settings.Styling.AdditionButtons.Hovered, Main.Settings.Styling.AdditionButtons.Active);
     private record EditorRecord(int GroupIndex, int BranchIndex, int StepIndex, int ConditionalIndex);
 }
