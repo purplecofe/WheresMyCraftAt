@@ -213,7 +213,7 @@ public static class CraftingSequenceMenu
 
         using (AdditionButton)
         {
-            if (ImGui.Button("Add branch"))
+            if (ImGui.Button("Add Branch"))
             {
                 currentStep.Branches.Add(
                     new CraftingStepBranchInput
