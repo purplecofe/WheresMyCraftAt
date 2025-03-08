@@ -44,6 +44,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
             {
                 var currentStep = craftingBase.CraftingSteps[currentStepIndex];
                 var success = false; // Defaulting success to false
+                var selectedBranchIndex = -1;
 
                 try
                 {
@@ -86,15 +87,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                     Logging.Logging.LogMessage($"CraftingSequenceStep: Executing step [{currentStepIndex + 1}]", LogMessageType.Special);
 
                     stopwatch.Restart(); // Start timing
-
-                    if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ConditionalCheckOnly)
-                    {
-                        // Count how many conditions are true and check if it meets or exceeds the required count
-                        success = await EvaluateConditionsAsync(currentStep, token);
-
-                        Logging.Logging.LogMessage($"CraftingSequenceStep: All ConditionalChecks for ConditionalCheckOnly {success}", LogMessageType.Special);
-                    }
-                    else
+                    if (currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
                     {
                         // Execute the method if no prior conditional check or if it's not applicable
                         var methodResult = await currentStep.Method(token);
@@ -102,18 +95,35 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                         Logging.Logging.LogMessage($"CraftingSequenceStep: Method result is {methodResult}", LogMessageType.Special);
                     }
 
-                    if (currentStep.ConditionalCheckGroups.Count != 0 && currentStep.CheckType == ConditionalCheckType.ModifyThenCheck)
-                    {
-                        // Count how many conditions are true and check if it meets or exceeds the required count
-                        success = await EvaluateConditionsAsync(currentStep, token);
-
-                        Logging.Logging.LogMessage($"CraftingSequenceStep: All ConditionalChecks after method are {success}", LogMessageType.Special);
-                    }
-
                     if (currentStep.AutomaticSuccess)
                     {
                         success = true; // Override success if AutomaticSuccess is true
                         Logging.Logging.LogMessage($"CraftingSequenceStep: AutomaticSuccess is {success}", LogMessageType.Special);
+                    }
+                    else if (currentStep.CheckType == ConditionalCheckType.Branch)
+                    {
+                        for (int branchIndex = 0; branchIndex < currentStep.Branches.Count; branchIndex++)
+                        {
+                            if (await EvaluateConditionsAsync(currentStep.Branches[branchIndex].ConditionalGroups, token))
+                            {
+                                Logging.Logging.LogMessage($"CraftingSequenceStep: Selected branch {branchIndex}", LogMessageType.Special);
+                                selectedBranchIndex = branchIndex;
+                                break;
+                            }
+                        }
+
+                        success = selectedBranchIndex != -1;
+                    }
+                    else if (currentStep.ConditionalCheckGroups.Count != 0)
+                    {
+                        // Count how many conditions are true and check if it meets or exceeds the required count
+                        success = await EvaluateConditionsAsync(currentStep, token);
+
+                        Logging.Logging.LogMessage($"CraftingSequenceStep: ConditionalCheck result for {currentStep.CheckType} is {success}", LogMessageType.Special);
+                    }
+                    else
+                    {
+                        // somehow 0 conditions equals automatic failure??
                     }
 
                     stopwatch.Stop(); // Stop timing after the step is executed
@@ -135,43 +145,39 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 }
 
                 // Determine the next step based on success or failure
-                if (success)
+                UpdateOperationStepsDictionary(currentStepIndex, success);
+
+                var action = currentStep.CheckType == ConditionalCheckType.Branch
+                    ? selectedBranchIndex != -1
+                        ? currentStep.Branches[selectedBranchIndex].MatchAction
+                        : AnyAction.End
+                    : success
+                        ? currentStep.SuccessAction
+                        : currentStep.FailureAction;
+
+                Logging.Logging.LogMessage($"CraftingSequenceStep: Sequence result {action}", LogMessageType.Special);
+
+                switch (action)
                 {
-                    UpdateOperationStepsDictionary(currentStepIndex, true);
-
-                    Logging.Logging.LogMessage($"CraftingSequenceStep: Sequence result {currentStep.SuccessAction}", LogMessageType.Special);
-
-                    switch (currentStep.SuccessAction)
-                    {
-                        case SuccessAction.Continue:
-                            currentStepIndex++;
-                            break;
-                        case SuccessAction.End:
-                            endCraft = true;
-                            break; // End the execution of the sequence
-                        case SuccessAction.GoToStep:
-                            currentStepIndex = currentStep.SuccessActionStepIndex;
-                            break;
-                    }
-                }
-                else
-                {
-                    UpdateOperationStepsDictionary(currentStepIndex, false);
-
-                    Logging.Logging.LogMessage($"CraftingSequenceStep: Sequence result {currentStep.FailureAction}", LogMessageType.Special);
-
-                    switch (currentStep.FailureAction)
-                    {
-                        case FailureAction.RepeatStep:
-                            // Stay on the current step
-                            break;
-                        case FailureAction.Restart:
-                            currentStepIndex = 0; // Restart from the first step
-                            break;
-                        case FailureAction.GoToStep:
-                            currentStepIndex = currentStep.FailureActionStepIndex;
-                            break;
-                    }
+                    case AnyAction.Continue:
+                        currentStepIndex++;
+                        break;
+                    case AnyAction.End:
+                        endCraft = true;
+                        break; // End the execution of the sequence
+                    case AnyAction.GoToStep:
+                        currentStepIndex = currentStep.CheckType == ConditionalCheckType.Branch
+                            ? currentStep.Branches[selectedBranchIndex].MatchActionStepIndex
+                            : success
+                                ? currentStep.SuccessActionStepIndex
+                                : currentStep.FailureActionStepIndex;
+                        break;
+                    case AnyAction.RepeatStep:
+                        // Stay on the current step
+                        break;
+                    case AnyAction.Restart:
+                        currentStepIndex = 0; // Restart from the first step
+                        break;
                 }
 
                 // Info: Next step to be executed
@@ -205,88 +211,7 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
         Logging.Logging.LogMessage("CraftingSequenceExecutor: Sequence execution completed successfully.", LogMessageType.Special);
 
         return true;
-
-        static async SyncTask<bool> EvaluateConditionsAsync(CraftingStep currentStep, CancellationToken token)
-        {
-            var andResult = true; // Start true for AND logic
-            var orResult = false; // Start false for OR logic
-
-            foreach (var group in currentStep.ConditionalCheckGroups)
-            {
-                var trueCount = await CountTrueAsync(group.ConditionalChecks, token);
-
-                if (!trueCount.result)
-                {
-                    Logging.Logging.LogMessage("EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping", LogMessageType.Error);
-
-                    Main.Stop();
-                }
-
-                switch (group.GroupType)
-                {
-                    case ConditionGroup.AND:
-                        andResult &= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
-
-                        Logging.Logging.LogMessage($"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
-
-                        break;
-                    case ConditionGroup.OR:
-                        orResult |= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
-
-                        Logging.Logging.LogMessage($"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
-
-                        break;
-                    case ConditionGroup.NOT:
-                        if (trueCount.trueCount > 0)
-                        {
-                            Logging.Logging.LogMessage("NOT Group Result: False (At least one condition is true)", LogMessageType.Evaluation);
-
-                            return false;
-                        }
-
-                        Logging.Logging.LogMessage("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
-
-                        break;
-                }
-
-                if (andResult)
-                {
-                    continue;
-                }
-
-                Logging.Logging.LogMessage("Exiting early due to AND group result being false", LogMessageType.Evaluation);
-                return false;
-            }
-
-            var combinedResult = andResult || orResult;
-            Logging.Logging.LogMessage($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
-            return combinedResult;
-        }
-
-        static async SyncTask<(bool result, int trueCount)> CountTrueAsync(IEnumerable<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> conditionalChecks, CancellationToken token)
-        {
-            var trueCount = 0;
-            var allSuccessful = true;
-
-            foreach (var condition in conditionalChecks)
-            {
-                var (result, isMatch) = await condition(token);
-
-                if (!result)
-                {
-                    allSuccessful = false;
-                    break;
-                }
-
-                if (isMatch)
-                {
-                    trueCount++;
-                }
-            }
-
-            return (allSuccessful, trueCount);
-        }
-
+        
         static void UpdateOperationStepsDictionary(int step, bool pass)
         {
             Main.CurrentOperationStepCountList ??= [];
@@ -307,5 +232,90 @@ public class CraftingSequenceExecutor(IEnumerable<CraftingBase> itemsToSequence)
                 Main.CurrentOperationStepCountList[step] = pass ? (1, 0, 1) : (0, 1, 1);
             }
         }
+    }
+
+    private static async SyncTask<bool> EvaluateConditionsAsync(CraftingStep currentStep, CancellationToken token)
+    {
+        return await EvaluateConditionsAsync(currentStep.ConditionalCheckGroups, token);
+    }
+
+    private static async SyncTask<bool> EvaluateConditionsAsync(List<ConditionalChecksGroup> groups, CancellationToken cancellationToken)
+    {
+        var andResult = true; // Start true for AND logic
+        var orResult = false; // Start false for OR logic
+
+        foreach (var group in groups)
+        {
+            var trueCount = await CountTrueAsync(group.ConditionalChecks, cancellationToken);
+
+            if (!trueCount.result)
+            {
+                Logging.Logging.LogMessage("EvaluateConditionsAsync: At some point we couldn't find our item in the slot wanted, stopping", LogMessageType.Error);
+
+                Main.Stop();
+            }
+
+            switch (group.GroupType)
+            {
+                case ConditionGroup.AND:
+                    andResult &= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
+
+                    Logging.Logging.LogMessage($"AND Group Result: {andResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
+
+                    break;
+                case ConditionGroup.OR:
+                    orResult |= trueCount.trueCount >= group.ConditionalsToBePassForSuccess;
+
+                    Logging.Logging.LogMessage($"OR Group Result: {orResult} (True Count: {trueCount.trueCount}, Required: {group.ConditionalsToBePassForSuccess})", LogMessageType.Evaluation);
+
+                    break;
+                case ConditionGroup.NOT:
+                    if (trueCount.trueCount > 0)
+                    {
+                        Logging.Logging.LogMessage("NOT Group Result: False (At least one condition is true)", LogMessageType.Evaluation);
+
+                        return false;
+                    }
+
+                    Logging.Logging.LogMessage("NOT Group Result: True (No conditions are true)", LogMessageType.Evaluation);
+
+                    break;
+            }
+
+            if (!andResult)
+            {
+                Logging.Logging.LogMessage("Exiting early due to AND group result being false", LogMessageType.Evaluation);
+                return false;
+            }
+        }
+
+        var combinedResult = andResult || orResult;
+        Logging.Logging.LogMessage($"Final Combined Result: {combinedResult}", LogMessageType.Evaluation);
+        return combinedResult;
+    }
+
+    static async SyncTask<(bool result, int trueCount)> CountTrueAsync(IEnumerable<Func<CancellationToken, SyncTask<(bool result, bool isMatch)>>> conditionalChecks,
+        CancellationToken token)
+    {
+        var trueCount = 0;
+        var allSuccessful = true;
+
+        foreach (var condition in conditionalChecks)
+        {
+            var (result, isMatch) = await condition(token);
+
+            if (!result)
+            {
+                allSuccessful = false;
+                break;
+            }
+
+            if (isMatch)
+            {
+                trueCount++;
+            }
+        }
+
+        return (allSuccessful, trueCount);
     }
 }

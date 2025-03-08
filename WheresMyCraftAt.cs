@@ -193,7 +193,7 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return false;
         }
 
-        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(x => x.CheckType != ConditionalCheckType.ConditionalCheckOnly && string.IsNullOrEmpty(x.CurrencyItem)))
+        if (Settings.NonUserData.SelectedCraftingStepInputs.Count == 0 || Settings.NonUserData.SelectedCraftingStepInputs.Any(x => x.CheckType == ConditionalCheckType.ModifyThenCheck && string.IsNullOrEmpty(x.CurrencyItem)))
         {
             Logging.Logging.LogMessage("No Crafting Steps or currency to use is null, operation will be terminated.", LogMessageType.Error);
 
