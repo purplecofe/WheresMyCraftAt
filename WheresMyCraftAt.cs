@@ -200,6 +200,13 @@ public class WheresMyCraftAt : BaseSettingsPlugin<WheresMyCraftAtSettings>
             return false;
         }
 
+        if (SelectedCraftingSteps.Count == 0)
+        {
+            Logging.Logging.LogMessage("No valid crafting steps were built (possibly due to ItemFilter compilation errors), operation will be terminated.", LogMessageType.Error);
+
+            return false;
+        }
+
         try
         {
             Logging.Logging.LogMessage("Beginning inventory and stash handling.", LogMessageType.Debug);
