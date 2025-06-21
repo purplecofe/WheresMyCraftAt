@@ -20,6 +20,7 @@ using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Vector2 = System.Numerics.Vector2;
+using Vector4 = System.Numerics.Vector4;
 
 namespace WheresMyCraftAt.CraftingMenu;
 
@@ -39,9 +40,9 @@ public static class CraftingSequenceMenu
 
     private static CoELang _coELang;
     private static string _coeImportData = string.Empty;
-    
-    // Filter compilation status cache: Key = filter value string, Value = (isCompiled, errorMessage)
-    private static Dictionary<string, (bool isCompiled, string errorMessage)> _filterCompilationCache = new();
+
+    private static readonly Dictionary<string, (bool isCompiled, string errorMessage)> _filterCompilationCache
+        = new Dictionary<string, (bool isCompiled, string errorMessage)>();
 
     private static ColorButton RemovalButton =>
         new ColorButton(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active);
@@ -364,8 +365,31 @@ public static class CraftingSequenceMenu
     private static void DrawBranchEditor(CraftingStepInput step, CraftingStepBranchInput branch, List<CraftingStepInput> steps, int stepIndex, int branchIndex)
     {
         var branchName = step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Name;
+        var branchFilterValue = step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Value;
+        var (isCompiled, errorMessage) = CheckFilterCompilation(branchFilterValue);
+
+        if (!isCompiled)
+        {
+            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2.0f);
+        }
+
         if (ImGui.InputTextWithHint("##conditionName", "Branch Name", ref branchName, 1000))
             step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Name = branchName;
+
+        if (!isCompiled)
+        {
+            ImGui.PopStyleVar();
+            ImGui.PopStyleColor();
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.BeginTooltip();
+                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "FILTER COMPILATION ERROR:");
+                ImGui.TextWrapped(errorMessage);
+                ImGui.EndTooltip();
+            }
+        }
 
         ImGui.SameLine();
         ImGui.PushID("editbutton");
@@ -594,10 +618,33 @@ public static class CraftingSequenceMenu
 
             ImGui.SameLine();
             var checkKey = step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name;
+            var filterValue = step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
+            var (isCompiled, errorMessage) = CheckFilterCompilation(filterValue);
+
+            if (!isCompiled)
+            {
+                ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2.0f);
+            }
+
             var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
             ImGui.SetNextItemWidth(availableWidth);
             if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 1000))
                 step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
+
+            if (!isCompiled)
+            {
+                ImGui.PopStyleVar();
+                ImGui.PopStyleColor();
+
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "FILTER COMPILATION ERROR:");
+                    ImGui.TextWrapped(errorMessage);
+                    ImGui.EndTooltip();
+                }
+            }
 
             ImGui.SameLine();
 
@@ -702,6 +749,12 @@ public static class CraftingSequenceMenu
 
         if (ImGui.Button("Save"))
         {
+            var oldValue = Editor.BranchIndex == -1
+                ? stepInput.ConditionalGroups[Editor.GroupIndex].Conditionals[Editor.ConditionalIndex].Value
+                : stepInput.Branches[Editor.BranchIndex].ConditionalGroups[Editor.GroupIndex].Conditionals[Editor.ConditionalIndex].Value;
+
+            InvalidateFilterCache(oldValue);
+
             if (Editor.BranchIndex == -1)
             {
                 stepInput.ConditionalGroups[Editor.GroupIndex].Conditionals[Editor.ConditionalIndex].Value = tempCondValue;
@@ -711,6 +764,7 @@ public static class CraftingSequenceMenu
                 stepInput.Branches[Editor.BranchIndex].ConditionalGroups[Editor.GroupIndex].Conditionals[Editor.ConditionalIndex].Value = tempCondValue;
             }
 
+            InvalidateFilterCache(tempCondValue);
             ResetEditingIdentifiers();
         }
 
@@ -761,6 +815,34 @@ public static class CraftingSequenceMenu
 
     private static bool IsCurrentEditorContext(int stepIndex, int branchIndex, int groupIndex, int conditionalIndex) =>
         Editor.StepIndex == stepIndex && Editor.GroupIndex == groupIndex && Editor.ConditionalIndex == conditionalIndex && Editor.BranchIndex == branchIndex;
+
+    private static (bool isCompiled, string errorMessage) CheckFilterCompilation(string filterValue)
+    {
+        if (string.IsNullOrWhiteSpace(filterValue))
+            return (true, "");
+
+        if (_filterCompilationCache.TryGetValue(filterValue, out var cachedResult))
+            return cachedResult;
+
+        var filter = ItemFilter.LoadFromString(filterValue);
+        var isCompiled = !(filter.Queries.Count == 0 || filter.Queries.All(q => q.Query.FailedToCompile));
+        var errorMessage = "";
+
+        if (!isCompiled)
+        {
+            var failedQuery = filter.Queries.FirstOrDefault(q => q.Query.FailedToCompile);
+            errorMessage = failedQuery.Query?.Error ?? "Unknown compilation error";
+        }
+
+        var result = (isCompiled, errorMessage);
+        _filterCompilationCache[filterValue] = result;
+        return result;
+    }
+
+    private static void InvalidateFilterCache(string filterValue)
+    {
+        _filterCompilationCache.Remove(filterValue);
+    }
 
     private static void ResetEditingIdentifiers()
     {
@@ -1142,6 +1224,8 @@ public static class CraftingSequenceMenu
                     _selectedFileName = fileName;
                     _fileSaveName = fileName;
                     LoadFile(fileName);
+
+                    _filterCompilationCache.Clear();
                     Logging.Logging.LogMessage($"File {fileName} loaded successfully.", LogMessageType.Info);
                 }
 
