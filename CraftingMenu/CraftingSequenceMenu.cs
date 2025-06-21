@@ -1,22 +1,25 @@
-﻿using ExileCore;
-using ExileCore.Shared.Enums;
-using ImGuiNET;
-using ItemFilterLibrary;
-using SharpDX;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
+using ExileCore;
 using ExileCore.Shared;
+using ExileCore.Shared.Enums;
+using ImGuiNET;
+using ItemFilterLibrary;
+using Newtonsoft.Json;
+using SharpDX;
+using WheresMyCraftAt.CraftingMenu.CraftofExileStructs;
 using WheresMyCraftAt.CraftingMenu.Styling;
+using WheresMyCraftAt.Extensions;
 using WheresMyCraftAt.Handlers;
 using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Vector2 = System.Numerics.Vector2;
-using WheresMyCraftAt.Extensions;
 
 namespace WheresMyCraftAt.CraftingMenu;
 
@@ -34,6 +37,10 @@ public static class CraftingSequenceMenu
     private static string tempCondValue = string.Empty;
     private static string condEditValue = string.Empty;
 
+
+    private static CoELang _coELang = null;
+    private static string _coeImportData = string.Empty;
+
     public static void Draw()
     {
         if (Main == null)
@@ -43,6 +50,7 @@ public static class CraftingSequenceMenu
             ResetEditingIdentifiers();
 
         DrawFileOptions();
+        DrawImportSettings();
 
         if (Main.Settings.NonUserData.SelectedCraftingStepInputs.Count <= 0)
             Main.Settings.NonUserData.SelectedCraftingStepInputs.Add(new CraftingStepInput());
@@ -1110,6 +1118,157 @@ public static class CraftingSequenceMenu
 
         ImGui.EndPopup();
         return isItemClicked;
+    }
+
+    private static void DrawImportSettings()
+    {
+        if (!ImGui.CollapsingHeader("Import Craft of Exile Skeleton", ImGuiTreeNodeFlags.DefaultOpen))
+            return;
+
+        ImGui.Indent();
+
+        if (ImGui.Button("Refresh CoE Lang Data"))
+        {
+            FetchNewCoeLangData();
+            LoadCoELangData();
+        }
+
+        ImGui.InputTextWithHint("##CoEImport", "Craft of Exile Export String..", ref _coeImportData, 1000000);
+        ImGui.SameLine();
+        if (ImGui.Button("Import CoE Data"))
+        {
+            if (_coELang == null)
+            {
+                LoadCoELangData();
+            }
+
+            Main.Settings.NonUserData.SelectedCraftingStepInputs = ConvertCoEData(_coeImportData);
+        }
+
+        ImGui.Unindent();
+    }
+
+    public static List<CraftingStepInput> ConvertCoEData(string coeJson)
+    {
+        var output = new List<CraftingStepInput>();
+        var coeSim = JsonConvert.DeserializeObject<CoESimulator>(coeJson);
+        foreach (var config in coeSim.config)
+        {
+            var input = new CraftingStepInput();
+            if (config.method is {Count: > 1} && config.method[0].Equals("currency", StringComparison.OrdinalIgnoreCase))
+                input.CurrencyItem = CoECurrencyDict.OrbNames.GetValueOrDefault(config.method[1], config.method[1]);
+            else
+                input.CurrencyItem = "";
+
+            input.AutomaticSuccess = config.autopass;
+            if (config.actions != null)
+            {
+                input.SuccessAction = config.actions.win?.ToLowerInvariant() == "end"
+                    ? SuccessAction.End
+                    : config.actions.win?.ToLowerInvariant() == "step"
+                        ? SuccessAction.GoToStep
+                        : SuccessAction.Continue;
+
+                input.SuccessActionStepIndex = config.actions.win_route.HasValue ? (int)config.actions.win_route.Value - 1 : 1;
+                input.FailureAction = config.actions.fail?.ToLowerInvariant() == "step"
+                    ? FailureAction.GoToStep
+                    : config.actions.fail?.ToLowerInvariant() == "loop"
+                        ? FailureAction.RepeatStep
+                        : FailureAction.Restart;
+
+                input.FailureActionStepIndex = config.actions.fail_route.HasValue ? (int)config.actions.fail_route.Value - 1 : 1;
+            }
+
+            input.ConditionalGroups = new List<ConditionalChecksGroupInput>();
+            if (config.filters != null)
+            {
+                foreach (var filter in config.filters)
+                {
+                    var group = new ConditionalChecksGroupInput
+                    {
+                        GroupType = filter.type?.ToLowerInvariant() == "or"
+                            ? ConditionGroup.OR
+                            : filter.type?.ToLowerInvariant() == "not"
+                                ? ConditionGroup.NOT
+                                : ConditionGroup.AND,
+                        ConditionalsToBePassForSuccess = filter.treshold.HasValue ? (int)filter.treshold.Value : 1,
+                        Conditionals = []
+                    };
+
+                    foreach (var cond in filter.conds)
+                    {
+                        var ck = new ConditionalKeys
+                        {
+                            Name = $"{_coELang.mod.GetValueOrDefault(cond.id, cond.id)} (min:{cond.treshold}{(cond.max != null ? $", max:{cond.max}" : "")})",
+                            Value = ""
+                        };
+
+                        group.Conditionals.Add(ck);
+                    }
+
+                    input.ConditionalGroups.Add(group);
+                }
+            }
+
+            if (config.method is {Count: > 0} && config.method[0].Equals("check", StringComparison.OrdinalIgnoreCase))
+                input.CheckType = ConditionalCheckType.ConditionalCheckOnly;
+            else
+                input.CheckType = ConditionalCheckType.ModifyThenCheck;
+
+            output.Add(input);
+        }
+
+        return output;
+    }
+
+    private static void LoadCoELangData()
+    {
+        var coeLangJson = "coe_lang.json";
+        var fullPath = Path.Combine(Main.DirectoryFullName, "ExternalData", coeLangJson);
+        try
+        {
+            if (!File.Exists(fullPath))
+            {
+                FetchNewCoeLangData();
+            }
+
+            var fileContent = File.ReadAllText(fullPath);
+            _coELang = JsonConvert.DeserializeObject<CoELang>(fileContent);
+            Logging.Logging.LogMessage($"[CoeLang] Loaded file from {coeLangJson} with {_coELang.mod.Count} mods", LogMessageType.Info);
+        }
+        catch (Exception e)
+        {
+            Logging.Logging.LogMessage($"[CoeLang] Error loading file from {coeLangJson}: {e.Message}", LogMessageType.Error);
+        }
+    }
+
+    private static void FetchNewCoeLangData()
+    {
+        const string url = "https://www.craftofexile.com/json/data/lang/poec_lang.us.json";
+        const string prefix = "poecl=";
+        const string coeLangJson = "coe_lang.json";
+        var fullPath = Path.Combine(Main.DirectoryFullName, "ExternalData", coeLangJson);
+
+        Directory.CreateDirectory(Path.Combine(Main.DirectoryFullName, "ExternalData"));
+
+        try
+        {
+            using var client = new WebClient();
+            var content = client.DownloadString(url);
+
+            if (content.StartsWith(prefix))
+            {
+                content = content[prefix.Length..];
+            }
+
+            File.WriteAllText(fullPath, content);
+
+            Logging.Logging.LogMessage($"[CoeLang] Fetched new JSON from remote URL and saved to {coeLangJson}", LogMessageType.Info);
+        }
+        catch (Exception e)
+        {
+            Logging.Logging.LogMessage($"[CoeLang] Error fetching remote JSON: {e.Message}", LogMessageType.Error);
+        }
     }
 
     private static ColorButton RemovalButton => new(Main.Settings.Styling.RemovalButtons.Normal, Main.Settings.Styling.RemovalButtons.Hovered, Main.Settings.Styling.RemovalButtons.Active);
