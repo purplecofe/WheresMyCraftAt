@@ -20,7 +20,6 @@ using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using static WheresMyCraftAt.WheresMyCraftAt;
 using Vector2 = System.Numerics.Vector2;
-using Vector4 = System.Numerics.Vector4;
 
 namespace WheresMyCraftAt.CraftingMenu;
 
@@ -278,7 +277,7 @@ public static class CraftingSequenceMenu
         var currencyItem = step.CurrencyItem;
         var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
         ImGui.SetNextItemWidth(availableWidth);
-        if (ImGui.InputTextWithHint("Currency Item", "Case Sensitive Currency BaseName \"Orb of Transmutation\"...", ref currencyItem, 100))
+        if (ImGui.InputTextWithHint("Currency Item", "Case Sensitive Currency BaseName \"Orb of Transmutation\"...", ref currencyItem, 100_000))
             step.CurrencyItem = currencyItem;
 
         var autoSuccess = step.AutomaticSuccess;
@@ -370,25 +369,23 @@ public static class CraftingSequenceMenu
 
         if (!isCompiled)
         {
-            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2.0f);
-        }
-
-        if (ImGui.InputTextWithHint("##conditionName", "Branch Name", ref branchName, 1000))
-            step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Name = branchName;
-
-        if (!isCompiled)
-        {
-            ImGui.PopStyleVar();
-            ImGui.PopStyleColor();
+            using (new ErrorStyling())
+            {
+                if (ImGui.InputTextWithHint("##conditionName", "Branch Name", ref branchName, 100_000))
+                    step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Name = branchName;
+            }
 
             if (ImGui.IsItemHovered())
             {
                 ImGui.BeginTooltip();
-                ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "FILTER COMPILATION ERROR:");
-                ImGui.TextWrapped(errorMessage);
+                ImGui.TextColored(ErrorStyling.PastelRed, errorMessage);
                 ImGui.EndTooltip();
             }
+        }
+        else
+        {
+            if (ImGui.InputTextWithHint("##conditionName", "Branch Name", ref branchName, 100_000))
+                step.Branches[branchIndex].ConditionalGroups[0].Conditionals[0].Name = branchName;
         }
 
         ImGui.SameLine();
@@ -623,27 +620,27 @@ public static class CraftingSequenceMenu
 
             if (!isCompiled)
             {
-                ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-                ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2.0f);
-            }
-
-            var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
-            ImGui.SetNextItemWidth(availableWidth);
-            if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 1000))
-                step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
-
-            if (!isCompiled)
-            {
-                ImGui.PopStyleVar();
-                ImGui.PopStyleColor();
+                using (new ErrorStyling())
+                {
+                    var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
+                    ImGui.SetNextItemWidth(availableWidth);
+                    if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 100_000))
+                        step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
+                }
 
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
-                    ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "FILTER COMPILATION ERROR:");
-                    ImGui.TextWrapped(errorMessage);
+                    ImGui.TextColored(ErrorStyling.PastelRed, errorMessage);
                     ImGui.EndTooltip();
                 }
+            }
+            else
+            {
+                var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
+                ImGui.SetNextItemWidth(availableWidth);
+                if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 100_000))
+                    step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
             }
 
             ImGui.SameLine();
@@ -831,7 +828,9 @@ public static class CraftingSequenceMenu
         if (!isCompiled)
         {
             var failedQuery = filter.Queries.FirstOrDefault(q => q.Query.FailedToCompile);
-            errorMessage = failedQuery.Query?.Error ?? "Unknown compilation error";
+            errorMessage = failedQuery.Query != null
+                ? $"[ItemQueryProcessor] Error processing query ({failedQuery.Query.RawQuery}) on Line # {failedQuery.Query.InitialLine}: {failedQuery.Query.Error}"
+                : "Unknown compilation error";
         }
 
         var result = (isCompiled, errorMessage);
@@ -1186,7 +1185,7 @@ public static class CraftingSequenceMenu
             return;
 
         ImGui.Indent();
-        ImGui.InputTextWithHint("##SaveAs", "File Path...", ref _fileSaveName, 100);
+        ImGui.InputTextWithHint("##SaveAs", "File Path...", ref _fileSaveName, 100_000);
         ImGui.SameLine();
 
         if (ImGui.Button("Save To File"))
@@ -1306,7 +1305,7 @@ public static class CraftingSequenceMenu
             LoadCoELangData();
         }
 
-        ImGui.InputTextWithHint("##CoEImport", "Craft of Exile Export String..", ref _coeImportData, 1000000);
+        ImGui.InputTextWithHint("##CoEImport", "Craft of Exile Export String..", ref _coeImportData, 10_000_000);
         ImGui.SameLine();
         if (ImGui.Button("Import CoE Data"))
         {
