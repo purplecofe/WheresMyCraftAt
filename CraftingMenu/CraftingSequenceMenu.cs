@@ -288,7 +288,7 @@ public static class CraftingSequenceMenu
     private static void DrawSuccessActionSection(CraftingStepInput step, List<CraftingStepInput> steps, int stepIndex)
     {
         var successActionIndex = (int)step.SuccessAction;
-        if (ImGui.Combo("##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), Enum.GetNames(typeof(SuccessAction)).Length))
+        if (ImGui.Combo(" On Success##SuccessAction", ref successActionIndex, Enum.GetNames(typeof(SuccessAction)), Enum.GetNames(typeof(SuccessAction)).Length))
         {
             step.SuccessAction = (SuccessAction)successActionIndex;
         }
@@ -326,7 +326,7 @@ public static class CraftingSequenceMenu
     private static void DrawFailureActionSection(CraftingStepInput step, List<CraftingStepInput> steps, int stepIndex)
     {
         var failureActionIndex = (int)step.FailureAction;
-        if (ImGui.Combo("##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), Enum.GetNames(typeof(FailureAction)).Length))
+        if (ImGui.Combo(" On Failure##FailureAction", ref failureActionIndex, Enum.GetNames(typeof(FailureAction)), Enum.GetNames(typeof(FailureAction)).Length))
         {
             step.FailureAction = (FailureAction)failureActionIndex;
         }
