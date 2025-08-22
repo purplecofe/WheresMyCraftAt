@@ -1,4 +1,5 @@
-﻿using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
+﻿using System;
+using static WheresMyCraftAt.CraftingSequence.CraftingSequence;
 
 namespace WheresMyCraftAt.Extensions;
 
@@ -13,6 +14,7 @@ public static class EnumExtensions
             FailureAction.GoToStep => AnyAction.GoToStep,
             FailureAction.RepeatStep => AnyAction.RepeatStep,
             FailureAction.Restart => AnyAction.Restart,
+            _ => throw new ArgumentOutOfRangeException(nameof(failureAction), failureAction, null)
         };
     }
 
@@ -24,6 +26,7 @@ public static class EnumExtensions
             SuccessAction.End => AnyAction.End,
             SuccessAction.GoToStep => AnyAction.GoToStep,
             SuccessAction.RepeatStep => AnyAction.RepeatStep,
+            _ => throw new ArgumentOutOfRangeException(nameof(failureAction), failureAction, null)
         };
     }
 }

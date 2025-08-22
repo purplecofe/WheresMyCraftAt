@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using WheresMyCraftAt.CraftingMenu.CraftofExileStructs;
 using WheresMyCraftAt.CraftingMenu.Styling;
@@ -146,7 +147,8 @@ public static class CraftingSequenceMenu
         {
             ConditionalCheckType.ConditionalCheckOnly => "Check The Item",
             ConditionalCheckType.Branch => "Branch",
-            ConditionalCheckType.ModifyThenCheck => $"Use '{step.CurrencyItem}'"
+            ConditionalCheckType.ModifyThenCheck => $"Use '{step.CurrencyItem}'",
+            _ => throw new ArgumentOutOfRangeException(nameof(step.CheckType), step.CheckType, null)
         };
     }
 
@@ -1414,7 +1416,7 @@ public static class CraftingSequenceMenu
         }
     }
 
-    private static void FetchNewCoeLangData()
+    private static async void FetchNewCoeLangData()
     {
         const string url = "https://www.craftofexile.com/json/data/lang/poec_lang.us.json";
         const string prefix = "poecl=";
@@ -1425,8 +1427,8 @@ public static class CraftingSequenceMenu
 
         try
         {
-            using var client = new WebClient();
-            var content = client.DownloadString(url);
+            using var client = new HttpClient();
+            var content = await client.GetStringAsync(url);
 
             if (content.StartsWith(prefix))
             {
