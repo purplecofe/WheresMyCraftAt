@@ -58,8 +58,8 @@ public class RunOptions
                 }
                 catch (Exception ex)
                 {
-                    ImGui.TextColored(new Vector4(1, 0.5f, 0.5f, 1), "Unable to retrieve inventory data. Please ensure you are in-game.");
-                    Logging.Logging.LogMessage($"Error retrieving inventory data: {ex.Message}", LogMessageType.Warning);
+                    ImGui.TextColored(new System.Numerics.Vector4(1, 0.5f, 0.5f, 1), "Unable to retrieve inventory data. Please ensure you are in-game.");
+                    Logging.Logging.LogMessage($"Error retrieving inventory data: {ex.Message}", WheresMyCraftAt.Enums.WheresMyCraftAt.LogMessageType.Warning);
                     return;
                 }
 
