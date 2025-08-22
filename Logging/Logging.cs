@@ -153,9 +153,18 @@ public static class Logging
 
         try
         {
-            var color = Main.Settings.Debugging.LogMessageFilters[messageType].color;
-
-            if (Main.Settings.Debugging.PrintTopLeft)
+            // 提供預設顏色
+            var color = Color.White;
+            
+            // 安全地嘗試取得設定的顏色
+            if (Main?.Settings?.Debugging?.LogMessageFilters != null &&
+                Main.Settings.Debugging.LogMessageFilters.TryGetValue(messageType, out var filter))
+            {
+                color = filter.color;
+            }
+            
+            // 安全地檢查是否要在左上角顯示
+            if (Main?.Settings?.Debugging?.PrintTopLeft == true)
             {
                 DebugWindow.LogMsg(msg, Main.Settings.Debugging.PrintLingerTime, color);
             }
