@@ -1,6 +1,7 @@
 ﻿using ExileCore;
 using ExileCore.Shared.Helpers;
 using ImGuiNET;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
