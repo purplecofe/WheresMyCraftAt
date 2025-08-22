@@ -12,6 +12,7 @@ using System.Linq;
 using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
+using static WheresMyCraftAt.Enums.WheresMyCraftAt;
 using Vector2 = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt;
@@ -59,7 +60,7 @@ public class RunOptions
                 catch (Exception ex)
                 {
                     ImGui.TextColored(new System.Numerics.Vector4(1, 0.5f, 0.5f, 1), "Unable to retrieve inventory data. Please ensure you are in-game.");
-                    Logging.Logging.LogMessage($"Error retrieving inventory data: {ex.Message}", WheresMyCraftAt.Enums.WheresMyCraftAt.LogMessageType.Warning);
+                    Logging.Logging.LogMessage($"Error retrieving inventory data: {ex.Message}", LogMessageType.Warning);
                     return;
                 }
 
