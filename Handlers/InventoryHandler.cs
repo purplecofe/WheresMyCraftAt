@@ -34,7 +34,13 @@ public static class InventoryHandler
 
     public static IList<InventSlotItem> TryGetValidCraftingItemsFromAnInventory(InventorySlotE invSlot)
     {
-        var items = GetInventorySlotItemsFromAnInventory(invSlot)
+        var inventoryItems = GetInventorySlotItemsFromAnInventory(invSlot);
+        if (inventoryItems == null)
+        {
+            return new List<InventSlotItem>();
+        }
+
+        var items = inventoryItems
             .Where(item => item.Item.IsValid 
                            && item.GetClientRect().Size != Size2F.Zero
                            && item.GetClientRect().Height > 0 && item.GetClientRect().Width > 0

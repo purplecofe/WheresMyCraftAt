@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using WheresMyCraftAt.Handlers;
+using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using Vector2 = System.Numerics.Vector2;
 
 namespace WheresMyCraftAt;
@@ -49,7 +50,18 @@ public class RunOptions
             {
                 ImGui.Separator();
                 ImGui.TextWrapped("Select the top left slot each item occupies in the inventory you want crafted on.\nI highly advise Styling be enabled to visually see what slots are considered valid positions otherwise you will only get a tooltip when it is hovered.");
-                var itemsInInventory = InventoryHandler.TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1).ToList();
+                
+                List<InventSlotItem> itemsInInventory;
+                try
+                {
+                    itemsInInventory = InventoryHandler.TryGetValidCraftingItemsFromAnInventory(InventorySlotE.MainInventory1).ToList();
+                }
+                catch (Exception ex)
+                {
+                    ImGui.TextColored(new Vector4(1, 0.5f, 0.5f, 1), "Unable to retrieve inventory data. Please ensure you are in-game.");
+                    Logging.Logging.LogMessage($"Error retrieving inventory data: {ex.Message}", LogMessageType.Warning);
+                    return;
+                }
 
                 var numb = 1;
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(1, 1));
