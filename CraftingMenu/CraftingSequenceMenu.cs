@@ -1060,6 +1060,26 @@ public static class CraftingSequenceMenu
         for (var conditionalIndex = 0; conditionalIndex < conditionGroup.Conditionals.Count; conditionalIndex++)
         {
             var checkKey = conditionGroup.Conditionals[conditionalIndex];
+            
+            // 檢查條件值是否為空或null
+            if (string.IsNullOrWhiteSpace(checkKey.Value))
+            {
+                var stepDescription = GetStepText(Main.Settings.NonUserData.SelectedCraftingStepInputs[stepNumber - 1]);
+                var locationDescription = string.IsNullOrEmpty(branchInfo)
+                    ? $"Conditional Group {groupNumber} ({conditionGroup.GroupType})"
+                    : $"{branchInfo} - Conditional Group {groupNumber} ({conditionGroup.GroupType})";
+
+                Logging.Logging.LogMessage(
+                    $"CRAFTING SEQUENCE WARNING:\n" +
+                    $"  Step {stepNumber}: '{stepDescription}'\n" +
+                    $"  {locationDescription}\n" +
+                    $"  Conditional {conditionalIndex + 1}: '{checkKey.Name}'\n" +
+                    $"  條件值為空，可能是從 CoE 導入但尚未手動設定 ItemFilter 查詢語法。\n" +
+                    $"  跳過此條件繼續處理。請手動編輯條件值。", LogMessageType.Warning);
+                
+                continue; // 跳過這個條件，繼續處理下一個
+            }
+            
             var filter = ItemFilter.LoadFromString(checkKey.Value);
             if (filter.Queries.Count == 0 || filter.Queries.All(q => q.Query.FailedToCompile))
             {
@@ -1078,9 +1098,15 @@ public static class CraftingSequenceMenu
                     $"  Step {stepNumber}: '{stepDescription}'\n" +
                     $"  {locationDescription}\n" +
                     $"  Conditional {conditionalIndex + 1}: '{checkKey.Name}'\n" +
-                    $"  {itemFilterError}", LogMessageType.Error);
+                    $"  ItemFilter 編譯錯誤: {itemFilterError}\n" +
+                    $"  \n" +
+                    $"  解決方法:\n" +
+                    $"  1. 檢查 ItemFilter 語法是否正確\n" +
+                    $"  2. 參考範例: ModsInfo.Prefixes.Count >= 1\n" +
+                    $"  3. 或使用: ItemStats[GameStat.xxx] >= value\n" +
+                    $"  4. 如果從 CoE 導入，請手動編輯條件值", LogMessageType.Error);
 
-                Logging.Logging.LogMessage("Clearing entire crafting sequence to prevent errors.", LogMessageType.Error);
+                Logging.Logging.LogMessage("清除整個製作序列以防止錯誤。請修正上述條件後重新套用。", LogMessageType.Error);
                 return false;
             }
 
@@ -1371,10 +1397,11 @@ public static class CraftingSequenceMenu
 
                     foreach (var cond in filter.conds)
                     {
+                        var modName = _coELang?.mod?.GetValueOrDefault(cond.id, cond.id) ?? cond.id;
                         var ck = new ConditionalKeys
                         {
-                            Name = $"{_coELang.mod.GetValueOrDefault(cond.id, cond.id)} (min:{cond.treshold}{(cond.max != null ? $", max:{cond.max}" : "")})",
-                            Value = ""
+                            Name = $"{modName} (min:{cond.treshold}{(cond.max != null ? $", max:{cond.max}" : "")})",
+                            Value = $"[CoE 導入] 請手動設定 ItemFilter 查詢語法\n// 例如: ModsInfo.ExplicitMods.Any(x => x.RawName == \"某個模組名稱\" && x.Values[0] >= {cond.treshold})\n// 或者: ItemStats[GameStat.某個屬性] >= {cond.treshold}"
                         };
 
                         group.Conditionals.Add(ck);
