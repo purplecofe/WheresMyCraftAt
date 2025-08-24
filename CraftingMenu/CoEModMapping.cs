@@ -27,22 +27,21 @@ public static class CoEModMapping
     /// </summary>
     private static readonly Dictionary<string, ModMappingTemplate> CommonModMappings = new()
     {
-        // Flask 相關模組：#% reduced Duration, #% increased effect (複合詞綴，分兩行顯示)
+        // Flask 相關模組：#% reduced Duration, #% increased effect 
+        // RawName 內部 ID：FlaskEffectReducedDuration1/2/3/4 ("Abecedarian's"/"Dabbler's"/"Alchemist's"/etc.)
         ["1654"] = new ModMappingTemplate 
         {
             Description = "Flask Duration with Effect",
-            Mode = MatchMode.Exact, // 使用特殊的完全匹配模式
-            ExactName = "CompoundFlaskDuration", // 特殊標記用於識別複合詞綴
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"reduced\") && x.RawName.Contains(\"Duration\") && !x.RawName.Contains(\"Skill\") && !x.RawName.Contains(\"less\")) && ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"increased\") && x.RawName.Contains(\"effect\") && !x.RawName.Contains(\"Area\"))"
+            Mode = MatchMode.Contains,
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"FlaskEffectReducedDuration\"))"
         },
-        // Curse 相關模組：#% reduced Effect of Curses on you (不檢查數值)
+        // Curse 相關模組：#% reduced Effect of Curses on you
+        // RawName 內部 ID：FlaskBuffCurseEffect1/2/3/4/5 ("of the Petrel"/"Mockingbird"/"Curlew"/"Kakapo"/"Owl")
         ["3887"] = new ModMappingTemplate
         {
             Description = "Curse Effect Reduction", 
-            Mode = MatchMode.SmartMatch,
-            RequiredWords = new[] { "reduced", "Effect", "Curses" },
-            ExcludeWords = new[] { "Skill", "Aura" },
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition})"
+            Mode = MatchMode.Contains,
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"FlaskBuffCurseEffect\"))"
         }
     };
 
@@ -94,17 +93,16 @@ public static class CoEModMapping
     }
 
     /// <summary>
-    /// 從模板生成查詢語法
+    /// 從模板生成查詢語法（使用內部 ID 匹配簡化版）
     /// </summary>
     private static string GenerateQueryFromTemplate(ModMappingTemplate template, int threshold, int? maxValue)
     {
         return template.Mode switch
         {
-            MatchMode.Exact when template.ExactName == "CompoundFlaskDuration" => template.QueryTemplate, // 直接使用預定義的複合詞綴查詢
             MatchMode.Exact => GenerateExactQuery(template.ExactName, threshold, maxValue),
-            MatchMode.SmartMatch => GenerateSmartMatchQuery(template.RequiredWords, template.ExcludeWords, false), // 不檢查數值
+            MatchMode.SmartMatch => GenerateSmartMatchQuery(template.RequiredWords, template.ExcludeWords, false),
             MatchMode.Regex => GenerateRegexQuery(template.RegexPattern, false),
-            MatchMode.Contains => template.QueryTemplate, // 不再使用 ApplyThreshold
+            MatchMode.Contains => template.QueryTemplate, // 直接使用預定義的查詢（內部 ID 匹配）
             _ => template.QueryTemplate
         };
     }
