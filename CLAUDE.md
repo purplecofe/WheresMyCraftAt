@@ -85,6 +85,13 @@ WheresMyCraftAt (主插件)
 - 整合 `ItemFilterLibrary` 提供強大的篩選功能
 - 支援 Craft of Exile 格式匯入和轉換
 - 即時篩選條件編譯檢查
+- **革命性內部 ID 匹配系統** - 使用 PoE 內部詞綴識別碼進行精確匹配
+
+**CoE 詞綴匹配系統**：
+- 發現並利用 `RawName` 包含 PoE 內部詞綴 ID（如 `FlaskEffectReducedDuration3`）
+- 從複雜關鍵字匹配轉換為簡單內部 ID 匹配
+- 提供 100% 精確的詞綴識別，無誤判風險
+- 支援自動 CoE 模組 ID 到內部 ID 的映射轉換
 
 **UI 架構**：
 - 基於 ImGui.NET 的即時渲染 UI
@@ -141,3 +148,38 @@ WheresMyCraftAt (主插件)
 - 使用背景任務避免阻塞 UI
 - 實作適當的延遲機制
 - 記憶體管理注意釋放資源
+
+## CoE 詞綴匹配最佳實踐
+
+**重大發現 (2025-08-25)**：
+- `RawName` 屬性包含 PoE 內部詞綴 ID，非顯示文字
+- 內部 ID 格式：`FlaskEffectReducedDuration3`, `FlaskBuffCurseEffect5` 等
+- 這提供了比顯示文字匹配更精確、更高效的匹配方式
+
+**內部 ID 映射範例**：
+```csharp
+// Flask Duration 詞綴
+["1654"] = new ModMappingTemplate {
+    Description = "Flask Duration with Effect",
+    Mode = MatchMode.Contains,
+    QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"FlaskEffectReducedDuration\"))"
+};
+
+// Curse Effect 詞綴  
+["3887"] = new ModMappingTemplate {
+    Description = "Curse Effect Reduction",
+    Mode = MatchMode.Contains, 
+    QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"FlaskBuffCurseEffect\"))"
+};
+```
+
+**已知內部 ID 對照**：
+- `FlaskEffectReducedDuration1/2/3/4` → "Abecedarian's"/"Dabbler's"/"Alchemist's"/etc.
+- `FlaskBuffCurseEffect1/2/3/4/5` → "of the Petrel"/"Mockingbird"/"Curlew"/"Kakapo"/"Owl"
+
+**開發建議**：
+1. **優先使用內部 ID 匹配**：比關鍵字匹配更精確
+2. **參考 PoE Wiki**：查找詞綴的內部識別碼
+3. **使用 Contains 模式**：匹配 ID 前綴涵蓋所有等級
+4. **避免複雜邏輯**：內部 ID 匹配通常只需單一 Contains 檢查
+5. **記錄 ID 對照**：在註解中記錄內部 ID 對應的顯示名稱
