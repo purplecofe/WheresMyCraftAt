@@ -27,37 +27,36 @@ public static class CoEModMapping
     /// </summary>
     private static readonly Dictionary<string, ModMappingTemplate> CommonModMappings = new()
     {
-        // Flask 相關模組：#% reduced Duration, #% increased effect
+        // Flask 相關模組：#% reduced Duration, #% increased effect (複合詞綴，分兩行顯示)
         ["1654"] = new ModMappingTemplate 
         {
             Description = "Flask Duration with Effect",
-            Mode = MatchMode.SmartMatch,
-            RequiredWords = new[] { "reduced", "Duration", "increased", "effect" },
-            ExcludeWords = new[] { "Skill", "Flask Charges", "Area" },
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition} && x.Values[0] >= {threshold})"
+            Mode = MatchMode.Exact, // 使用特殊的完全匹配模式
+            ExactName = "CompoundFlaskDuration", // 特殊標記用於識別複合詞綴
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"reduced\") && x.RawName.Contains(\"Duration\") && !x.RawName.Contains(\"Skill\") && !x.RawName.Contains(\"less\")) && ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"increased\") && x.RawName.Contains(\"effect\") && !x.RawName.Contains(\"Area\"))"
         },
-        // Curse 相關模組：#% reduced Effect of Curses on you
+        // Curse 相關模組：#% reduced Effect of Curses on you (不檢查數值)
         ["3887"] = new ModMappingTemplate
         {
             Description = "Curse Effect Reduction", 
             Mode = MatchMode.SmartMatch,
             RequiredWords = new[] { "reduced", "Effect", "Curses" },
             ExcludeWords = new[] { "Skill", "Aura" },
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition} && x.Values[0] >= {threshold})"
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition})"
         }
     };
 
     /// <summary>
-    /// 根據關鍵字的通用模板（向後相容）
+    /// 根據關鍵字的通用模板（向後相容，不檢查數值）
     /// </summary>
     private static readonly Dictionary<string, string> KeywordTemplates = new()
     {
-        ["life"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Life\") && x.Values[0] >= {threshold})",
-        ["mana"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Mana\") && x.Values[0] >= {threshold})",
-        ["damage"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Damage\") && x.Values[0] >= {threshold})",
-        ["resistance"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Resistance\") && x.Values[0] >= {threshold})",
-        ["speed"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Speed\") && x.Values[0] >= {threshold})",
-        ["critical"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Critical\") && x.Values[0] >= {threshold})"
+        ["life"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Life\"))",
+        ["mana"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Mana\"))",
+        ["damage"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Damage\"))",
+        ["resistance"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Resistance\"))",
+        ["speed"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Speed\"))",
+        ["critical"] = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Critical\"))"
     };
 
     /// <summary>
@@ -101,11 +100,12 @@ public static class CoEModMapping
     {
         return template.Mode switch
         {
+            MatchMode.Exact when template.ExactName == "CompoundFlaskDuration" => template.QueryTemplate, // 直接使用預定義的複合詞綴查詢
             MatchMode.Exact => GenerateExactQuery(template.ExactName, threshold, maxValue),
-            MatchMode.SmartMatch => GenerateSmartMatchQuery(template.RequiredWords, template.ExcludeWords, threshold, maxValue),
-            MatchMode.Regex => GenerateRegexQuery(template.RegexPattern, threshold, maxValue),
-            MatchMode.Contains => ApplyThreshold(template.QueryTemplate, threshold, maxValue),
-            _ => ApplyThreshold(template.QueryTemplate, threshold, maxValue)
+            MatchMode.SmartMatch => GenerateSmartMatchQuery(template.RequiredWords, template.ExcludeWords, false), // 不檢查數值
+            MatchMode.Regex => GenerateRegexQuery(template.RegexPattern, false),
+            MatchMode.Contains => template.QueryTemplate, // 不再使用 ApplyThreshold
+            _ => template.QueryTemplate
         };
     }
 
@@ -121,7 +121,7 @@ public static class CoEModMapping
     /// <summary>
     /// 生成智慧匹配查詢（多關鍵字 AND + 排除條件）
     /// </summary>
-    private static string GenerateSmartMatchQuery(string[] requiredWords, string[] excludeWords, int threshold, int? maxValue)
+    private static string GenerateSmartMatchQuery(string[] requiredWords, string[] excludeWords, bool checkValues = false)
     {
         var conditions = new List<string>();
         
@@ -138,39 +138,35 @@ public static class CoEModMapping
         }
         
         var allConditions = string.Join(" && ", conditions);
-        var template = $"ModsInfo.ExplicitMods.Any(x => {allConditions} && x.Values[0] >= {{threshold}})";
-        
-        return ApplyThreshold(template, threshold, maxValue);
+        return $"ModsInfo.ExplicitMods.Any(x => {allConditions})";
     }
 
     /// <summary>
     /// 生成正則表達式匹配查詢
     /// </summary>
-    private static string GenerateRegexQuery(string pattern, int threshold, int? maxValue)
+    private static string GenerateRegexQuery(string pattern, bool checkValues = false)
     {
-        var template = $"ModsInfo.ExplicitMods.Any(x => System.Text.RegularExpressions.Regex.IsMatch(x.RawName, @\"{EscapeRegexString(pattern)}\") && x.Values[0] >= {{threshold}})";
-        return ApplyThreshold(template, threshold, maxValue);
+        return $"ModsInfo.ExplicitMods.Any(x => System.Text.RegularExpressions.Regex.IsMatch(x.RawName, @\"{EscapeRegexString(pattern)}\"))";
     }
 
     /// <summary>
-    /// 根據模組名稱智慧生成查詢（向後相容）
+    /// 根據模組名稱智慧生成查詢（向後相容，不檢查數值）
     /// </summary>
     private static string GenerateSmartQuery(string modName, int threshold, int? maxValue)
     {
         var lowerModName = modName.ToLowerInvariant();
 
-        // 檢查關鍵字匹配
+        // 檢查關鍵字匹配（不再使用 ApplyThreshold）
         foreach (var (keyword, template) in KeywordTemplates)
         {
             if (lowerModName.Contains(keyword))
             {
-                return ApplyThreshold(template, threshold, maxValue);
+                return template;
             }
         }
 
-        // 通用模組匹配模板
-        var genericTemplate = $"ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"{EscapeString(modName)}\") && x.Values[0] >= {{threshold}})";
-        return ApplyThreshold(genericTemplate, threshold, maxValue);
+        // 通用模組匹配模板（不檢查數值）
+        return $"ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"{EscapeString(modName)}\"))";
     }
 
     /// <summary>
