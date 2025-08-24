@@ -1569,10 +1569,27 @@ public static class CraftingSequenceMenu
                     foreach (var cond in filter.conds)
                     {
                         var modName = _coELang?.mod?.GetValueOrDefault(cond.id, cond.id) ?? cond.id;
+                        var conditionName = $"{modName} (min:{cond.treshold}{(cond.max != null ? $", max:{cond.max}" : "")})" ;
+                        
+                        // 嘗試自動轉換模組 ID 為 ItemFilter 查詢
+                        var autoQuery = CoEModMapping.GetItemFilterQuery(cond.id, _coELang, (int)cond.treshold, cond.max.HasValue ? (int)cond.max.Value : null);
+                        
+                        string conditionValue;
+                        if (autoQuery != null)
+                        {
+                            // 成功自動轉換
+                            conditionValue = $"{autoQuery}\n// [自動轉換] 從 CoE 模組 ID: {cond.id} ({CoEModMapping.GetModDescription(cond.id, _coELang)})";
+                        }
+                        else
+                        {
+                            // 無法自動轉換，提供手動編輯模板
+                            conditionValue = $"[CoE 導入] 請手動設定 ItemFilter 查詢語法\n// 模組 ID: {cond.id} - {modName}\n// 例如: ModsInfo.ExplicitMods.Any(x => x.RawName == \"{EscapeForComment(modName)}\" && x.Values[0] >= {cond.treshold})\n// 或者: ItemStats[GameStat.屬性名稱] >= {cond.treshold}";
+                        }
+
                         var ck = new ConditionalKeys
                         {
-                            Name = $"{modName} (min:{cond.treshold}{(cond.max != null ? $", max:{cond.max}" : "")})",
-                            Value = $"[CoE 導入] 請手動設定 ItemFilter 查詢語法\n// 例如: ModsInfo.ExplicitMods.Any(x => x.RawName == \"某個模組名稱\" && x.Values[0] >= {cond.treshold})\n// 或者: ItemStats[GameStat.某個屬性] >= {cond.treshold}"
+                            Name = conditionName,
+                            Value = conditionValue
                         };
 
                         group.Conditionals.Add(ck);
@@ -1641,6 +1658,14 @@ public static class CraftingSequenceMenu
         {
             Logging.Logging.LogMessage($"[CoeLang] Error fetching remote JSON: {e.Message}", LogMessageType.Error);
         }
+    }
+
+    /// <summary>
+    /// 跳脫字串中的特殊字元以便在註釋中安全使用
+    /// </summary>
+    private static string EscapeForComment(string input)
+    {
+        return input.Replace("\"", "\\\"").Replace("\\", "\\\\");
     }
 
     private record EditorRecord(int GroupIndex, int BranchIndex, int StepIndex, int ConditionalIndex);
