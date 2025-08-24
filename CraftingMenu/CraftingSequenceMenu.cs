@@ -619,6 +619,22 @@ public static class CraftingSequenceMenu
             var checkKey = step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name;
             var filterValue = step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Value;
             var (isCompiled, errorMessage) = CheckFilterCompilation(filterValue);
+            
+            // 檢查是否為 CoE 導入的條件
+            var isCoEImported = !string.IsNullOrEmpty(filterValue) && filterValue.Contains("[CoE 導入]");
+
+            // 為 CoE 導入條件添加警告圖示
+            if (isCoEImported)
+            {
+                ImGui.TextColored(new Vector4(1.0f, 0.8f, 0.2f, 1.0f), "⚠");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.TextWrapped("這是從 CoE 導入的條件，需要手動編輯條件值。");
+                    ImGui.EndTooltip();
+                }
+                ImGui.SameLine();
+            }
 
             if (!isCompiled)
             {
@@ -636,6 +652,16 @@ public static class CraftingSequenceMenu
                     ImGui.TextColored(ErrorStyling.PastelRed, errorMessage);
                     ImGui.EndTooltip();
                 }
+            }
+            else if (isCoEImported)
+            {
+                // 為 CoE 導入條件使用特殊的背景色
+                ImGui.PushStyleColor(ImGuiCol.FrameBg, new Vector4(1.0f, 1.0f, 0.8f, 0.3f)); // 淡黃色背景
+                var availableWidth = ImGui.GetContentRegionAvail().X * 0.75f;
+                ImGui.SetNextItemWidth(availableWidth);
+                if (ImGui.InputTextWithHint("##conditionName", "Name of condition...", ref checkKey, 100_000))
+                    step.ConditionalGroups[groupIndex].Conditionals[conditionalIndex].Name = checkKey;
+                ImGui.PopStyleColor();
             }
             else
             {
@@ -780,9 +806,153 @@ public static class CraftingSequenceMenu
         ImGui.SameLine();
         DrawCopyConditionalCombo();
 
+        // 新增範例和快速插入區域
+        DrawConditionExamplesAndQuickInsert();
+
         ImGui.InputTextMultiline("##text_edit", ref tempCondValue, 15000, ImGui.GetContentRegionAvail(), ImGuiInputTextFlags.AllowTabInput);
 
         ImGui.End();
+    }
+
+    private static void DrawConditionExamplesAndQuickInsert()
+    {
+        // 範例和快速插入區域
+        if (ImGui.CollapsingHeader("範例語法與快速插入", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            ImGui.Indent();
+            
+            // 範例語法說明
+            ImGui.TextWrapped("常用條件範例：");
+            ImGui.BulletText("詞綴數量: ModsInfo.Prefixes.Count >= 1");
+            ImGui.BulletText("開放位置: ModsInfo.HasOpenPrefix || ModsInfo.HasOpenSuffix");
+            ImGui.BulletText("物品等級: ItemLevel >= 75");
+            ImGui.BulletText("物品稀有度: Rarity == Rarity.Rare");
+            ImGui.BulletText("特定模組: ModsInfo.ExplicitMods.Any(x => x.RawName == \"模組名稱\")");
+            ImGui.BulletText("屬性值: ItemStats[GameStat.屬性名稱] >= 數值");
+            
+            ImGui.Separator();
+            
+            // 快速插入按鈕
+            ImGui.TextWrapped("快速插入：");
+            
+            // 第一行按鈕
+            if (ImGui.Button("開放前綴"))
+                InsertTextAtCursor("ModsInfo.HasOpenPrefix");
+            ImGui.SameLine();
+            if (ImGui.Button("開放後綴"))
+                InsertTextAtCursor("ModsInfo.HasOpenSuffix");
+            ImGui.SameLine();
+            if (ImGui.Button("任一開放"))
+                InsertTextAtCursor("ModsInfo.HasOpenPrefix || ModsInfo.HasOpenSuffix");
+            
+            // 第二行按鈕
+            if (ImGui.Button("前綴數量 >= 1"))
+                InsertTextAtCursor("ModsInfo.Prefixes.Count >= 1");
+            ImGui.SameLine();
+            if (ImGui.Button("後綴數量 >= 1"))
+                InsertTextAtCursor("ModsInfo.Suffixes.Count >= 1");
+            ImGui.SameLine();
+            if (ImGui.Button("總詞綴 >= 1"))
+                InsertTextAtCursor("ModsInfo.Prefixes.Count + ModsInfo.Suffixes.Count >= 1");
+            
+            // 第三行按鈕
+            if (ImGui.Button("物品等級 >= 75"))
+                InsertTextAtCursor("ItemLevel >= 75");
+            ImGui.SameLine();
+            if (ImGui.Button("稀有物品"))
+                InsertTextAtCursor("Rarity == Rarity.Rare");
+            ImGui.SameLine();
+            if (ImGui.Button("魔法物品"))
+                InsertTextAtCursor("Rarity == Rarity.Magic");
+            
+            // 第四行按鈕
+            if (ImGui.Button("包含特定模組"))
+                InsertTextAtCursor("ModsInfo.ExplicitMods.Any(x => x.RawName == \"模組名稱\")");
+            ImGui.SameLine();
+            if (ImGui.Button("屬性值檢查"))
+                InsertTextAtCursor("ItemStats[GameStat.屬性名稱] >= 數值");
+            
+            ImGui.Unindent();
+        }
+        
+        // 語法參考文檔區域
+        if (ImGui.CollapsingHeader("語法參考文檔"))
+        {
+            ImGui.Indent();
+            
+            ImGui.TextWrapped("詳細語法說明：");
+            
+            ImGui.BulletText("ModsInfo - 物品模組相關資訊");
+            ImGui.Indent();
+            ImGui.BulletText("ModsInfo.Prefixes.Count - 前綴數量");
+            ImGui.BulletText("ModsInfo.Suffixes.Count - 後綴數量");
+            ImGui.BulletText("ModsInfo.HasOpenPrefix - 是否有開放前綴位");
+            ImGui.BulletText("ModsInfo.HasOpenSuffix - 是否有開放後綴位");
+            ImGui.BulletText("ModsInfo.ExplicitMods - 明確模組清單");
+            ImGui.Unindent();
+            
+            ImGui.BulletText("ItemStats - 物品屬性統計");
+            ImGui.Indent();
+            ImGui.BulletText("ItemStats[GameStat.屬性名稱] - 獲取特定屬性值");
+            ImGui.BulletText("常用屬性: MaximumLifePct, AttackSpeedPct, etc.");
+            ImGui.Unindent();
+            
+            ImGui.BulletText("基本屬性");
+            ImGui.Indent();
+            ImGui.BulletText("ItemLevel - 物品等級");
+            ImGui.BulletText("Rarity - 物品稀有度 (Normal, Magic, Rare, Unique)");
+            ImGui.BulletText("Quality - 物品品質");
+            ImGui.Unindent();
+            
+            ImGui.BulletText("邏輯運算符");
+            ImGui.Indent();
+            ImGui.BulletText("&& - AND (且)");
+            ImGui.BulletText("|| - OR (或)");
+            ImGui.BulletText("! - NOT (非)");
+            ImGui.BulletText("== - 等於");
+            ImGui.BulletText(">= - 大於等於");
+            ImGui.BulletText("<= - 小於等於");
+            ImGui.Unindent();
+            
+            ImGui.BulletText("LINQ 方法 (.Any, .All, .Count)");
+            ImGui.Indent();
+            ImGui.BulletText(".Any(x => 條件) - 是否有任何元素符合條件");
+            ImGui.BulletText(".All(x => 條件) - 是否所有元素都符合條件");
+            ImGui.BulletText(".Count(x => 條件) - 符合條件的元素數量");
+            ImGui.Unindent();
+            
+            ImGui.Unindent();
+        }
+        
+        // 即時編譯檢查顯示
+        if (!string.IsNullOrWhiteSpace(tempCondValue))
+        {
+            var (isCompiled, errorMessage) = CheckFilterCompilation(tempCondValue);
+            
+            ImGui.Separator();
+            if (isCompiled)
+            {
+                ImGui.TextColored(new Vector4(0.3f, 0.8f, 0.3f, 1.0f), "✓ 語法正確");
+            }
+            else
+            {
+                ImGui.TextColored(ErrorStyling.PastelRed, "✗ 語法錯誤");
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.BeginTooltip();
+                    ImGui.TextWrapped(errorMessage);
+                    ImGui.EndTooltip();
+                }
+            }
+        }
+    }
+
+    private static void InsertTextAtCursor(string text)
+    {
+        // 簡單的文字插入，添加在當前內容末尾
+        if (!string.IsNullOrEmpty(tempCondValue) && !tempCondValue.EndsWith("\n"))
+            tempCondValue += "\n";
+        tempCondValue += text;
     }
 
     private static void DrawCopyConditionalCombo()
