@@ -23,27 +23,32 @@ public static class CoEModMapping
 
     /// <summary>
     /// 常見模組 ID 的映射模板
-    /// 使用關鍵字匹配來處理模組名稱
+    /// 使用精確匹配來處理模組名稱
     /// </summary>
     private static readonly Dictionary<string, ModMappingTemplate> CommonModMappings = new()
     {
-        // Flask 相關模組
+        // Flask 相關模組：#% reduced Duration, #% increased effect
         ["1654"] = new ModMappingTemplate 
         {
-            Description = "Flask Duration",
-            Keywords = new[] { "duration", "持續時間" },
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Duration\") && x.Values[0] >= {threshold})"
+            Description = "Flask Duration with Effect",
+            Mode = MatchMode.SmartMatch,
+            RequiredWords = new[] { "reduced", "Duration", "increased", "effect" },
+            ExcludeWords = new[] { "Skill", "Flask Charges", "Area" },
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition} && x.Values[0] >= {threshold})"
         },
+        // Curse 相關模組：#% reduced Effect of Curses on you
         ["3887"] = new ModMappingTemplate
         {
             Description = "Curse Effect Reduction", 
-            Keywords = new[] { "curse", "詛咒" },
-            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => x.RawName.Contains(\"Curse\") && x.Values[0] >= {threshold})"
+            Mode = MatchMode.SmartMatch,
+            RequiredWords = new[] { "reduced", "Effect", "Curses" },
+            ExcludeWords = new[] { "Skill", "Aura" },
+            QueryTemplate = "ModsInfo.ExplicitMods.Any(x => {smartCondition} && x.Values[0] >= {threshold})"
         }
     };
 
     /// <summary>
-    /// 根據關鍵字的通用模板
+    /// 根據關鍵字的通用模板（向後相容）
     /// </summary>
     private static readonly Dictionary<string, string> KeywordTemplates = new()
     {
@@ -74,7 +79,7 @@ public static class CoEModMapping
         // 2. 檢查常見模組 ID 的直接映射
         if (CommonModMappings.TryGetValue(modId, out var mapping))
         {
-            return ApplyThreshold(mapping.QueryTemplate, threshold, maxValue);
+            return GenerateQueryFromTemplate(mapping, threshold, maxValue);
         }
 
         // 3. 嘗試使用 CoE 語言資料進行智慧匹配
@@ -90,7 +95,65 @@ public static class CoEModMapping
     }
 
     /// <summary>
-    /// 根據模組名稱智慧生成查詢
+    /// 從模板生成查詢語法
+    /// </summary>
+    private static string GenerateQueryFromTemplate(ModMappingTemplate template, int threshold, int? maxValue)
+    {
+        return template.Mode switch
+        {
+            MatchMode.Exact => GenerateExactQuery(template.ExactName, threshold, maxValue),
+            MatchMode.SmartMatch => GenerateSmartMatchQuery(template.RequiredWords, template.ExcludeWords, threshold, maxValue),
+            MatchMode.Regex => GenerateRegexQuery(template.RegexPattern, threshold, maxValue),
+            MatchMode.Contains => ApplyThreshold(template.QueryTemplate, threshold, maxValue),
+            _ => ApplyThreshold(template.QueryTemplate, threshold, maxValue)
+        };
+    }
+
+    /// <summary>
+    /// 生成完全匹配查詢
+    /// </summary>
+    private static string GenerateExactQuery(string exactName, int threshold, int? maxValue)
+    {
+        var template = $"ModsInfo.ExplicitMods.Any(x => x.RawName == \"{EscapeString(exactName)}\" && x.Values[0] >= {{threshold}})";
+        return ApplyThreshold(template, threshold, maxValue);
+    }
+
+    /// <summary>
+    /// 生成智慧匹配查詢（多關鍵字 AND + 排除條件）
+    /// </summary>
+    private static string GenerateSmartMatchQuery(string[] requiredWords, string[] excludeWords, int threshold, int? maxValue)
+    {
+        var conditions = new List<string>();
+        
+        // 加入必要關鍵字條件（AND）
+        foreach (var word in requiredWords)
+        {
+            conditions.Add($"x.RawName.Contains(\"{EscapeString(word)}\")");
+        }
+        
+        // 加入排除條件（NOT）
+        foreach (var word in excludeWords)
+        {
+            conditions.Add($"!x.RawName.Contains(\"{EscapeString(word)}\")");
+        }
+        
+        var allConditions = string.Join(" && ", conditions);
+        var template = $"ModsInfo.ExplicitMods.Any(x => {allConditions} && x.Values[0] >= {{threshold}})";
+        
+        return ApplyThreshold(template, threshold, maxValue);
+    }
+
+    /// <summary>
+    /// 生成正則表達式匹配查詢
+    /// </summary>
+    private static string GenerateRegexQuery(string pattern, int threshold, int? maxValue)
+    {
+        var template = $"ModsInfo.ExplicitMods.Any(x => System.Text.RegularExpressions.Regex.IsMatch(x.RawName, @\"{EscapeRegexString(pattern)}\") && x.Values[0] >= {{threshold}})";
+        return ApplyThreshold(template, threshold, maxValue);
+    }
+
+    /// <summary>
+    /// 根據模組名稱智慧生成查詢（向後相容）
     /// </summary>
     private static string GenerateSmartQuery(string modName, int threshold, int? maxValue)
     {
@@ -135,6 +198,14 @@ public static class CoEModMapping
     }
 
     /// <summary>
+    /// 跳脫正則表達式中的特殊字元
+    /// </summary>
+    private static string EscapeRegexString(string input)
+    {
+        return System.Text.RegularExpressions.Regex.Escape(input);
+    }
+
+    /// <summary>
     /// 檢查模組 ID 是否可以自動轉換
     /// </summary>
     public static bool CanAutoConvert(string modId, CoELang coeLang = null)
@@ -172,6 +243,32 @@ public static class CoEModMapping
 }
 
 /// <summary>
+/// 詞綴匹配模式
+/// </summary>
+public enum MatchMode
+{
+    /// <summary>
+    /// 使用 Contains 進行部分匹配（向後相容）
+    /// </summary>
+    Contains,
+    
+    /// <summary>
+    /// 完全匹配詞綴名稱
+    /// </summary>
+    Exact,
+    
+    /// <summary>
+    /// 智慧匹配：多關鍵字組合 + 排除條件
+    /// </summary>
+    SmartMatch,
+    
+    /// <summary>
+    /// 正則表達式匹配
+    /// </summary>
+    Regex
+}
+
+/// <summary>
 /// 模組映射模板
 /// </summary>
 public class ModMappingTemplate
@@ -182,9 +279,34 @@ public class ModMappingTemplate
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// 關鍵字（用於匹配）
+    /// 匹配模式
+    /// </summary>
+    public MatchMode Mode { get; set; } = MatchMode.Contains;
+
+    /// <summary>
+    /// 關鍵字（用於向後相容）
     /// </summary>
     public string[] Keywords { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// 完全匹配用：確切的詞綴名稱
+    /// </summary>
+    public string ExactName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 智慧匹配用：必須包含的關鍵字（AND 條件）
+    /// </summary>
+    public string[] RequiredWords { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// 智慧匹配用：排除的關鍵字（NOT 條件）
+    /// </summary>
+    public string[] ExcludeWords { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// 正則表達式模式
+    /// </summary>
+    public string RegexPattern { get; set; } = string.Empty;
 
     /// <summary>
     /// ItemFilter 查詢模板
